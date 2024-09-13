@@ -55,15 +55,11 @@ const FooterLinks = (): JSX.Element => {
             sx={{
                 justifyContent: 'space-around',
                 alignItems: isMobile ? 'center' : 'end',
+                minWidth: 525,
             }}
         >
             {
                 links.map((link) => (
-                    <>
-                        <Divider
-                            orientation="vertical"
-                            variant="middle"
-                        />
                         <Link
                             to={link.url}
                             key={link.label}
@@ -71,14 +67,13 @@ const FooterLinks = (): JSX.Element => {
                                 fontSize: 15,
                                 color: 'white',
                                 paddingBottom: '3px',
-                                textDecoration: 'none',
+                                textDecoration: 'underline',
                                 borderBottom: isMobile ? 'none' : 'solid 1px white',
                                 textAlign: isMobile ? 'center' : 'start',
                             }}
                         >
                             {link.label}
                         </Link>
-                    </>
                 ))
             }
         </Stack>

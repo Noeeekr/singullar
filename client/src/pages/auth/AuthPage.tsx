@@ -69,9 +69,9 @@ const AuthPage = (): JSX.Element => {
                                 <RegisterForm structure="entire" />
                             </Stack>
                             <Box sx={{
-                                flex: 3.5
+                                flex: 2.5
                             }}>
-                                This is where the mascot should come, fuck the mascot, idc
+                                mascot image if I had one.jpeg
                             </Box>
                         </Stack>
                     )

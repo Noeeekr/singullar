@@ -18,6 +18,9 @@ import routes from './routes'
 import RootPage, { loader as rootLoader } from './pages/root/RootPage'
 import AuthPage from './pages/auth/AuthPage'
 
+// This and route provider component might become App.tsx file
+// so I can put redux store and things like that there.
+
 const router = createBrowserRouter([
   { // Root's a redirect middleware for logged/non-logged
     path: "/",

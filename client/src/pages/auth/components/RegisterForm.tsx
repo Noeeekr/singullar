@@ -106,23 +106,19 @@ const Internal = (): JSX.Element => {
         <>
             <Typography
                 component="p"
-                variant="body2"
+                variant="body1"
                 marginBottom={2}
                 color={ isMobile ? "primary.dark": "primary.semiLight" }
             >
                 Selecione uma opção para se cadastrar
             </Typography>
 
-            <Box
-                sx={{
-                    padding: 1,
-                }}
-            >
+            <Box padding={1} >
                 <ButtonGroup
                     variant="text"
                     orientation="vertical"
+                    fullWidth={true}
                     sx={{
-                        width: '100%',
                         '& .MuiButtonGroup-grouped': {
                             border: 'none',
                             margin: '0',
@@ -137,24 +133,18 @@ const Internal = (): JSX.Element => {
                                     color: theme.palette.primary.contrast
                                 },
                                 '&:hover .MuiSvgIcon-root': {
-                                    color: theme.palette.primary.lightGray
+                                    color: theme.palette.primary.lightGray,
+                                    opacity: 0.6,
                                 }
                                 })}
                             >
-                                <ListButton
-                                    sx={{
-                                        justifyContent: 'space-between',
-                                    }}
+                                <ListButton 
+                                    sx={{ justifyContent: 'space-between', }}
                                     endIcon={<ArrowRight sx={{
                                         fontSize: "25px !important" 
                                     }}/>}
                                 >
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            gap: 2,
-                                        }}
-                                    >
+                                    <Box sx={{ display: 'flex', gap: 2, }} >
                                         {item.icon}
                                         {item.label}
                                     </Box>
@@ -182,18 +172,18 @@ const Entire = (): JSX.Element => {
 
     return (
         <Box
+            padding={isMobile ? 2 : 3}
             sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: 'rgb(255,255,255)',
-                padding: isMobile ? 2 : 3,
+                backgroundColor: 'primary.main',
                 borderRadius: 4,
                 flex: 1
             }}
             component="section"
         >
             <Typography
-                variant="h4"
+                variant="h6"
                 marginBottom={0.2}
             >
                 Cadastro

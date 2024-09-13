@@ -1,6 +1,4 @@
-import {
-    createTheme,
-} from '@mui/material'
+import { createTheme, ThemeOptions } from '@mui/material/styles'
 
 
 declare module '@mui/material/styles' {
@@ -27,6 +25,30 @@ declare module '@mui/material/styles' {
     }
 }
 
+const lightPaletteTheme = createTheme({
+    palette: {
+        primary: { // purple, white, black
+            main: 'rgb(255,255,255)', // not defined, it is just necessary to eixt
+            
+            lightPurple: 'rgb(154, 61, 230)',
+            darkPurple: 'rgb(114, 41, 230)',
+            
+            semiLight: 'rgb(150,150,150)',
+            light: 'rgb(255,255,255)',
+            
+            dark: 'rgb(0,0,0)',
+            lightGray: 'rgb(100,100,100)',
+            
+            contrast: 'rgb(255, 102, 0)',
+        },
+        error: { // red
+            main: 'rgb(255, 77, 106)',
+            light: 'rgb(255, 227, 232)',
+            dark: 'rgb(212, 7, 40)',
+        }
+    },
+})
+
 const lightTheme = createTheme({
     breakpoints: {
         values: {
@@ -37,47 +59,50 @@ const lightTheme = createTheme({
             xl: 1536,         // Extra-large devices 
         }
     },
-    typography: {
-        h4: {
-            fontSize: 21,
-            fontFamily: 'Roboto',
-            fontWeight: 'bold'
-        },
-        body2: {
-            fontSize: 14.5,
-        }
-    },
-    palette: {
-        primary: {
-            lightPurple: 'rgb(154, 61, 230)',
-            darkPurple: 'rgb(114, 41, 230)',
-            semiLight: 'rgb(150,150,150)',
-            lightGray: 'rgb(100,100,100)',
-            contrast: 'rgb(255, 102, 0)',
-            light: 'rgb(255,255,255)',
-            dark: 'rgb(0,0,0)',
-            main: 'rgb(200,0,200)', // not defined, it is just necessary to eixt
-        }
-    },
+    palette: lightPaletteTheme.palette,
     components: {
+        MuiTypography: {
+            styleOverrides: {
+                body1: {
+                    fontSize: 14
+                },
+                body2: {
+                    fontSize: 12
+                },
+                h6: {
+                    fontSize: 20
+                }
+            }
+        },
         MuiFormControl: {
             styleOverrides: {
                 root: {
-                    width: '100%' // general, not theme specific
+                    width: '100%' // applies for all themes
                 }
             }
         },
         MuiOutlinedInput: {
             styleOverrides: {
                 root: {
+                    zIndex: 2,
+                    height: '43px', // applies for all themes
+                    borderRadius: '10px', // applies for all themes
                     backgroundColor: 'rgb(250,250,255)',
-                    height: '43px', // general, not theme specific
-                    borderRadius: '10px', // general, not theme specific
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'rgb(215,215,215)',
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'rgb(156,90,220)',
+                    },
+                    '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+                        borderColor: lightPaletteTheme.palette?.error?.main,
+                        borderWidth: '2px !important',
+                    },
+                    '&.Mui-focused.Mui-error .MuiOutlinedInput-notchedOutline': {
+                        borderWidth: '2px !important',
+                    },
+                    '&.Mui-error:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: lightPaletteTheme.palette?.error?.main,
                     },
                 },
                 notchedOutline: {
@@ -89,8 +114,9 @@ const lightTheme = createTheme({
         MuiInputLabel: {
             styleOverrides: {
                 outlined: {
-                    color: 'rgb(120,120,120)',
+                    zIndex: 4,
                     translate: '0px -6px',
+                    color: 'rgb(120,120,120)',
                     transition: 'linear 150ms all',
                     '&.MuiInputLabel-shrink': {
                         translate: '0px 1px',
