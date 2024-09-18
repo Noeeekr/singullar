@@ -1,6 +1,5 @@
 import {
     Stack,
-    Divider,
 } from '@mui/material'
 import {
     useMediaQuery

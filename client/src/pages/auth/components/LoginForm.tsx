@@ -236,7 +236,7 @@ const Internal = (): JSX.Element => {
                         value={formFields.password}
                     />
                     <Fade in={Boolean(errors?.password)}>
-                        <div style={{ position: 'relative', marginBottom: errors?.email ? 20 : 1 }}>
+                        <div style={{ position: 'relative', marginBottom: errors?.password ? 20 : 1 }}>
                             <ErrorHelperText>
                                 Campo obrigatório. Digite sua senha.
                             </ErrorHelperText>
