@@ -1,5 +1,7 @@
-import { useState, useTransition, ReactNode } from 'react'
+import { useState, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useForm, SubmitHandler } from 'react-hook-form'
+
 import {
     Typography,
     FormControl,
@@ -14,14 +16,19 @@ import {
     Box,
     Fade
 } from '@mui/material'
-import { Visibility, VisibilityOff, HighlightOff } from '@mui/icons-material'
+import { 
+    Visibility, 
+    VisibilityOff,
+    HighlightOff
+} from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import { useMediaQuery } from '@mui/system'
-import { useForm, SubmitHandler } from 'react-hook-form'
+
+import useSignIn from '../../../hooks/useSignin'
 
 interface Fields {
-    email: string
     password: string
+    email: string
 }
 
 const ErrorHelperText = (
@@ -105,43 +112,43 @@ const ErrorBubble = (
         </Box>
     )
 }
+
 const Internal = (): JSX.Element => {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
-
+    
     const { register, handleSubmit, formState: { errors } } = useForm<Fields>({
         defaultValues: {
-            email: " ",
-            password: " ",
+            email: "",
+            password: "",
         }
     })
 
+    // Input update
     const [showPassword, setShowPassword] = useState(false)
     const [formFields, setFormFields] = useState<Fields>({
         email: "",
-        password: ""
+        password: "",
     })
-
-    const handleClickShowPassword = () => setShowPassword((show) => !show)
     const handleClickCleanInput = () => setFormFields((prevState: Fields) => ({ ...prevState, email: "" }))
-
+    
+    // Fetch
     const navigate = useNavigate()
 
-    const [isPending, startTransition] = useTransition()
+    const [signin, isLoading, error] = useSignIn()
 
-    const onSubmit: SubmitHandler<Fields> = (data) => {
+    const onSubmit: SubmitHandler<Fields> = async (fields) => {
         setFormFields({
             password: "",
             email: ""
         })
 
-        startTransition(() => {
-            console.log(data)
-        })
+        await signin(fields.email, fields.password)
 
+        if(error != null) {
+            navigate("/home")
+        }
     }
-
-    const fetchResponseDummyDeleteLater = "Login ou senha não encontrados";
 
     return (
         <Box component="section">
@@ -156,8 +163,8 @@ const Internal = (): JSX.Element => {
 
             <form noValidate onSubmit={handleSubmit(onSubmit)}>
                 {
-                    fetchResponseDummyDeleteLater
-                        ? <ErrorBubble err={fetchResponseDummyDeleteLater} />
+                    error != null
+                        ? <ErrorBubble err={error} />
                         : <></>
                 }
                 <FormControl>
@@ -173,7 +180,7 @@ const Internal = (): JSX.Element => {
                         type="text"
                         label="Insira seu e-mail"
                         value={formFields.email}
-                        disabled={isPending}
+                        disabled={isLoading}
                         onChange={(e) => setFormFields((prevState: Fields) => (
                             {
                                 email: e.target.value,
@@ -218,7 +225,7 @@ const Internal = (): JSX.Element => {
                             <InputAdornment position="end">
                                 <IconButton
                                     aria-label="mudar visibilidade da senha"
-                                    onClick={handleClickShowPassword}
+                                    onClick={() => (setShowPassword((show) => !show))}
                                     edge="end"
                                 >
                                     {showPassword ? <Visibility sx={{ opacity: '0.5' }} /> : <VisibilityOff sx={{ opacity: '0.5' }} />}
@@ -226,7 +233,7 @@ const Internal = (): JSX.Element => {
                             </InputAdornment>
                         }
                         label="Digite sua senha"
-                        disabled={isPending}
+                        disabled={isLoading}
                         onChange={(e) => setFormFields((prevState: Fields) => (
                             {
                                 password: e.target.value,
@@ -263,7 +270,7 @@ const Internal = (): JSX.Element => {
                     }}>
                     <Button
                         type="submit"
-                        disabled={isPending}
+                        disabled={isLoading}
                         fullWidth={true}
                         color="primary"
                         sx={{

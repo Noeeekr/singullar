@@ -104,11 +104,16 @@ const lightTheme = createTheme({
                     '&.Mui-error:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: lightPaletteTheme.palette?.error?.main,
                     },
+                    '&.Mui-disabled': {
+                        backgroundColor: 'rgb(243,243,243)'
+                    },
+                    '&.Mui-disabled:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(0, 0, 0, 0.26)',
+                    }
                 },
                 notchedOutline: {
                     borderColor: 'rgb(230,230,230)',
                 },
-
             }
         },
         MuiInputLabel: {

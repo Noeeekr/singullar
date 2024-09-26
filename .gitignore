@@ -44,11 +44,12 @@ diary.txt
 *.out
 
 # Static dir 
-server/static/
+server/web/static
+server/web/dist
 
 # Go workspace file
 go.work
 go.work.sum
 
 # env file
-.env
+*.env

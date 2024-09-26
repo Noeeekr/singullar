@@ -2,24 +2,30 @@ package main
 
 import (
 	"flag"
-	"log"
 
 	config "github.com/noeeekr/sch-server/config"
-	"github.com/noeeekr/sch-server/internal/core"
+	logs "github.com/noeeekr/sch-server/internal/core/log"
+	server "github.com/noeeekr/sch-server/internal/core/server"
 )
 
 func main() {
-	// Flags setup
+	// Need modification to become an array
 	env_path := flag.String("env-path", "./config/dev.env", "sets the absolute enviroment path for server setup.")
-
 	flag.Parse()
+
+	logs.InitLoggers()
 
 	// Env config
 	_, err := config.NewConfig(*env_path)
 	if err != nil {
-		log.Fatalf("An error happenned in the setup of environment. %q", err)
+		logs.LogInfo.Fatalf("An error happenned in the setup of environment: %q", err)
 	}
 
 	// Server and Routing
-	log.Fatal(core.ServeAndListen())
+	err = server.ServeAndListen()
+	if err != nil {
+		logs.LogErr.Fatal(err)
+	}
+
+	// implement a graceful shutdown for server
 }

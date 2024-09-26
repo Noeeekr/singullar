@@ -1,4 +1,4 @@
-package projectpath
+package paths
 
 import (
 	"path/filepath"
@@ -11,5 +11,5 @@ import (
 var (
 	_, b, _, _ = runtime.Caller(0)
 
-	Root = filepath.Join(filepath.Dir(b), "../..") // the second param is based on where this is located, should bring this to root
+	Root = filepath.Join(filepath.Dir(b), "../..") // Insert the path to root in the second parameter.
 )
