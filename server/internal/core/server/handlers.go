@@ -97,23 +97,20 @@ func (h *RouterHandlers) CreateUser(user models.Users) (*models.Users, error) {
 
 	return newUser, nil
 }
-func (h *RouterHandlers) checkUserPassword(email string, password string) (id string, e error) {
-	var result struct {
-		Hashed_password string `gorm:"column:password"`
-		Id              string `gorm:"column:id"`
-	}
+func (h *RouterHandlers) checkUserPassword(email string, password string) (user models.Users, e error) {
+	var _user models.Users
 
-	err := h.users.DB.Model(&models.Users{}).Select("password, id").Where("email = ?", email).Scan(&result).Error
+	err := h.users.DB.Model(&models.Users{}).Where("email = ?", email).First(&_user).Error
 	if err != nil {
-		return "", err
+		return _user, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(result.Hashed_password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(_user.Password), []byte(password))
 	if err != nil {
-		return "", err
+		return _user, err
 	}
 
-	return result.Id, nil
+	return _user, nil
 }
 
 func (h *RouterHandlers) Authenticate(ctx *gin.Context) {
@@ -145,7 +142,7 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.checkUserPassword(user.Email, user.Password)
+	user, err = h.checkUserPassword(user.Email, user.Password)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		h.clientError(ctx, "Usuário não existe.")
 		return
@@ -157,13 +154,15 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 		return
 	}
 
+	user.Password = ""
+
 	s := sessions.Default(ctx)
-	s.Set("auth", id)
+	s.Set("auth", user)
 	s.Save()
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"error": nil,
-		"data":  id,
+		"data":  user,
 	})
 }
 

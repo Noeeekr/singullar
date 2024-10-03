@@ -55,10 +55,10 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 
 	// Auth routes
 	r.POST("/api/auth/signin", handlers.SigninHandler)
-	r.POST("/api/auth/signout", handlers.SignupHandler)
+	r.POST("/api/auth/signup", handlers.SignupHandler)
 	r.GET("/api/user/auth", handlers.Authenticate)
 
-	// Private routes
+	// Statics private routes session renew
 	r.GET("/home", middlewares.AuthMiddleware, handlers.StaticsHandler)
 
 	return r, nil

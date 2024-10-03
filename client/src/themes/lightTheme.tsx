@@ -1,20 +1,39 @@
 import { createTheme } from '@mui/material/styles'
 
+import './fonts.css'
 
 declare module '@mui/material/styles' {
-    interface PaletteColor {
-        lightPurple?: string,
-        darkPurple?: string,
-        lightGray?: string,
-        semiLight?: string,
-        contrast?: string,
+    interface PaletteColor { // Extra Types definitions for typescript
+        purpleLightInv?: string,
+        purpleLight?: string,
+        purpleDark?: string,
+
+        paperLight?: string,
+        
+        whiteNone?: string,
+        whiteLow?:  string,
+        whiteSemiLow?: string,
+        whiteMedium?:  string,
+        whiteSemiMedium?: string,
+        whiteHigh?:  string,
+
+        contrast?:  string,
     }
-    interface SimplePaletteColorOptions {
-        lightPurple?: string,
-        darkPurple?: string,
-        lightGray?: string,
-        semiLight?: string,
-        contrast?: string,
+    interface SimplePaletteColorOptions { // Extra types config
+        purpleLightInv?: string,
+        purpleLight?: string,
+        purpleDark?: string,
+
+        paperLight?: string,
+        
+        whiteNone?: string,
+        whiteLow?:  string,
+        whiteSemiLow?: string,
+        whiteMedium?:  string,
+        whiteSemiMedium?: string,
+        whiteHigh?:  string,
+
+        contrast?:  string,
     }
     interface BreakpointOverrides {
         xs: true;
@@ -27,21 +46,29 @@ declare module '@mui/material/styles' {
 
 const lightPaletteTheme = createTheme({
     palette: {
-        primary: { // purple, white, black
-            main: 'rgb(255,255,255)', // not defined, it is just necessary to eixt
-            
-            lightPurple: 'rgb(154, 61, 230)',
-            darkPurple: 'rgb(114, 41, 230)',
-            
-            semiLight: 'rgb(150,150,150)',
-            light: 'rgb(255,255,255)',
-            
-            dark: 'rgb(0,0,0)',
-            lightGray: 'rgb(100,100,100)',
-            
+        // todo: primary: purple colors
+        // todo: secondary: undefined for now
+        // todo: error: red colors
+        // todo: contrast: orange, black
+        primary: {
+            main: 'rgb(255,255,255)', // not part of theme : necessary value
+
+            purpleLightInv: 'rgba(220,210,240,0.4)',
+            purpleLight: 'rgb(154, 61, 230)',
+            purpleDark: 'rgb(114, 41, 230)',
+
+            paperLight: 'rgb(245, 245, 250)',
+
+            whiteNone: 'rgb(0,0,0)',
+            whiteLow: 'rgb(100,100,100)',
+            whiteSemiLow: 'rgb(120,120,120)',
+            whiteMedium: 'rgb(150,150,150)',
+            whiteSemiMedium: 'rgb(150,150,150)',
+            whiteHigh: 'rgb(240,240,240)',
+
             contrast: 'rgb(255, 102, 0)',
         },
-        error: { // red
+        error: {
             main: 'rgb(255, 77, 106)',
             light: 'rgb(255, 227, 232)',
             dark: 'rgb(212, 7, 40)',
@@ -61,10 +88,30 @@ const lightTheme = createTheme({
     },
     palette: lightPaletteTheme.palette,
     components: {
+        MuiSvgIcon: {
+            styleOverrides: {
+              root: {
+                fontSize: '1.6rem', // Set a default size
+                WebkitFontSmoothing: 'antialiased',
+                MozOsxFontSmoothing: 'grayscale',
+              },
+            },
+        },
         MuiTypography: {
             styleOverrides: {
+                root: {
+                    fontFamily: 'inter, system-ui',
+                },
                 body1: {
                     fontSize: 14
+                },
+                subtitle1: {
+                    fontSize: 12,
+                    fontWeight: 600,
+                },
+                subtitle2: {
+                    fontSize: 14,
+                    fontWeight: 'bold',
                 },
                 body2: {
                     fontSize: 12
@@ -78,6 +125,20 @@ const lightTheme = createTheme({
             styleOverrides: {
                 root: {
                     width: '100%' // applies for all themes
+                }
+            }
+        },
+        MuiInputBase: {
+            styleOverrides: {
+                root: {
+                    justifyContent: 'end',
+                    '& input:-webkit-autofill': {
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        height: '10px',
+                        width: 'calc(100% - 16px)',
+                    },
                 }
             }
         },

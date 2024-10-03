@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import useAuth from './useAuthContext'
+
+import { IUser, IUserRequest } from '../types/user'
+import useAuth from './useAuth'
 
 const useSignIn = (): [typeof signin, boolean, string |null] => {
     const [ error, setError] = useState<null | string>(null)
@@ -21,11 +23,17 @@ const useSignIn = (): [typeof signin, boolean, string |null] => {
                 })
             })
 
-            const res = await response.json()
+            const res: IUserRequest & {
+                data: IUser & {
+                    password?: string
+                }
+            } = await response.json()
 
             if (!response.ok) {
-                setError(res.Error)
+                setError(res.error)
             } else  {
+                delete(res.data.password)
+
                 dispatch({
                     type: "login",
                     payload: res.data,

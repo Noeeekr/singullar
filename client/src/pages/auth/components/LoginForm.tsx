@@ -40,7 +40,7 @@ const ErrorHelperText = (
             sx={{
                 position: 'absolute',
                 bottom: -25,
-                backgroundColor: (theme) => (theme.palette.error.light),
+                backgroundColor: (theme) => (theme.palette.error.whiteHigh),
                 paddingX: 2,
                 paddingTop: 2,
                 paddingBottom: 0.5,
@@ -69,7 +69,7 @@ const ErrorBubble = (
                 marginY: 2,
                 padding: 2,
                 borderRadius: 3.5,
-                backgroundColor: (theme) => `${theme.palette.error.light}`,
+                backgroundColor: (theme) => `${theme.palette.error.whiteHigh}`,
             }}>
             <Stack
                 direction="row"
@@ -130,12 +130,13 @@ const Internal = (): JSX.Element => {
         email: "",
         password: "",
     })
+
     const handleClickCleanInput = () => setFormFields((prevState: Fields) => ({ ...prevState, email: "" }))
     
     // Fetch
     const navigate = useNavigate()
 
-    const [signin, isLoading, error] = useSignIn()
+    const [signin, isLoading, loginError] = useSignIn()
 
     const onSubmit: SubmitHandler<Fields> = async (fields) => {
         setFormFields({
@@ -145,7 +146,7 @@ const Internal = (): JSX.Element => {
 
         await signin(fields.email, fields.password)
 
-        if(error != null) {
+        if(loginError != null) {
             navigate("/home")
         }
     }
@@ -156,16 +157,14 @@ const Internal = (): JSX.Element => {
                 component="p"
                 variant="body1"
                 marginBottom={2}
-                color={isMobile ? "primary.dark" : "primary.semiLight"}
+                color={isMobile ? "primary.whiteNone" : "primary.whiteMedium"}
             >
                 Digite seus dados de acesso para entrar
             </Typography>
 
             <form noValidate onSubmit={handleSubmit(onSubmit)}>
                 {
-                    error != null
-                        ? <ErrorBubble err={error} />
-                        : <></>
+                    loginError != null && <ErrorBubble err={loginError} />
                 }
                 <FormControl>
                     <InputLabel htmlFor="text">
@@ -196,7 +195,7 @@ const Internal = (): JSX.Element => {
                                     edge="end"
                                 >
                                     {
-                                        formFields.email && <HighlightOff sx={{ opacity: 0.5 }} />
+                                        formFields.email && <HighlightOff sx={{ fontSize: 30, opacity: 0.3 }} />
                                     }
                                 </IconButton>
                             </InputAdornment>
@@ -228,7 +227,12 @@ const Internal = (): JSX.Element => {
                                     onClick={() => (setShowPassword((show) => !show))}
                                     edge="end"
                                 >
-                                    {showPassword ? <Visibility sx={{ opacity: '0.5' }} /> : <VisibilityOff sx={{ opacity: '0.5' }} />}
+                                    {formFields.password 
+                                        ? showPassword 
+                                            ? <Visibility sx={{ fontSize: 30, opacity: '0.3' }} />
+                                            : <VisibilityOff sx={{ fontSize: 30, opacity: '0.3' }} />
+                                        : <></>
+                                    } 
                                 </IconButton>
                             </InputAdornment>
                         }
@@ -253,7 +257,7 @@ const Internal = (): JSX.Element => {
                         <ButtonBase
                             disableRipple={true}
                             sx={{
-                                color: 'primary.darkPurple',
+                                color: 'primary.purpleDark',
                                 textDecoration: 'underline',
                                 fontFamily: 'Verdana',
                             }}
@@ -265,9 +269,10 @@ const Internal = (): JSX.Element => {
                 </FormControl>
                 <Box 
                     marginTop={2}
-                    sx={{
-                        display: 'flex', alignItems: 'center', height: 44
-                    }}>
+                    display="flex"
+                    alignItems="center"
+                    height={44}
+                >
                     <Button
                         type="submit"
                         disabled={isLoading}
@@ -275,7 +280,7 @@ const Internal = (): JSX.Element => {
                         color="primary"
                         sx={{
                             fontWeight: "bold",
-                            fontFamily: 'Verdana',
+                            fontFamily: "Verdana",
                             borderRadius: 20,
                             textTransform: 'Capitalize',
                             transition: 'all 180ms ease-in-out',
@@ -283,6 +288,9 @@ const Internal = (): JSX.Element => {
                             '&:hover': {
                                 scale: '1.005 1.1'
                             },
+                            '&.Mui-disabled': {
+                                backgroundColor: 'rgb(212,220,214)'
+                            }
                         }} 
                     >
                         Entrar
@@ -299,13 +307,13 @@ const Entire = (): JSX.Element => {
 
     return (
         <Box
+            padding={isMobile ? 2 : 3}
+            display="flex"
+            flexDirection="column"
+            borderRadius={4}
+            flex={1}
             sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: 'primary.main',
-                padding: isMobile ? 2 : 3,
-                borderRadius: 4,
-                flex: 1
+                backgroundColor: 'primary.whiteHigh',
             }}
             component="section"
         >

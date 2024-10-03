@@ -1,8 +1,16 @@
 import { useLocation, Outlet, Navigate } from 'react-router-dom'
-import useAuth from '../hooks/useAuthContext'
+import useAuth from '../hooks/useAuth'
 
 import routes from '../routes'
 
+/**
+* Protected routes checks if user is logged and manages the authorization
+* redirects. 
+* 
+* Renders children routes.
+* 
+* @remarks  It must have a AuthProvider as its parent
+*/
 const ProtectedRoutes = () => {
     const url = useLocation().pathname;
 
@@ -10,20 +18,20 @@ const ProtectedRoutes = () => {
     const isAuthRoute = routes.auth.some((route) => (url.includes(route)))
     const isPrivateRoute = routes.private.some((route) => (url.includes(route))) 
 
-    const isSigned = (useAuth().user != null)
+    const { user } = useAuth();
 
-    console.log("Auth state (user) and (user != null):")
-    console.log(useAuth().user)
-    console.log(useAuth().user != null)
+    const isSigned = Boolean(user);
 
     // Root page
     if (url == "/") return <Navigate to="/home"/>;
     // Handle private route redirect
-    if (!isSigned && isPrivateRoute) return <Navigate to="/auth"></Navigate>;
+    if (!isSigned && isPrivateRoute) return <Navigate to="/auth"/>;
     // Handle auth route redirect (for signed users to not signin again)
-    if (isSigned && isAuthRoute) return <Navigate to="/home"></Navigate>
+    if (isSigned && isAuthRoute) return <Navigate to="/home"/>
     // Serves the routes
-    return <Outlet/>
+    return (
+        <Outlet/>
+    )
 }
 
 export default ProtectedRoutes

@@ -25,7 +25,7 @@ const AuthPage = (): JSX.Element => {
             spacing={4}
             component="div"
             sx={{
-                backgroundColor: (theme) => theme.palette.primary.darkPurple,
+                backgroundColor: (theme) => theme.palette.primary.purpleDark,
                 minHeight: '100vh',
                 paddingY: isLargerScreen ? 4 : 2,
                 paddingX: isLargerScreen ? 14 : 2,
@@ -42,7 +42,7 @@ const AuthPage = (): JSX.Element => {
                     textAlign: isMobile ? 'center' : "start",
                     paddingY: isMobile ? 2 : 5,
                 }}
-            >RandName</Typography>
+            >Singullar</Typography>
 
             {
                 isMobile

@@ -24,10 +24,10 @@ const TextGlowButton = (
                     let colors = theme.palette.primary;
                     return {
                         ":hover": {
-                            color: colors.lightPurple
+                            color: colors.purpleLight
                         },
                         fontSize: '0.9rem',
-                        color: isActive ? colors.lightPurple : colors.lightGray
+                        color: isActive ? colors.purpleLight : colors.whiteLow
                     }
                 }}>
                     {children}
@@ -38,7 +38,7 @@ const TextGlowButton = (
                 ? <Box
                     sx={(theme) => {
                         return {
-                            backgroundColor: theme.palette.primary.darkPurple,
+                            backgroundColor: theme.palette.primary.purpleDark,
                             width: "100%",
                             height: '3.4px',
                             translate: "0 6px",
@@ -63,7 +63,7 @@ const GlowButtonStack = (
                 spacing={3}
                 sx={(theme) => {
                     return {
-                        color: theme.palette.primary.lightGray,
+                        color: theme.palette.primary.whiteLow,
                     }
                 }}
                 marginBottom={0.5}

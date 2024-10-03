@@ -38,20 +38,20 @@ const HoverBox = styled(Box)({
 })
 
 const ListButton = styled(Button)(({ theme }) => ({
-    color: theme.palette.primary.lightGray,
+    color: theme.palette.primary.whiteNone,
     justifyContent: 'start',
     height: '38px',
     margin: '10px 0px',
     fontFamily: 'Helvetica',
     fontSize: 14,
-    textTransform: 'capitalize',
+    textTransform: "initial",
     '& .MuiTouchRipple-root .MuiTouchRipple-rippleVisible': {
         color: 'rgba(150,150,150,0.2)', // Ripple color on click
     },
     '&:hover': {
         backgroundColor: 'rgba(200,200,200,0.2)', // Button hover color
         '& .MuiTouchRipple-root .MuiTouchRipple-rippleVisible': {
-            color: 'rgba(200,0,150,0.2)', // Ripple color on hover
+            color: theme.palette.primary.whiteMedium, // Ripple color on hover
         },
     },
 }))
@@ -73,28 +73,28 @@ interface ButtonGroupPopup extends BaseButtonGroupItems {
 
 const buttonGroupItems: (ButtonGroupRedirect | ButtonGroupPopup)[] = [
     {
-        label: "Alunos",
+        label: "Convidados e visitantes", // one session expiracy
         type: "url",
         url: "/changeThisLater39393939",
         icon: <Brightness4/>
     },
     {
-        label: "Responsavel",
+        label: "Empresas ou equipes", // create a group 
         type: "component",
         component: <div>Change This Later</div>,
         icon: <Brightness5 />
     },
     {
-        label: "Professor e Equipe escolar",
-        type: "component",
-        component: <div>Change This Later</div>,
-        icon: <Brightness6 />
-    },
-    {
-        label: "Código de material",
+        label: "Testadores beta",
         type: "component",
         component: <div>Change This Later</div>,
         icon: <Brightness7 />
+    },
+    {
+        label: "Indivíduos",
+        type: "component",
+        component: <div>Change This Later</div>,
+        icon: <Brightness6 />
     },
 ]
 
@@ -108,7 +108,7 @@ const Internal = (): JSX.Element => {
                 component="p"
                 variant="body1"
                 marginBottom={2}
-                color={ isMobile ? "primary.dark": "primary.semiLight" }
+                color={ isMobile ? "primary.whiteNone": "primary.semiLight" }
             >
                 Selecione uma opção para se cadastrar
             </Typography>
@@ -133,9 +133,10 @@ const Internal = (): JSX.Element => {
                                     color: theme.palette.primary.contrast
                                 },
                                 '&:hover .MuiSvgIcon-root': {
-                                    color: theme.palette.primary.lightGray,
+                                    color: theme.palette.primary.whiteLow,
                                     opacity: 0.6,
-                                }
+                                },
+                                '&:hover .MuiBox-root': { color: 'gray' }
                                 })}
                             >
                                 <ListButton 
@@ -144,7 +145,7 @@ const Internal = (): JSX.Element => {
                                         fontSize: "25px !important" 
                                     }}/>}
                                 >
-                                    <Box sx={{ display: 'flex', gap: 2, }} >
+                                    <Box sx={{ display: 'flex', gap: 2, color: 'black' }} >
                                         {item.icon}
                                         {item.label}
                                     </Box>
@@ -176,7 +177,7 @@ const Entire = (): JSX.Element => {
             sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: 'primary.main',
+                backgroundColor: 'primary.whiteHigh',
                 borderRadius: 4,
                 flex: 1
             }}
