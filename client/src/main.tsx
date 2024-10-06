@@ -39,10 +39,11 @@ const App = (): JSX.Element => {
     <Routes>
       <Route path="/" element={<ProtectedRoutes />}>
         <Route path="home" element={<Layout />}>
-          <Route path="" element={<div>Home Root page</div>} />
+          <Route index element={<div>Home root page</div>} />
+          <Route path="*" element={<div>Not found specific home</div>} />
         </Route>
         <Route path="auth" element={<AuthPage />} />
-        <Route path="*" element={<div>not found</div>} />
+        <Route path="*" element={<div>Not found general page</div>} />
       </Route>
     </Routes>
   )
@@ -50,13 +51,15 @@ const App = (): JSX.Element => {
 
 
 createRoot(document.getElementById('root')!).render(
-      <ThemeProvider theme={lightTheme}>
-          <CssBaseline />
-          <GlobalStyle />
-          <Router>
-            <AuthContextProvider>
-              <App />
-            </AuthContextProvider>
-          </Router>
-      </ThemeProvider>
+  <StrictMode>
+    <ThemeProvider theme={lightTheme}>
+      <CssBaseline />
+      <GlobalStyle />
+      <Router>
+        <AuthContextProvider>
+          <App />
+        </AuthContextProvider>
+      </Router>
+    </ThemeProvider>
+  </StrictMode>
 )

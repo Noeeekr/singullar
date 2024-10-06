@@ -4,6 +4,7 @@ import './fonts.css'
 
 declare module '@mui/material/styles' {
     interface PaletteColor { // Extra Types definitions for typescript
+        purpleExtraLight?: string,
         purpleLightInv?: string,
         purpleLight?: string,
         purpleDark?: string,
@@ -20,7 +21,8 @@ declare module '@mui/material/styles' {
         contrast?:  string,
     }
     interface SimplePaletteColorOptions { // Extra types config
-        purpleLightInv?: string,
+        purpleExtraLight?: string,
+        purpleLightInv?: string
         purpleLight?: string,
         purpleDark?: string,
 
@@ -53,6 +55,7 @@ const lightPaletteTheme = createTheme({
         primary: {
             main: 'rgb(255,255,255)', // not part of theme : necessary value
 
+            purpleExtraLight: 'rgba(170,148,240)',
             purpleLightInv: 'rgba(220,210,240,0.4)',
             purpleLight: 'rgb(154, 61, 230)',
             purpleDark: 'rgb(114, 41, 230)',
@@ -100,10 +103,11 @@ const lightTheme = createTheme({
         MuiTypography: {
             styleOverrides: {
                 root: {
+                    color: 'rgb(38, 41, 48)',
                     fontFamily: 'inter, system-ui',
                 },
                 body1: {
-                    fontSize: 14
+                    fontSize: 12
                 },
                 subtitle1: {
                     fontSize: 12,
@@ -114,10 +118,25 @@ const lightTheme = createTheme({
                     fontWeight: 'bold',
                 },
                 body2: {
-                    fontSize: 12
+                    fontSize: 14
                 },
                 h6: {
+                    fontSize: 16
+                },
+                h5: {
+                    fontSize: 18
+                },
+                h4: {// This now will be the older h6
                     fontSize: 20
+                },
+                h3: { 
+                    fontSize: 22
+                },
+                h2: {
+                    fontSize: 26
+                },
+                h1: {
+                    fontSize: 30
                 }
             }
         },

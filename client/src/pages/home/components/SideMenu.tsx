@@ -5,210 +5,16 @@ import {
 import {
     Box,
     Stack,
-    styled,
-    Divider,
-    Typography,
 } from '@mui/material'
 
-import { GrBook } from "react-icons/gr";
-import { FaChalkboardTeacher } from "react-icons/fa";
-import { FaRegPenToSquare } from "react-icons/fa6";
-import { IoNewspaperOutline } from "react-icons/io5";
-import { AiOutlineQuestionCircle } from "react-icons/ai";
-import { TbSmartHome } from "react-icons/tb";
-import { MdOutlineNotificationsNone } from "react-icons/md";
-import { BiDirections } from "react-icons/bi";
-import { LuPartyPopper } from "react-icons/lu";
-import { FaGithub } from "react-icons/fa";
-import { FaShareAlt } from "react-icons/fa";
-
-import MenuItems from './MenuItems'
-import { ISideMenuItems } from '../../../types/sideMenu'
-
-// Seriously MUI, what is this syntax???
-const SectionTitle = styled(({ children, ...other }: { children: string }) => (
-    <Typography variant={"subtitle1"} {...other}>{children}</Typography>
-))(({ theme }) => ({
-    margin: '0px 10px',
-    textTransform: 'uppercase',
-    textWrap: 'nowrap',
-    color: theme.palette.primary.whiteSemiLow,
-}));
-
-const BorderIcon = styled(({ children, style = {}, ...other }: { children: JSX.Element, style?: object }) => (
-    <Box style={{ ...style, color: 'black' }} {...other}>
-        {
-            children
-                ? children
-                : <Box sx={{
-                    borderRadius: 20,
-                    backgroundColor: "rgb(110,110,110)",
-                    width: 28,
-                    height: 28,
-                }} />
-        }
-    </Box>
-))(() => ({
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    border: 'solid 1px gray',
-    overflow: 'hidden',
-}))
-
-const menuItems_Main: ISideMenuItems = {
-    title: "",
-    items: [
-        {
-            title: "Início",
-            icon: <TbSmartHome />,
-            type: "link",
-            href: "/",
-        },
-        {
-            title: "Notificações",
-            icon: <MdOutlineNotificationsNone />, // might need the other version for hover effect
-            type: "link",
-            href: "/",
-        },
-        {
-            title: "Ajuda",
-            icon: <BiDirections />,
-            type: "link",
-            href: "/",
-        },
-        {
-            title: "Minha conta",
-            icon: <IoNewspaperOutline />,
-            type: "group",
-            items: [
-                {
-                    title: "Dados pessoais e acesso",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-                {
-                    title: "Responsáveis vinculados",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-                {
-                    title: "Código de acesso",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-                {
-                    title: "Comunicações",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-                {
-                    title: "Privacidade",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-                {
-                    title: "Sair",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-            ],
-        },
-    ],
-}
-const menuItems_Classroom: ISideMenuItems = {
-    title: "Sala de aula",
-    items: [
-        {
-            title: "Biblioteca de conteúdos",
-            icon: <GrBook />,
-            type: "link",
-            href: "/",
-        },
-        {
-            title: "Atividades",
-            icon: <FaRegPenToSquare />, // might need the other version for hover effect
-            type: "link",
-            href: "/",
-        },
-        {
-            title: "Aulas digitais",
-            icon: <FaChalkboardTeacher />,
-            type: "link",
-            href: "/",
-        },
-        {
-            title: "Simulados e Provas",
-            icon: <IoNewspaperOutline />,
-            type: "group",
-            items: [
-                {
-                    title: "Avaliações",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-                {
-                    title: "Resultados de Avaliações",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-            ],
-        },
-        {
-            title: "Dúvidas e materiais",
-            icon: <AiOutlineQuestionCircle />,
-            type: "group",
-            items: [
-                {
-                    title: "Ver materiais e tirar dúvidas",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-                {
-                    title: "Minhas dúvidas",
-                    icon: <div>I</div>,
-                    type: "link",
-                    href: "/",
-                },
-            ],
-        },
-    ],
-}
-const menuItems_QuickAccess: ISideMenuItems = {
-    title: "Acesso Rápido",
-    items: [
-        {
-            title: "Ir para o perfil do criador",
-            icon: <BorderIcon><FaGithub /></BorderIcon>,
-            type: "link",
-            href: "/",
-        },
-        {
-            title: "Ir para o perfil do parceiro 1",
-            icon: <BorderIcon><LuPartyPopper /></BorderIcon>,
-            type: "link",
-            href: "/",
-        },
-        {
-            title: "Ir para o perfil do parceiro 2",
-            icon: <BorderIcon><FaShareAlt /></BorderIcon>,
-            type: "link",
-            href: "/",
-        },
-    ]
-}
+import Divider from './Divider'
+import MenuItems from './SideMenuItems'
+import { 
+    menuItems_Classroom,
+    menuItems_Main,
+    menuItems_QuickAccess
+} from '../data'
+import SectionTitle from './SectionTitle'
 
 /*
 * onHover must be a toggle type of effect to work.
@@ -222,10 +28,11 @@ const SideMenu = (
             component="div"
             sx={{
                 overflow: 'hidden',
-                transition: isMobile ? 'none' : 'width 300ms ease-in-out',
+                transition: isMobile ? 'none' : 'width 200ms ease-in-out',
                 backgroundColor: 'white',
                 borderRight: (theme) => `2px ${theme.palette.primary.whiteHigh} solid`
             }}
+            height="auto"
             width={
                 isMobile
                     ? '100vw'
@@ -241,15 +48,11 @@ const SideMenu = (
                 <Stack
                     component="nav"
 
-                    gap={3}
+                    gap={2.5}
                 >
                     { /* INICIO */}
 
-                    <Box
-                        sx={{
-                            marginTop: isMobile ? 0 : 3,
-                        }}
-                    >
+                    <Box marginTop={isMobile ? 0 : 2}>
                         {
                             <MenuItems
                                 showIcon={true}
@@ -265,11 +68,7 @@ const SideMenu = (
                     {
                         isOpen && !isMobile 
                         ? <></>
-                        : <Divider sx={{
-                            marginX: 1,
-                            borderBottomWidth: 2,
-                            borderColor: 'rgb(240,240,240)',
-                        }} />
+                        : <Divider/>
                     }
 
                     { /* SALA DE AULA */}
@@ -290,10 +89,7 @@ const SideMenu = (
                     {
                         isMobile && (
                             <>
-                                <Divider sx={{
-                                    borderBottomWidth: 2,
-                                    borderColor: 'rgb(240,240,240)'
-                                }} />
+                                <Divider/>
                                 <Stack gap={1}>
                                     <SectionTitle>
                                         {menuItems_QuickAccess.title}

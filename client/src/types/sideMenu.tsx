@@ -3,17 +3,23 @@ export interface ISideMenuItemBase {
     icon: JSX.Element,
 }
 
-export interface ISideMenuLink extends ISideMenuItemBase {
+export interface ISideMenuLinkButton extends ISideMenuItemBase {
     href: string
     type: "link"
+    description?: string 
 }
 
-export interface ISideMenuGroup extends ISideMenuItemBase {
-    items: ISideMenuLink[]
+export interface ISideMenuLinkButtonGroup extends ISideMenuItemBase {
+    items: ISideMenuLinkButton[]
     type: "group"
+}
+
+export interface ISideMenuPopupButton extends ISideMenuItemBase {
+    type: "popup"
+    content: JSX.Element
 }
 
 export interface ISideMenuItems {
     title: string,
-    items: (ISideMenuLink | ISideMenuGroup)[]
+    items: (ISideMenuLinkButton | ISideMenuLinkButtonGroup | ISideMenuPopupButton)[]
 }

@@ -4,7 +4,7 @@ import { IUser } from '../types/user'
 
 interface IuseAuthResponse {
     dispatch: React.Dispatch<{
-        payload?: IUser,
+        payload: IUser | null,
         type: string
     }>,
     user: IUser | null,
@@ -25,7 +25,7 @@ const useAuth = (): IuseAuthResponse => {
 
     return {
         dispatch: context.dispatch as React.Dispatch<{
-            payload?: IUser,
+            payload: IUser | null,
             type: string
         }>,
         user: context.user,

@@ -7,27 +7,27 @@ import {
 
 import useAuth from '../../../hooks/useAuth'
 
-interface InternalLayout {
-    position: "center" | "left"
-    bgColor: "purple" | "white"
+interface IUserProfileProps {
+    structure?: "center" | "left"
 }
 
-const UserProfile = (props: InternalLayout): JSX.Element => {
+const UserProfile = (props: IUserProfileProps): JSX.Element => {
     const { user } = useAuth();
 
-    const { position, bgColor } = props;
+    const { structure } = props;
 
     return (
         <Stack 
-            direction="row"
+            direction={structure === "center" ? 'column' : 'row'}
             paddingX={1.7}
             paddingY={2.5}
-            gap={2}
+            minWidth={300}
+            gap={1.5}
             alignItems="center"
             sx={{
                 backgroundColor: (theme) => {
-                    return bgColor == "white"
-                        ? theme.palette.primary.whiteHigh
+                    return structure === "center"
+                        ? "white"
                         : theme.palette.primary.purpleDark
                 }
             }}
@@ -46,23 +46,29 @@ const UserProfile = (props: InternalLayout): JSX.Element => {
                 >{ user?.name[0] || "</>"}</Avatar>
             </Box>
             <Stack
-                gap={0.1}
+                gap={0.2}
+                sx={{
+                    textAlign: structure,
+                    color: structure === "center" ? 'rgb(0,0,0)' : 'white'
+                }}
             >
                     <Typography 
                         component="h3"
-                        variant="h6"
+                        variant={structure === "center" ? 'h4' : 'h5'}
                         sx={{ 
+                            color: structure === "center" ? 'rgba(0,0,0,0.8)' :'rgba(255,255,255,0.86)',
                             fontFamily: `Public Sans Web, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;`,
-                            fontWeight: 'semiBold', 
-                            color: 'white'}}
+                            fontWeight: 700,
+                            marginBottom: structure === "center" ? 0.5 : 0,
+                        }}
                     >
                         Olá, {user?.name || "" } { user?.surname || ""}
                     </Typography>
                     <Typography 
                         variant="subtitle2"
                         sx={{ 
-                            fontFamily: `Public Sans Web, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol`,
-                            color: 'rgba(255,255,255,0.86)',
+                            fontWeight: structure === "center" ? 400 : 500,
+                            color: structure === "center" ? 'rgba(0,0,0,0.8)' :'rgba(255,255,255,0.86)',
                         }}
                     >
                         {user?.email || "email@desconhecido.com" }
@@ -70,9 +76,9 @@ const UserProfile = (props: InternalLayout): JSX.Element => {
                     <Typography 
                         sx={{ 
                             fontSize: 14,
-                            fontWeight: 'bold',
+                            fontWeight: structure === 'center' ? 400 : 600,
                             fontFamily: "Arial",
-                            color: 'rgba(255,255,255,0.86)',
+                            color: structure === "center" ? 'rgba(0,0,0,0.8)' :'rgba(255,255,255,0.86)',
                         }}
                     >
                         Plataforma ID {user?.id ? Number(user?.id) + 1000000 : "Plataforma ID: Desconhecido" }

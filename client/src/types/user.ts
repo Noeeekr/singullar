@@ -7,6 +7,7 @@ export interface IUser {
     createdAt: Date,
     profileImg: string
 }
+
 export interface IUserRequest {
     data: null | IUser,
     error: null | string,

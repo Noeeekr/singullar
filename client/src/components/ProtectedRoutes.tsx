@@ -29,6 +29,7 @@ const ProtectedRoutes = () => {
     // Handle auth route redirect (for signed users to not signin again)
     if (isSigned && isAuthRoute) return <Navigate to="/home"/>
     // Serves the routes
+
     return (
         <Outlet/>
     )

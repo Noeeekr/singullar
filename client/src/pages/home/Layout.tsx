@@ -5,7 +5,6 @@ import {
     Stack,
     useMediaQuery,
 } from '@mui/material'
-
 import {
     useTheme
 } from '@mui/material/styles'
@@ -43,13 +42,13 @@ const Layout = (): JSX.Element => {
 
     return (
         <Box
+            display="grid"
+            gridTemplateColumns="1fr"
+            gridTemplateRows="55px 1fr"
+            height="auto"
+            minHeight="100vh"
             sx={{
-                display: 'grid',
-                gridTemplateColumns: "1fr",
-                gridTemplateRows: '55px 1fr',
-
                 backgroundColor: theme.palette.primary.paperLight,
-                height: '100vh',
                 overflow: 'hidden',
             }}
         >
@@ -57,7 +56,7 @@ const Layout = (): JSX.Element => {
                 showMenu={isOpen}
                 menuButtonCallback={toggleIsOpen}
             >
-                <UserProfile position="left" bgColor="purple" />
+                <UserProfile structure="left"/>
                 <SideMenu isMobile={true}/>
             </AppNavbar>
 
