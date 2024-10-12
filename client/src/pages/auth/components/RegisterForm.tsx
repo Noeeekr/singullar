@@ -106,7 +106,7 @@ const Internal = (): JSX.Element => {
         <>
             <Typography
                 component="p"
-                variant="body1"
+                variant="body2"
                 marginBottom={2}
                 color={ isMobile ? "primary.whiteNone": "primary.semiLight" }
             >

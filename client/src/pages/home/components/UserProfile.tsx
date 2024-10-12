@@ -5,7 +5,7 @@ import {
     Typography
 } from '@mui/material'
 
-import useAuth from '../../../hooks/useAuth'
+import useAuth from '../../../hooks/useChangeUserState'
 
 interface IUserProfileProps {
     structure?: "center" | "left"

@@ -102,31 +102,31 @@ const lightTheme = createTheme({
         },
         MuiTypography: {
             styleOverrides: {
-                root: {
+                root: { // ALREADY  SET
                     color: 'rgb(38, 41, 48)',
-                    fontFamily: 'inter, system-ui',
+                    fontFamily: 'inter, system-ui, Arial, sans-serif',
                 },
-                body1: {
+                body1: { // ALREADY  SET
                     fontSize: 12
                 },
-                subtitle1: {
+                subtitle1: { // ALREADY  SET
                     fontSize: 12,
                     fontWeight: 600,
                 },
-                subtitle2: {
+                subtitle2: { // ALREADY  SET
                     fontSize: 14,
                     fontWeight: 'bold',
                 },
-                body2: {
+                body2: { // ALREADY  SET
                     fontSize: 14
                 },
-                h6: {
+                h6: { // ALREADY  SET
                     fontSize: 16
                 },
                 h5: {
                     fontSize: 18
                 },
-                h4: {// This now will be the older h6
+                h4: { // OLDER H6
                     fontSize: 20
                 },
                 h3: { 

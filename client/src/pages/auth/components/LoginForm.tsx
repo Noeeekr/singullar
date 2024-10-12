@@ -51,7 +51,7 @@ const ErrorHelperText = (
             }}
         >
             <Typography
-                variant="body2"
+                variant="body1"
                 color="error.dark"
             >
                 {children}
@@ -69,7 +69,7 @@ const ErrorBubble = (
                 marginY: 2,
                 padding: 2,
                 borderRadius: 3.5,
-                backgroundColor: (theme) => `${theme.palette.error.whiteHigh}`,
+                backgroundColor: (theme) => `${theme.palette.error.light}`,
             }}>
             <Stack
                 direction="row"
@@ -86,7 +86,7 @@ const ErrorBubble = (
                             position: 'absolute',
                             top: -16,
                             content: '""',
-                            backgroundColor: (theme) => `${theme.palette.error.main}`,
+                            backgroundColor: (theme) => theme.palette.error.main,
                             width: '80%',
                             height: 5,
                             marginLeft: '2px',
@@ -146,7 +146,7 @@ const Internal = (): JSX.Element => {
 
         await signin(fields.email, fields.password)
 
-        if(loginError != null) {
+        if(!loginError) {
             navigate("/home")
         }
     }
@@ -155,7 +155,7 @@ const Internal = (): JSX.Element => {
         <Box component="section">
             <Typography
                 component="p"
-                variant="body1"
+                variant="body2"
                 marginBottom={2}
                 color={isMobile ? "primary.whiteNone" : "primary.whiteMedium"}
             >
@@ -172,7 +172,11 @@ const Internal = (): JSX.Element => {
                     </InputLabel>
                     <OutlinedInput
                         {...register("email", {
-                            required: "Por favor insira um e-mail",
+                            required: "Por favor insira um e-mail.",
+                            pattern: {
+                                value: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                                message: 'Por favor insira um email válido.',
+                            },
                         })}
                         error={Boolean(errors?.email)}
                         id="text"
@@ -204,7 +208,7 @@ const Internal = (): JSX.Element => {
                     <Fade in={Boolean(errors?.email)}>
                         <div style={{ position: 'relative', marginBottom: errors?.email ? 20 : 1 }}>
                             <ErrorHelperText>
-                                Campo obrigatório. Digite seu login.
+                                Campo obrigatório. Digite seu email corretamente.
                             </ErrorHelperText>
                         </div>
                     </Fade>

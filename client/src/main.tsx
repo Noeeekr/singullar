@@ -51,7 +51,6 @@ const App = (): JSX.Element => {
 
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
     <ThemeProvider theme={lightTheme}>
       <CssBaseline />
       <GlobalStyle />
@@ -61,5 +60,4 @@ createRoot(document.getElementById('root')!).render(
         </AuthContextProvider>
       </Router>
     </ThemeProvider>
-  </StrictMode>
 )

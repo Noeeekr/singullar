@@ -1,5 +1,5 @@
 import {
-    cloneElement
+    cloneElement,
 } from 'react'
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '@mui/material/styles'
 
 import { MenuItemStack } from './SideMenuItems'
-import { ISideMenuLinkButton } from '../../../types/sideMenu'
+import { ISideMenuLinkButton } from '../../../types/propsButtons'
 
 export interface ILinkButtonBaseProps {
     showDescription?: boolean,
@@ -27,16 +27,30 @@ export interface ILinkButtonBaseProps {
     iconSize?: number,
     fontWeight?: number,
     hasHoverEffect?: boolean,
+    hasNotifications?: boolean,
 }
 
-export interface ISideMenuLinkProps extends ISideMenuLinkButton, ILinkButtonBaseProps {}
+export type ISideMenuLinkProps = ISideMenuLinkButton & ILinkButtonBaseProps;
 
 const MenuItemLink = (props: ISideMenuLinkProps): JSX.Element => {
+    const { 
+        fontWeight,
+        href,
+        
+        hasHoverEffect,
+        showDescription, 
+        
+        icon,
+        iconSize, 
+        showIcon,
+        
+        title,
+        description, 
+    } = props;
+
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
     const pathname = useLocation().pathname
-
-    const { title, icon, hasHoverEffect, href, showIcon, description, showDescription, iconSize, fontSize, fontWeight } = props;
 
     const Icon = Boolean(showIcon)
         ? <Box display='flex' sx={{ opacity: 0.7 }}>
@@ -54,12 +68,8 @@ const MenuItemLink = (props: ISideMenuLinkProps): JSX.Element => {
         : <></>;
 
     return (
-        <Link to={href} style={{
-            textDecoration: 'none',
-        }}>
+        <Link to={href} style={{ textDecoration: 'none' }}>
             <MenuItemStack
-                component="li"
-
                 paddingX={1}
                 paddingY={isMobile ? 1.5 : 1}
 
@@ -70,15 +80,15 @@ const MenuItemLink = (props: ISideMenuLinkProps): JSX.Element => {
                     backgroundColor: pathname == href ? theme.palette.primary.purpleLightInv : 'none',
                 }}
             >
-                {Icon}
+                    {Icon}
                 <Stack gap={0.5}>
-                    <Typography variant="body2" fontSize={fontSize} fontWeight={fontWeight || 500}>
+                    <Typography variant="body2" fontWeight={fontWeight || 500} sx={{ paddingX: 1 }}>
                         {title}
                     </Typography>
                     {
                         showDescription && description
-                            ?(
-                                <Typography variant="body1" sx={{ textWrap: 'wrap', minWidth: 150}}>
+                            ? (
+                                <Typography variant="body1" sx={{ textWrap: 'wrap', minWidth: 150, paddingX: 1 }}>
                                     { description }
                                 </Typography>
                             )

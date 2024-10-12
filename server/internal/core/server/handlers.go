@@ -8,12 +8,15 @@ import (
 
 	"fmt"
 	"log"
+	"strconv"
+	"time"
 
 	"net/http"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
+	// COOKIE BASED AUTH
+	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
@@ -65,6 +68,7 @@ func (h *RouterHandlers) clientError(ctx *gin.Context, message string) {
 func (h *RouterHandlers) StaticsHandler(ctx *gin.Context) {
 	path := filepath.Join(paths.Root, h.env.StaticsPath, ctx.Request.URL.Path)
 
+	h.LogInfo.Println("STATIC HANDLER CALLED")
 	_, err := os.Stat(path)
 	if err != nil {
 		http.ServeFile(ctx.Writer, ctx.Request, filepath.Join(paths.Root, h.env.StaticsPath, "index.html"))
@@ -110,21 +114,55 @@ func (h *RouterHandlers) checkUserPassword(email string, password string) (user 
 		return _user, err
 	}
 
+	_user.Password = ""
+
 	return _user, nil
 }
 
 func (h *RouterHandlers) Authenticate(ctx *gin.Context) {
-	s := sessions.Default(ctx)
-	auth := s.Get("auth")
+	cookie, err := ctx.Cookie("auth")
+	if err != nil {
+		ctx.JSON(
+			http.StatusUnauthorized,
+			gin.H{"data": nil, "error": "No authentication data found for the user"},
+		)
+		return
+	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"error": nil,
-		"data":  auth,
+	token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("failed to parse token")
+		}
+		return []byte(h.env.JwtSecret), nil
 	})
+	if err != nil {
+		ctx.JSON(
+			http.StatusUnauthorized,
+			gin.H{"data": nil, "error": "Token in wrong format."},
+		)
+		return
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		user := claims["User"]
+
+		ctx.JSON(http.StatusOK, gin.H{"data": user, "error": nil})
+	} else {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid token.",
+			"data":  nil,
+		})
+	}
 }
 
 // Handles user sign-in and returns custom graceful JSON objects for client form ui.
+type authClaims struct {
+	User models.Users
+	jwt.RegisteredClaims
+}
+
 func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
+
 	var user models.Users
 
 	err := ctx.ShouldBindJSON(&user)
@@ -154,11 +192,29 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 		return
 	}
 
-	user.Password = ""
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims{
+		User: user,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
+			Issuer:    strconv.Itoa(user.ID),
+		},
+	})
 
-	s := sessions.Default(ctx)
-	s.Set("auth", user)
-	s.Save()
+	stringifiedToken, err := token.SignedString([]byte(h.env.JwtSecret))
+	if err != nil {
+		h.internalServerErr(ctx, "Falha ao logar o usuario.", err)
+		return
+	}
+
+	ctx.SetCookie(
+		"auth",
+		stringifiedToken,
+		3600,
+		"/",
+		h.env.FrontendUrl,
+		false, // SHOULD BE TRUE IN HTTPS
+		true,
+	)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"error": nil,
@@ -167,13 +223,20 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 }
 
 func (h *RouterHandlers) SignoutHandler(ctx *gin.Context) {
-	sessions.Default(ctx).Delete("userId")
+	ctx.SetCookie(
+		"auth",
+		"",
+		0,
+		"/",
+		h.env.FrontendUrl,
+		false,
+		true,
+	)
 
-	http.Redirect(ctx.Writer, ctx.Request, "/", http.StatusPermanentRedirect)
+	ctx.Redirect(http.StatusFound, "/auth")
 }
 
 func (h *RouterHandlers) SignupHandler(ctx *gin.Context) {
-	// Validate user
 	var user models.Users
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {

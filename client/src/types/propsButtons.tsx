@@ -17,6 +17,7 @@ export interface ISideMenuLinkButtonGroup extends ISideMenuItemBase {
 export interface ISideMenuPopupButton extends ISideMenuItemBase {
     type: "popup"
     content: JSX.Element
+    notifications?: boolean
 }
 
 export interface ISideMenuItems {

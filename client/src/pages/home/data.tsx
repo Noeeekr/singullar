@@ -15,7 +15,7 @@ import {
     styled,
 } from '@mui/material'
 
-import { ISideMenuItems, ISideMenuLinkButton } from '../../types/sideMenu'
+import { ISideMenuItems, ISideMenuLinkButton } from '../../types/propsButtons'
 
 const BorderIcon = styled(({ children, style = {}, ...other }: { children: JSX.Element, style?: object }) => (
     <Box style={{ ...style, color: 'black' }} {...other}>
@@ -94,6 +94,7 @@ export const menuItems_Main: ISideMenuItems = {
             icon: <MdOutlineNotificationsNone />, // might need the other version for hover effect
             type: "popup",
             content: <div>DIVINISSIMA</div>,
+            notifications: true,
         },
         {
             title: "Ajuda",

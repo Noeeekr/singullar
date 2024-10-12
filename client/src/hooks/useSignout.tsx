@@ -1,24 +1,23 @@
 import { useState } from 'react'
-import useAuth from './useAuth';
+import useChangeUserState from './useChangeUserState';
 
-export const useSignOut = () => {
-    const { dispatch } = useAuth();
+const useSignOut = () => {
+    const { setUser } = useChangeUserState();
 
-    const [isLoading, setIsLoading] = useState(false)
+    const [isSigningOut, setIsSigningOut] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const signout = async () => {
-        setIsLoading(true)
+        setIsSigningOut(true)
 
         try {
-            const response = await fetch("http://localhost:8000/auth/signout", {
+            const response = await fetch("http://localhost:8000/api/auth/signout", {
                 credentials: "include"
             })
             
             if (response.ok) {
-                dispatch({
-                    type: "logout",
-                })
+                console.log("dispatched logout")
+                setUser(null)
             } else {
                 let res = await response.json()
                 setError(res.Error)
@@ -27,10 +26,11 @@ export const useSignOut = () => {
         } catch (err: unknown) {
             setError("Falha ao requisitar deslogamento do usuário")
         } finally {
-            setIsLoading(false)
+            setIsSigningOut(false)
         }
     
     }
 
-    return [signout, isLoading, error]
+    return { signout, isSigningOut, error } 
 }
+export default useSignOut

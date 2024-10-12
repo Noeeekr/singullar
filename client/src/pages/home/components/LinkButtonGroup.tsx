@@ -20,7 +20,7 @@ import {
 
 import {
     ISideMenuLinkButton,
-} from '../../../types/sideMenu'
+} from '../../../types/propsButtons'
 
 import MenuItems, { MenuItemStack } from './SideMenuItems'
 
@@ -66,7 +66,6 @@ const MenuItemGroup = (props: ILinkButtonGroupProps): JSX.Element => {
             <MenuItemStack
                 paddingX={1}
                 paddingY={isMobile ? 1.5 : 1}
-                gap={1}
 
                 onClick={toggleDrawer}
             >
@@ -74,7 +73,7 @@ const MenuItemGroup = (props: ILinkButtonGroupProps): JSX.Element => {
                 <Box display='flex' sx={{ opacity: 0.7 }}>
                     {Icon}
                 </Box>
-                <Typography variant="body2" fontWeight={500}>
+                <Typography variant="body2" fontWeight={500} sx={{ paddingX: 1 }}>
                     {title}
                 </Typography>
                 <FaCaretUp
@@ -88,7 +87,7 @@ const MenuItemGroup = (props: ILinkButtonGroupProps): JSX.Element => {
             </MenuItemStack>
             {
                 isOpen
-                    ? <Box sx={{ paddingLeft: 3.8 }}>
+                    ? <Box sx={{ paddingLeft: 2.6 }}>
                         <MenuItems items={items} fontWeight={350} fontSize={13.5} />
                     </Box>
                     : <></>

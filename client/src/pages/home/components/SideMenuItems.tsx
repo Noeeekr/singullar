@@ -8,17 +8,14 @@ import {
     ISideMenuLinkButton,
     ISideMenuPopupButton,
     ISideMenuLinkButtonGroup,
-} from '../../../types/sideMenu'
+} from '../../../types/propsButtons'
 
 import PopupButton from './SidePopupButton'
 import LinkButtonGroup from './LinkButtonGroup'
 import LinkButton, { ILinkButtonBaseProps } from './LinkButton'
 
 interface ISideMenuItemsProps extends ILinkButtonBaseProps {
-    items: (ISideMenuLinkButton | ISideMenuLinkButtonGroup | ISideMenuPopupButton)[]
-    
-    // the props are to SideMenuLink and sand SideMenuItems itself
-    // thats ugly and unorganized
+    items: (ISideMenuLinkButton | ISideMenuLinkButtonGroup | ISideMenuPopupButton)[],
 
     isCompacted?: boolean,
     gap?: number,
@@ -28,11 +25,10 @@ interface ISideMenuItemsProps extends ILinkButtonBaseProps {
  * Holds the icon, the text, and the arrow of each Link / Group
  */
 const MenuItemStack = styled(({ children, onClick, ...props }: StackProps) => (
-    <Stack direction="row" onClick={onClick} {...props}>{ children }</Stack>
+    <Stack direction="row" component="li" onClick={onClick} {...props}>{ children }</Stack>
 ))(({ theme }) => ({
     alignItems: "center",
     overflow: 'hidden',
-    gap: 10,
     textWrap: 'nowrap',
     cursor: "pointer",
     color: "black",
@@ -55,7 +51,7 @@ const SideMenuItems = ({ items, ...props}: ISideMenuItemsProps): JSX.Element => 
                         case "link":
                             return <LinkButton key={item.title} {...props} {...item} />;
                         case "popup":
-                            return <PopupButton key={item.title} {...props} {...item} />;
+                            return <PopupButton key={item.title} hasNotifications={item?.notifications ? item.notifications : false} {...props} {...item} />;
                         case "group":
                             return <LinkButtonGroup key={item.title} {...props} {...item} />;
                     }

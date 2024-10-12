@@ -11,11 +11,14 @@ import (
 )
 
 type Configuration struct {
+	FrontendUrl string `env:"FRONTEND_URL,required"`
 	Addr        string `env:"ADDR" envDefault:"8000"`
+
 	StaticsPath string `env:"STATICS_PATH" envDefault:"./static"`
 
 	DatabaseWR_ConnectString string `env:"DB_WR_CONNECTION_STR,required"`
 
+	JwtSecret           string `env:"JWT_SECRET,required"`
 	UserAuthStoreSecret string `env:"USER_AUTH_STORE_SECRET,required"`
 }
 

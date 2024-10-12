@@ -13,23 +13,27 @@ import routes from '../routes'
 */
 const ProtectedRoutes = () => {
     const url = useLocation().pathname;
-
+    
     // Might become hash maps if there are too many routes so speed go to O(1)
     const isAuthRoute = routes.auth.some((route) => (url.includes(route)))
     const isPrivateRoute = routes.private.some((route) => (url.includes(route))) 
-
-    const { user } = useAuth();
-
-    const isSigned = Boolean(user);
-
-    // Root page
-    if (url == "/") return <Navigate to="/home"/>;
+    
+    // checks if user is logged on every protected page change
+    const { isSigned, isLoading } = useAuth(isAuthRoute, isPrivateRoute)
+    
+    // Serves the routes
+    if (isLoading) {        
+        return <div>Redirecting...</div>
+    }
+    
+    if (url == "/" && isSigned) return <Navigate to="/home"/>;
+    if (url == "/" && !isSigned) return <Navigate to="/auth"/>;
     // Handle private route redirect
     if (!isSigned && isPrivateRoute) return <Navigate to="/auth"/>;
-    // Handle auth route redirect (for signed users to not signin again)
-    if (isSigned && isAuthRoute) return <Navigate to="/home"/>
-    // Serves the routes
-
+        // Handle auth route redirect (for signed users to not signin again)
+    if (isSigned && isAuthRoute) return <Navigate to="/home"/>;
+    // Actual page if there's no need to redirect
+    
     return (
         <Outlet/>
     )

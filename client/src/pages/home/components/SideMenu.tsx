@@ -6,15 +6,20 @@ import {
     Box,
     Stack,
 } from '@mui/material'
-
 import Divider from './Divider'
 import MenuItems from './SideMenuItems'
-import { 
+import SectionTitle from './SectionTitle'
+import LinkButton from './LinkButton'
+import LinkButtonGroup from './LinkButtonGroup'
+import SidePopupButton from './SidePopupButton'
+import NotificationPopup from './NotificationPopup'
+
+import {
     menuItems_Classroom,
     menuItems_Main,
-    menuItems_QuickAccess
+    menuItems_QuickAccess,
+    sideMenuLinks_MyAccount,
 } from '../data'
-import SectionTitle from './SectionTitle'
 
 /*
 * onHover must be a toggle type of effect to work.
@@ -22,10 +27,8 @@ import SectionTitle from './SectionTitle'
 const SideMenu = (
     { isMobile, isOpen, onHoverOpen }: { isMobile?: boolean, isOpen?: boolean, onHoverOpen?: Function }
 ): JSX.Element => {
-
     return (
         <Box
-            component="div"
             sx={{
                 overflow: 'hidden',
                 transition: isMobile ? 'none' : 'width 200ms ease-in-out',
@@ -33,49 +36,66 @@ const SideMenu = (
                 borderRight: (theme) => `2px ${theme.palette.primary.whiteHigh} solid`
             }}
             height="auto"
-            width={
-                isMobile
-                    ? '100vw'
-                    : isOpen
-                        ? 250
-                        : 55
-            }
-            padding={isMobile ? 2 : 1 }
+            width={isMobile ? '100vw' : isOpen ? 250 : 55}
+            padding={isMobile ? 2 : 1}
             onMouseEnter={isOpen ? undefined : onHoverOpen as MouseEventHandler<HTMLDivElement>}
-            onMouseLeave={onHoverOpen as (MouseEventHandler<HTMLDivElement> | undefined)}            
+            onMouseLeave={onHoverOpen as (MouseEventHandler<HTMLDivElement> | undefined)}
         >
             <div style={{ overflow: 'hidden' }}>
                 <Stack
                     component="nav"
-
-                    gap={2.5}
+                    gap={isMobile ? 4 : 2}
                 >
                     { /* INICIO */}
 
                     <Box marginTop={isMobile ? 0 : 2}>
                         {
-                            <MenuItems
+                            <LinkButton
                                 showIcon={true}
-                                isCompacted={!isOpen}
-                                items={
-                                    isMobile
-                                        ? menuItems_Main.items
-                                        : [menuItems_Main.items[0]]
-                                }
-                            />
+                                type="link"
+                                href="/home"
+                                title={menuItems_Main.items[0].title}
+                                icon={menuItems_Main.items[0].icon} />
+                        }
+                        {
+                            isMobile
+                                ? (
+                                    <>
+                                        <SidePopupButton
+                                            type="popup"
+                                            title={menuItems_Main.items[1].title}
+                                            showIcon={true}
+                                            icon={menuItems_Main.items[1].icon}
+                                            content={<NotificationPopup/>}
+                                        />
+                                        <SidePopupButton
+                                            type="popup"
+                                            title={menuItems_Main.items[2].title}
+                                            showIcon={true}
+                                            icon={menuItems_Main.items[2].icon}
+                                            content={<NotificationPopup/>} // THE CONTENT HERE WILL GET A SET HAVE NOTIFICATION CB TO CHANGE HAS NOTIFICATION PARAM
+                                        />
+                                        <LinkButtonGroup
+                                            title={menuItems_Main.items[3].title}
+                                            icon={menuItems_Main.items[3].icon}
+                                            items={sideMenuLinks_MyAccount}
+                                        />
+                                    </>
+                                )
+                                : <></>
                         }
                     </Box>
                     {
-                        isOpen && !isMobile 
-                        ? <></>
-                        : <Divider/>
+                        isOpen && !isMobile
+                            ? <></>
+                            : <Divider />
                     }
 
                     { /* SALA DE AULA */}
 
                     <Stack gap={1}>
                         {
-                            isOpen && <SectionTitle>
+                            (isOpen || isMobile) && <SectionTitle>
                                 {menuItems_Classroom.title}
                             </SectionTitle>
                         }
@@ -89,7 +109,7 @@ const SideMenu = (
                     {
                         isMobile && (
                             <>
-                                <Divider/>
+                                <Divider />
                                 <Stack gap={1}>
                                     <SectionTitle>
                                         {menuItems_QuickAccess.title}

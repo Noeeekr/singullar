@@ -1,18 +1,24 @@
 import {
     cloneElement,
+    useContext,
     useState,
+    useMemo,
 } from 'react'
+import {
+    NotificationContext
+} from '../../../context/notificationsContext'
+
 import {
     Box,
     Typography,
-    Stack, 
+    Stack,
     useMediaQuery
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 import { MenuItemStack } from './SideMenuItems'
 
-import { ISideMenuPopupButton } from '../../../types/sideMenu';
+import { ISideMenuPopupButton } from '../../../types/propsButtons';
 import SidePopup from './SidePopup'
 
 interface IPopupButtonProps extends ISideMenuPopupButton {
@@ -30,33 +36,37 @@ const PopupButton = (props: IPopupButtonProps) => {
     const [isOpen, setIsOpen] = useState(false)
     const toggleIsOpen = () => (setIsOpen(prevState => !prevState))
 
-    const { 
+    const {
         title,
         content,
 
         icon,
         showIcon,
-    
+
         iconSize,
         fontSize,
         fontWeight,
         hasHoverEffect,
     } = props;
 
-    const Icon = Boolean(showIcon)
-        ? <Box display='flex' sx={{ opacity: 0.7 }}>
-            {
-                cloneElement(icon,
-                    {
-                        style: {
-                            fontSize: iconSize || 21,
-                        },
-                        color: theme.palette.primary.purpleDark,
-                    }
-                )
-            }
-        </Box>
-        : <></>;
+    const Icon = useMemo(() => {
+        return Boolean(showIcon)
+            ? <Box display='flex' sx={{ opacity: 0.7 }}>
+                {
+                    cloneElement(icon,
+                        {
+                            style: {
+                                fontSize: iconSize || 21,
+                            },
+                            color: theme.palette.primary.purpleDark,
+                        }
+                    )
+                }
+            </Box>
+            : <></>
+    }, [showIcon]);
+
+    const { hasNotifications } = useContext(NotificationContext)
 
     return (
         <>
@@ -74,19 +84,32 @@ const PopupButton = (props: IPopupButtonProps) => {
 
                 onClick={toggleIsOpen}
             >
-                {Icon}
+                <Box sx={{ position: 'relative' }}>
+                    {Icon}
+                    {
+                        hasNotifications &&
+                        <Box sx={{
+                            position: 'absolute',
+                            top: '0',
+                            right: '0',
+
+                            content: '""',
+                            backgroundColor: (theme) => theme.palette.primary.contrast,
+                            width: 7.6,
+                            height: 7.6,
+                            borderRadius: 20
+                        }} />
+                    }
+                </Box>
                 <Stack gap={0.5}>
-                    <Typography variant="body2" fontSize={fontSize} fontWeight={fontWeight || 500}>
+                    <Typography variant="body2" sx={{ paddingX: 1 }} fontSize={fontSize} fontWeight={fontWeight || 500}>
                         {title}
                     </Typography>
                 </Stack>
             </MenuItemStack>
-            {
-                isOpen && 
-                <SidePopup onClickCb={toggleIsOpen} title={title}>
-                    { content }
-                </SidePopup>
-            }
+            <SidePopup onClickCb={toggleIsOpen} title={title} isOpen={isOpen}>
+                {content}
+            </SidePopup>
         </>
     )
 }

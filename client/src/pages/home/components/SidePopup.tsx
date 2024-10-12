@@ -10,16 +10,18 @@ import { CloseRounded } from '@mui/icons-material'
 
 interface INavbarItemGroupProps {
     // for toggle menu open click event handling
+    isOpen: boolean,
     onClickCb?: Function,
-
+    id?: string,
+    
     children: JSX.Element,
     title: string, // for small title popup
-
+    
     structure?: "side" | "popup"
 }
 
 const SidePopup = (props: INavbarItemGroupProps) => {
-    const { children, onClickCb, title } = props;
+    const { children, isOpen, onClickCb, title, id } = props;
     
     return(
             <>
@@ -34,9 +36,12 @@ const SidePopup = (props: INavbarItemGroupProps) => {
                             position: 'absolute',
                             top: '0',
                             left: '0',
+
+                            opacity: isOpen ? '1' : '0',
+                            pointerEvents: isOpen ? 'all' : 'none',
                         }}
 
-                        onClick={onClickCb as MouseEventHandler<HTMLDivElement> | undefined}
+                        onClick={(!onClickCb) ? undefined : () => (onClickCb(id)) as MouseEventHandler<HTMLDivElement>}
                     >
                     </Box>
                     <Box
@@ -54,6 +59,9 @@ const SidePopup = (props: INavbarItemGroupProps) => {
                             paddingY: 2,
 
                             zIndex: 2,
+
+                            opacity: isOpen ? '1' : '0',
+                            pointerEvents: isOpen ? 'all' : 'none',
                         }}
                     >
                         <Stack

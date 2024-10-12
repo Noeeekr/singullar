@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
 import { IUserRequest } from '../types/user'
-import useAuth from './useAuth'
+import useChangeUserState from './useChangeUserState'
 
 const useSignIn = (): [typeof signin, boolean, string |null] => {
     const [ error, setError] = useState<null | string>(null)
     const [ isLoading, setIsLoading] = useState(false);
-    const { dispatch } = useAuth()
+    const { setUser } = useChangeUserState()
 
     const signin = async (email: string, password: string) => {
         setIsLoading(true)
@@ -28,10 +28,7 @@ const useSignIn = (): [typeof signin, boolean, string |null] => {
             if (!response.ok) {
                 setError(res.error)
             } else  {
-                dispatch({
-                    type: "login",
-                    payload: res.data,
-                })
+                setUser(res.data)
             }
         } catch (err) {
             setError("Falha ao logar o usuário.")
