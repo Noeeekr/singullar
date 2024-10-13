@@ -15,7 +15,7 @@ import {
     styled,
 } from '@mui/material'
 
-import { ISideMenuItems, ISideMenuLinkButton } from '../../types/propsButtons'
+import { ISideMenuItems, ISideMenuLinkButton, ISideMenuButton } from '../../types/propsButtons'
 
 const BorderIcon = styled(({ children, style = {}, ...other }: { children: JSX.Element, style?: object }) => (
     <Box style={{ ...style, color: 'black' }} {...other}>
@@ -41,7 +41,7 @@ const BorderIcon = styled(({ children, style = {}, ...other }: { children: JSX.E
     overflow: 'hidden',
 }))
 
-export const sideMenuLinks_MyAccount: ISideMenuLinkButton[] = [
+export const sideMenuData_MyAccount: (ISideMenuLinkButton | ISideMenuButton)[] = [
     {
         title: "Dados pessoais e acesso",
         icon: <LuScanFace/>,
@@ -75,8 +75,7 @@ export const sideMenuLinks_MyAccount: ISideMenuLinkButton[] = [
     {
         title: "Sair",
         icon: <IoExitOutline/>,
-        type: "link",
-        href: "/",
+        type: "button",
     },
 ];
 
@@ -106,7 +105,7 @@ export const menuItems_Main: ISideMenuItems = {
             title: "Minha conta",
             icon: <GoPerson />,
             type: "group",
-            items: sideMenuLinks_MyAccount,
+            items: sideMenuData_MyAccount,
         },
     ],
 };

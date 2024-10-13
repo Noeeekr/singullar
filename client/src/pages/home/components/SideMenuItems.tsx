@@ -4,18 +4,23 @@ import {
     StackProps,
 } from '@mui/material'
 
-import {
+import type {
     ISideMenuLinkButton,
+    ISideMenuButtonGroup,
     ISideMenuPopupButton,
-    ISideMenuLinkButtonGroup,
+    ISideMenuButton,
 } from '../../../types/propsButtons'
+import type {
+    IButtonBaseProps
+} from './Button'
 
 import PopupButton from './SidePopupButton'
-import LinkButtonGroup from './LinkButtonGroup'
-import LinkButton, { ILinkButtonBaseProps } from './LinkButton'
+import LinkButtonGroup from './ButtonGroup'
+import LinkButton from './LinkButton'
+import Button from './Button'
 
-interface ISideMenuItemsProps extends ILinkButtonBaseProps {
-    items: (ISideMenuLinkButton | ISideMenuLinkButtonGroup | ISideMenuPopupButton)[],
+interface ISideMenuItemsProps extends IButtonBaseProps {
+    items: (ISideMenuLinkButton | ISideMenuButtonGroup | ISideMenuPopupButton | ISideMenuButton)[],
 
     isCompacted?: boolean,
     gap?: number,
@@ -51,9 +56,13 @@ const SideMenuItems = ({ items, ...props}: ISideMenuItemsProps): JSX.Element => 
                         case "link":
                             return <LinkButton key={item.title} {...props} {...item} />;
                         case "popup":
-                            return <PopupButton key={item.title} hasNotifications={item?.notifications ? item.notifications : false} {...props} {...item} />;
+                            return <PopupButton key={item.title} notifications={item?.notifications ? item.notifications : false} {...props} {...item} />;
                         case "group":
                             return <LinkButtonGroup key={item.title} {...props} {...item} />;
+                        case "button":
+                            return <Button key={item.title} {...props} {...item}/>;
+                        default: 
+                            return <div>Error rendering button, type does not exist in ISideMenuItemsProps</div>
                     }
                 })
             }

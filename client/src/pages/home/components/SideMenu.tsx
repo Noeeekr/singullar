@@ -10,7 +10,7 @@ import Divider from './Divider'
 import MenuItems from './SideMenuItems'
 import SectionTitle from './SectionTitle'
 import LinkButton from './LinkButton'
-import LinkButtonGroup from './LinkButtonGroup'
+import ButtonGroup from './ButtonGroup'
 import SidePopupButton from './SidePopupButton'
 import NotificationPopup from './NotificationPopup'
 
@@ -18,7 +18,7 @@ import {
     menuItems_Classroom,
     menuItems_Main,
     menuItems_QuickAccess,
-    sideMenuLinks_MyAccount,
+    sideMenuData_MyAccount,
 } from '../data'
 
 /*
@@ -30,15 +30,18 @@ const SideMenu = (
     return (
         <Box
             sx={{
-                overflow: 'hidden',
-                transition: isMobile ? 'none' : 'width 200ms ease-in-out',
                 backgroundColor: 'white',
-                borderRight: (theme) => `2px ${theme.palette.primary.whiteHigh} solid`
+                borderRight: (theme) => `2px ${theme.palette.primary.whiteHigh} solid`,
+                
+                overflow: 'hidden',
+                
+                transition: isMobile ? 'none' : 'width 200ms ease-in-out',
             }}
             height="auto"
             width={isMobile ? '100vw' : isOpen ? 250 : 55}
             padding={isMobile ? 2 : 1}
-            onMouseEnter={isOpen ? undefined : onHoverOpen as MouseEventHandler<HTMLDivElement>}
+
+            onMouseEnter={isOpen ? undefined : onHoverOpen as MouseEventHandler<HTMLDivElement> }
             onMouseLeave={onHoverOpen as (MouseEventHandler<HTMLDivElement> | undefined)}
         >
             <div style={{ overflow: 'hidden' }}>
@@ -75,10 +78,10 @@ const SideMenu = (
                                             icon={menuItems_Main.items[2].icon}
                                             content={<NotificationPopup/>} // THE CONTENT HERE WILL GET A SET HAVE NOTIFICATION CB TO CHANGE HAS NOTIFICATION PARAM
                                         />
-                                        <LinkButtonGroup
+                                        <ButtonGroup
                                             title={menuItems_Main.items[3].title}
                                             icon={menuItems_Main.items[3].icon}
-                                            items={sideMenuLinks_MyAccount}
+                                            items={sideMenuData_MyAccount}
                                         />
                                     </>
                                 )

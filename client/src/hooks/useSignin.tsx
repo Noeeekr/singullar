@@ -1,12 +1,16 @@
 import { useState } from 'react'
 
 import { IUserRequest } from '../types/user'
-import useChangeUserState from './useChangeUserState'
 
-const useSignIn = (): [typeof signin, boolean, string |null] => {
+import { updateUser } from '../slices/authSlice'
+import { AppDispatch } from '../slices/store'
+import { useDispatch } from 'react-redux'
+
+const useSignin = (): [typeof signin, boolean, string |null] => {
     const [ error, setError] = useState<null | string>(null)
     const [ isLoading, setIsLoading] = useState(false);
-    const { setUser } = useChangeUserState()
+
+    const dispatch = useDispatch<AppDispatch>()
 
     const signin = async (email: string, password: string) => {
         setIsLoading(true)
@@ -28,7 +32,7 @@ const useSignIn = (): [typeof signin, boolean, string |null] => {
             if (!response.ok) {
                 setError(res.error)
             } else  {
-                setUser(res.data)
+                dispatch(updateUser(res.data))
             }
         } catch (err) {
             setError("Falha ao logar o usuário.")
@@ -40,4 +44,4 @@ const useSignIn = (): [typeof signin, boolean, string |null] => {
     return [signin, isLoading, error]
 }
 
-export default useSignIn
+export default useSignin

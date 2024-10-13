@@ -20,6 +20,7 @@ import {
 
 import {
     ISideMenuLinkButton,
+    ISideMenuButton
 } from '../../../types/propsButtons'
 
 import MenuItems, { MenuItemStack } from './SideMenuItems'
@@ -27,7 +28,7 @@ import MenuItems, { MenuItemStack } from './SideMenuItems'
 interface ILinkButtonGroupProps {
     title: string,
     icon: JSX.Element,
-    items: ISideMenuLinkButton[],
+    items: (ISideMenuLinkButton | ISideMenuButton)[],
 
     fontSize?: number,
     isCompacted?: boolean,

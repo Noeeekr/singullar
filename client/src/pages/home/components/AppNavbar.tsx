@@ -1,7 +1,9 @@
 import {
     useState,
+    MouseEventHandler
 } from 'react'
 
+import { useNavigate } from 'react-router-dom'
 import { NotificationContext } from '../../../context/notificationsContext'
 
 import {
@@ -14,6 +16,8 @@ import {
     useTheme
 } from '@mui/material/styles'
 
+import useSignout from '../../../hooks/useSignout'
+
 // COMPONENTS
 import NotificationPopup from './NotificationPopup'
 import NavbarItemPopup from './PopupIconButton'
@@ -21,8 +25,11 @@ import UserProfile from './UserProfile'
 import Divider from './Divider'
 import MenuIcon from './NavbarIconButton'
 import SideMenuItems from './SideMenuItems'
+import Button from './Button'
 import SectionTitle from './SectionTitle'
+
 import { ISideMenuLinkProps } from './LinkButton'
+import { ISideMenuButtonProps } from './Button'
 
 // ICONS
 import { IoIosHelpCircleOutline, IoIosNotificationsOutline } from "react-icons/io";
@@ -31,7 +38,7 @@ import { VscAccount } from "react-icons/vsc";
 
 // DATA
 import {
-    sideMenuLinks_MyAccount,
+    sideMenuData_MyAccount,
     menuItems_QuickAccess,
 } from '../data'
 
@@ -43,8 +50,19 @@ interface IAppNavBarProps {
     showMenu?: boolean
 }
 
-const MyAccountPopupContent = (props: { items: ISideMenuLinkProps[] }) => {
+const MyAccountPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenuButtonProps)[] }) => {
     const { items } = props;
+
+    const navigate = useNavigate()
+
+    const { signout, error } = useSignout()
+    const handleSignout = async () => {
+        await signout()
+
+        if (!error) {
+            navigate("/auth")
+        }
+    }
 
     return (
         <Stack>
@@ -62,19 +80,21 @@ const MyAccountPopupContent = (props: { items: ISideMenuLinkProps[] }) => {
             </Box>
             <Divider />
             <Box padding={1}>
-                <SideMenuItems
-                    gap={1}
-                    fontWeight={400}
-                    fontSize={13.5}
-                    showIcon={true}
-                    hasHoverEffect={true}
-                    items={[items[items.length - 1]]}
-                />
+                <div onClick={handleSignout as MouseEventHandler<HTMLDivElement>}>
+                    <Button 
+                        fontWeight={400}
+                        fontSize={13.5}
+                        showIcon={true}
+                        hasHoverEffect={true}
+                        { ...items[items.length - 1] }
+                        type="button"
+                    />
+                </div>
             </Box>
         </Stack>
     )
 }
-const QuickAccessPopupContent = (props: { items: ISideMenuLinkProps[] }) => {
+const QuickAccessPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenuButtonProps)[] }) => {
     const { items } = props;
 
     return (
@@ -135,12 +155,12 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                     top="0"
                     left="0"
                     width="100vw"
-                    height={showMenu ? '100vh' : 'auto' }
+                    height={showMenu && isMobile ? '100vh' : 'auto' }
                     sx={{
-                        '&:hover': {
-                            backgroundColor: 'red'
-                        },
                         overflow: isMobile ? 'auto' : 'visible',
+                        '&:hover': {
+                            backgroundColor: 'red',
+                        }
                     }}
                 >
                     <Box
@@ -207,7 +227,7 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                                     onClickCb={toggleIsOpen}
                                     icon={<VscAccount color="white" fontSize={22} />}
                                 >
-                                    <MyAccountPopupContent items={sideMenuLinks_MyAccount} />
+                                    <MyAccountPopupContent items={sideMenuData_MyAccount} />
                                 </NavbarItemPopup>
                                 <NavbarItemPopup
                                     title="Acesso Rápido"

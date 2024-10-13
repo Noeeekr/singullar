@@ -5,14 +5,15 @@ import {
     Typography
 } from '@mui/material'
 
-import useAuth from '../../../hooks/useChangeUserState'
+import { RootState } from '../../../slices/store'
+import { useSelector } from 'react-redux'
 
 interface IUserProfileProps {
     structure?: "center" | "left"
 }
 
 const UserProfile = (props: IUserProfileProps): JSX.Element => {
-    const { user } = useAuth();
+    const user = useSelector((state: RootState) => state.auth.user);
 
     const { structure } = props;
 

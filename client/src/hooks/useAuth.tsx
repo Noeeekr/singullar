@@ -7,7 +7,9 @@ import {
     useLocation
 } from 'react-router-dom'
 
-import useChangeUserState from './useChangeUserState'
+import type { AppDispatch } from '../slices/store';
+import { useDispatch } from 'react-redux'
+import { updateUser } from '../slices/authSlice'
 
 const useAuth = (isAuthRoute: boolean, isPrivateRoute: boolean): {
     isSigned: boolean,
@@ -17,7 +19,8 @@ const useAuth = (isAuthRoute: boolean, isPrivateRoute: boolean): {
     
     const [isLoading, setIsLoading] = useState(true);
     const [isSigned, setIsSigned] = useState(false);
-    const { setUser } = useChangeUserState();
+
+    const dispatch = useDispatch<AppDispatch>()
     // Problem: isLoading state starts as false after a redirect making the
     // actual component appear instead for a brief second before setIsloading(true)
 
@@ -49,38 +52,29 @@ const useAuth = (isAuthRoute: boolean, isPrivateRoute: boolean): {
                 // If there's data refresh user state. Otherwise signout bc
                 // there's no user or there was a fail validating user.
                 if (response.ok && data.data) {
-                    setUser(data.data)
+                    dispatch(updateUser(data.data))
                     setIsSigned(true)
                 } else {
-                    console.log("called signout")
-                    setUser(null)
+                    // THE PROBLEM LIES HERE, WHERE DISPATCH IS RE RENDERING COMPONENT PROBABLY
+                    dispatch(updateUser(null))
                     setIsSigned(false)
                 }
             } catch (err) {
                 // If the request above gives an unauthorized error, tries
-                // to signout user. 
+                // to signout user..
                 const response = await fetch("http://localhost:8000/api/auth/signout", {
                     credentials: "include"
                 })
 
                 if (response.ok) {
-                    setUser(null)
+                    dispatch(updateUser(null))
                     setIsSigned(false)
                 }
             } finally {
-                if (!isLoading && (url == "/" && isSigned || url == "/" && !isSigned || !isSigned && isPrivateRoute || isSigned && isAuthRoute)) {
-                    console.log("got activated")
-                    console.log(url == "/" && isSigned)
-                    console.log(url == "/" && !isSigned)
-                    console.log(!isSigned && isPrivateRoute)
-                    console.log(isSigned && isAuthRoute)
-
-                    console.log("isSigned", isSigned)
-                    console.log("isLoading", isLoading)
-                    console.log("url", url)
+                if (!isLoading && ((url == "/" && isSigned) || (url == "/" && !isSigned) || (!isSigned && isPrivateRoute) || (isSigned && isAuthRoute))) {
                     isLoadingShouldBeTrue.current = 1;
                 }
-
+                console.log("called")
                 setIsLoading(false)
             }
         }

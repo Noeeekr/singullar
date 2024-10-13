@@ -1,6 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
+import { Provider } from 'react-redux'
+import store from './slices/store'
+
 import {
   ThemeProvider,
   CssBaseline,
@@ -16,7 +19,6 @@ import {
   Route,
 } from "react-router-dom"
 
-import { AuthContextProvider } from './context/authProvider'
 import ProtectedRoutes from './components/ProtectedRoutes'
 import AuthPage from './pages/auth/Auth'
 import Layout from './pages/home/Layout'
@@ -51,13 +53,15 @@ const App = (): JSX.Element => {
 
 
 createRoot(document.getElementById('root')!).render(
+  <StrictMode>
     <ThemeProvider theme={lightTheme}>
       <CssBaseline />
       <GlobalStyle />
-      <Router>
-        <AuthContextProvider>
+      <Provider store={store}>
+        <Router>
           <App />
-        </AuthContextProvider>
-      </Router>
+        </Router>
+      </Provider>
     </ThemeProvider>
+  </StrictMode>
 )

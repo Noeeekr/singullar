@@ -17,7 +17,6 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 		return nil, err
 	}
 
-	middlewares := RouterMiddlewares{}
 	handlers := RouterHandlers{
 		LogErr:  logs.LogErr,
 		LogInfo: logs.LogInfo,
@@ -47,7 +46,6 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 	r.GET("/api/user/auth", handlers.Authenticate)
 
 	// Statics private routes session renew
-	r.GET("/home", middlewares.AuthMiddleware, handlers.StaticsHandler)
 
 	return r, nil
 }

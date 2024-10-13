@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import useChangeUserState from './useChangeUserState';
 
-const useSignOut = () => {
-    const { setUser } = useChangeUserState();
+import { useDispatch } from 'react-redux'
+import { updateUser } from '../slices/authSlice'
+import { AppDispatch } from '../slices/store'
+
+const useSignout = () => {
+    const dispatch = useDispatch<AppDispatch>()
 
     const [isSigningOut, setIsSigningOut] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -17,7 +20,7 @@ const useSignOut = () => {
             
             if (response.ok) {
                 console.log("dispatched logout")
-                setUser(null)
+                dispatch(updateUser(null))
             } else {
                 let res = await response.json()
                 setError(res.Error)
@@ -33,4 +36,4 @@ const useSignOut = () => {
 
     return { signout, isSigningOut, error } 
 }
-export default useSignOut
+export default useSignout

@@ -9,7 +9,6 @@ import {
     useTheme
 } from '@mui/material/styles'
 
-import useSignout from '../../hooks/useSignout'
 import {
     AppNavbar,
     SideMenu,
@@ -42,6 +41,7 @@ const Layout = (): JSX.Element => {
     */
     const toggleIsOpenRelative = () => (setIsOpen(prevState => {
         if (isAbsoluteOpen.current) return true;
+
         return !prevState;
     }))
     
