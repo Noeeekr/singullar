@@ -1,6 +1,12 @@
-import { useState, ReactNode } from 'react'
+import { 
+    useState, 
+    ReactNode,  
+} from 'react'
+
 import { useNavigate } from 'react-router-dom'
-import { useForm, SubmitHandler } from 'react-hook-form'
+
+import { useForm } from 'react-hook-form'
+import type { SubmitHandler } from 'react-hook-form'
 
 import {
     Typography,
@@ -24,7 +30,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { useMediaQuery } from '@mui/system'
 
-import useSignIn from '../../../hooks/useSignin'
+import useSignin from '../../../hooks/useSignin'
 
 interface Fields {
     password: string
@@ -117,7 +123,7 @@ const Internal = (): JSX.Element => {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
     
-    const { register, handleSubmit, formState: { errors } } = useForm<Fields>({
+    const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<Fields>({
         defaultValues: {
             email: "",
             password: "",
@@ -125,28 +131,23 @@ const Internal = (): JSX.Element => {
     })
 
     // Input update
-    const [showPassword, setShowPassword] = useState(false)
-    const [formFields, setFormFields] = useState<Fields>({
-        email: "",
-        password: "",
-    })
+    const emailValue = watch("email")
+    const passwordValue = watch("password")
 
-    const handleClickCleanInput = () => setFormFields((prevState: Fields) => ({ ...prevState, email: "" }))
+    const [showPassword, setShowPassword] = useState(false)
     
     // Fetch
     const navigate = useNavigate()
 
-    const [signin, isLoading, loginError] = useSignIn()
+    const { signin, isLoading, signinError } = useSignin()
 
     const onSubmit: SubmitHandler<Fields> = async (fields) => {
-        setFormFields({
-            password: "",
-            email: ""
-        })
+        reset()
 
-        await signin(fields.email, fields.password)
+        const worked = await signin(fields.email, fields.password);
 
-        if(!loginError) {
+        console.log(worked)
+        if (worked) {
             navigate("/home")
         }
     }
@@ -162,9 +163,9 @@ const Internal = (): JSX.Element => {
                 Digite seus dados de acesso para entrar
             </Typography>
 
-            <form noValidate onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(onSubmit)}>
                 {
-                    loginError != null && <ErrorBubble err={loginError} />
+                    signinError != null && <ErrorBubble err={signinError} />
                 }
                 <FormControl>
                     <InputLabel htmlFor="text">
@@ -182,24 +183,17 @@ const Internal = (): JSX.Element => {
                         id="text"
                         type="text"
                         label="Insira seu e-mail"
-                        value={formFields.email}
                         disabled={isLoading}
-                        onChange={(e) => setFormFields((prevState: Fields) => (
-                            {
-                                email: e.target.value,
-                                password: prevState.password
-                            }
-                        ))}
                         endAdornment={
                             <InputAdornment
                                 position="end"
-                                onClick={handleClickCleanInput}
+                                onClick={() => { setValue("email", "")}}
                             >
                                 <IconButton
                                     edge="end"
                                 >
                                     {
-                                        formFields.email && <HighlightOff sx={{ fontSize: 30, opacity: 0.3 }} />
+                                        emailValue && <HighlightOff sx={{ fontSize: 30, opacity: 0.3 }} />
                                     }
                                 </IconButton>
                             </InputAdornment>
@@ -221,9 +215,8 @@ const Internal = (): JSX.Element => {
                         {...register("password", {
                             required: "por favor insira uma senha",
                         })}
-                        error={Boolean(errors?.password)}
-                        id="filled-adorment-password"
                         type={showPassword ? 'text' : 'password'}
+                        id="filled-adorment-password"
                         endAdornment={
                             <InputAdornment position="end">
                                 <IconButton
@@ -231,7 +224,7 @@ const Internal = (): JSX.Element => {
                                     onClick={() => (setShowPassword((show) => !show))}
                                     edge="end"
                                 >
-                                    {formFields.password 
+                                    {passwordValue 
                                         ? showPassword 
                                             ? <Visibility sx={{ fontSize: 30, opacity: '0.3' }} />
                                             : <VisibilityOff sx={{ fontSize: 30, opacity: '0.3' }} />
@@ -242,13 +235,7 @@ const Internal = (): JSX.Element => {
                         }
                         label="Digite sua senha"
                         disabled={isLoading}
-                        onChange={(e) => setFormFields((prevState: Fields) => (
-                            {
-                                password: e.target.value,
-                                email: prevState.email
-                            }
-                        ))}
-                        value={formFields.password}
+                        error={Boolean(errors?.password)}
                     />
                     <Fade in={Boolean(errors?.password)}>
                         <div style={{ position: 'relative', marginBottom: errors?.password ? 20 : 1 }}>
@@ -317,7 +304,7 @@ const Entire = (): JSX.Element => {
             borderRadius={4}
             flex={1}
             sx={{
-                backgroundColor: 'primary.whiteHigh',
+                backgroundColor: 'white',
             }}
             component="section"
         >

@@ -6,18 +6,22 @@ import { updateUser } from '../slices/authSlice'
 import { AppDispatch } from '../slices/store'
 import { useDispatch } from 'react-redux'
 
-const useSignin = (): [typeof signin, boolean, string |null] => {
-    const [ error, setError] = useState<null | string>(null)
-    const [ isLoading, setIsLoading] = useState(false);
+const useSignin = (): {
+    signin: typeof signin, 
+    isLoading: boolean, 
+    signinError: string |null
+} => {
+    const [signinError, setSigninError] = useState<null | string>(null)
+    const [isLoading, setIsLoading] = useState(false);
 
     const dispatch = useDispatch<AppDispatch>()
 
     const signin = async (email: string, password: string) => {
         setIsLoading(true)
-        setError(null)
+        setSigninError(null)
         
         try {
-            const response = await fetch("http://localhost:8000/api/auth/signin",{
+            const response = await fetch("http://localhost:8000/api/user/signin",{
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -30,18 +34,21 @@ const useSignin = (): [typeof signin, boolean, string |null] => {
             const res: IUserRequest = await response.json()
 
             if (!response.ok) {
-                setError(res.error)
+                setSigninError(res.error)
+                return false
             } else  {
                 dispatch(updateUser(res.data))
+                return true
             }
         } catch (err) {
-            setError("Falha ao logar o usuário.")
+            setSigninError("Falha ao logar o usuário.")
+            return false
         } finally {
             setIsLoading(false)
         }
     }
 
-    return [signin, isLoading, error]
+    return { signin, isLoading, signinError } 
 }
 
 export default useSignin

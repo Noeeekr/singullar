@@ -177,7 +177,7 @@ const Entire = (): JSX.Element => {
             sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: 'primary.whiteHigh',
+                backgroundColor: 'white',
                 borderRadius: 4,
                 flex: 1
             }}

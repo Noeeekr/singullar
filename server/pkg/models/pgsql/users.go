@@ -14,8 +14,7 @@ type UserModel struct {
 }
 
 func (model *UserModel) Insert(user *models.Users) (*models.Users, error) {
-
-	err := model.DB.Create(user).Error
+	err := model.DB.Model(&models.Users{}).Create(user).Error
 	if err != nil {
 		return user, err
 	}

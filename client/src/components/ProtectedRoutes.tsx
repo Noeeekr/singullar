@@ -19,9 +19,8 @@ const ProtectedRoutes = () => {
     const isPrivateRoute = routes.private.some((route) => (url.includes(route))) 
     
     // Authenticate user in every protected route
-    const { isSigned, isLoading } = useAuth(isAuthRoute, isPrivateRoute)
+    const { isSigned, isLoading } = useAuth()
     
-    console.log("pr:", isLoading)
     // Serves the routes
     if (isLoading) {        
         return <div>Redirecting...</div>

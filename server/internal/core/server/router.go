@@ -18,10 +18,11 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 	}
 
 	handlers := RouterHandlers{
-		LogErr:  logs.LogErr,
-		LogInfo: logs.LogInfo,
-		env:     cfg,
-		users:   &pgsql.UserModel{DB: database},
+		LogErr:       logs.LogErr,
+		LogInfo:      logs.LogInfo,
+		env:          cfg,
+		users:        &pgsql.UserModel{DB: database},
+		institutions: &pgsql.InstitutionModel{DB: database},
 	}
 
 	r := gin.Default()
@@ -40,12 +41,19 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 	r.NoRoute(handlers.StaticsHandler)
 
 	// Auth routes
-	r.POST("/api/auth/signin", handlers.SigninHandler)
-	r.POST("/api/auth/signup", handlers.SignupHandler)
-	r.GET("/api/auth/signout", handlers.SignoutHandler)
-	r.GET("/api/user/auth", handlers.Authenticate)
+	r.POST("/api/user/signin", handlers.SigninHandler)  // For users and instituitions
+	r.GET("/api/user/signout", handlers.SignoutHandler) // For users and instituitions
 
-	// Statics private routes session renew
+	r.GET("/api/user/auth", handlers.Authenticate) // For users and instituitions
+
+	// CRUD
+	r.POST("/api/user/signup", handlers.SignupHandler) /// for users and instituitions
+
+	// r.POST("/api/auth/notifications", handlers.CreateNotificationsHandler)
+	// r.GET("/api/auth/notifications", handlers.GetNotificationsHandler)
+
+	// r.Post("/api/auth/classes", handlers.CreateClassesHandler)
+	// r.GET("/api/auth/classes", handlers.GetClassesHandler)
 
 	return r, nil
 }

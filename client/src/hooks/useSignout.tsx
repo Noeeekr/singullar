@@ -14,7 +14,7 @@ const useSignout = () => {
         setIsSigningOut(true)
 
         try {
-            const response = await fetch("http://localhost:8000/api/auth/signout", {
+            const response = await fetch("http://localhost:8000/api/user/signout", {
                 credentials: "include"
             })
             

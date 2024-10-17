@@ -5,33 +5,32 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
+	"time"
 
 	"fmt"
 	"log"
-	"strconv"
-	"time"
 
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	// COOKIE BASED AUTH
 	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 
 	"github.com/noeeekr/sch-server/config"
-	"github.com/noeeekr/sch-server/pkg/forms"
 	"github.com/noeeekr/sch-server/pkg/models"
 	pqsql "github.com/noeeekr/sch-server/pkg/models/pgsql"
 	"github.com/noeeekr/sch-server/pkg/paths"
 )
 
 type RouterHandlers struct {
-	LogInfo *log.Logger
-	LogErr  *log.Logger
-	users   *pqsql.UserModel
-	env     *config.Configuration
+	LogInfo      *log.Logger
+	LogErr       *log.Logger
+	users        *pqsql.UserModel
+	institutions *pqsql.InstitutionModel
+	env          *config.Configuration
 }
 
 // HTTP ERROR RESPONSE CODE REPLIERS
@@ -85,39 +84,6 @@ func (h *RouterHandlers) StaticsHandler(ctx *gin.Context) {
 // For architetural porpuses this function doesn't handle query and bcrypt errors
 // instead, they're returned to be handled in the main function.
 // Such errors include Gorm.ErrRecordNotFound and Bcrypt.ErrMismatchedHashAndPassword.
-func (h *RouterHandlers) CreateUser(user models.Users) (*models.Users, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 16)
-	if err != nil {
-		return &user, err
-	}
-
-	user.Password = string(hashedPassword)
-	user.ProfileImgUrl = "images/userDefaultPic.png"
-
-	newUser, err := h.users.Insert(&user)
-	if err != nil {
-		return &user, err
-	}
-
-	return newUser, nil
-}
-func (h *RouterHandlers) checkUserPassword(email string, password string) (user models.Users, e error) {
-	var _user models.Users
-
-	err := h.users.DB.Model(&models.Users{}).Where("email = ?", email).First(&_user).Error
-	if err != nil {
-		return _user, err
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(_user.Password), []byte(password))
-	if err != nil {
-		return _user, err
-	}
-
-	_user.Password = ""
-
-	return _user, nil
-}
 
 func (h *RouterHandlers) Authenticate(ctx *gin.Context) {
 	cookie, err := ctx.Cookie("auth")
@@ -155,55 +121,112 @@ func (h *RouterHandlers) Authenticate(ctx *gin.Context) {
 	}
 }
 
+func (h *RouterHandlers) checkInstitutionPassword(email string, password string) (user *models.Institutions, e error) {
+	var _institutions models.Institutions
+
+	err := h.users.DB.Model(&models.Institutions{}).Where("email = ?", email).First(&_institutions).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(_institutions.Password), []byte(password))
+	if err != nil {
+		return nil, err
+	}
+
+	_institutions.Password = ""
+
+	return &_institutions, nil
+}
+
+func (h *RouterHandlers) checkUserPassword(email string, password string) (user *models.Users, e error) {
+	var _user models.Users
+
+	err := h.users.DB.Model(&models.Users{}).Where("email = ?", email).First(&_user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(_user.Password), []byte(password))
+	if err != nil {
+		return nil, err
+	}
+
+	_user.Password = ""
+	return &_user, nil
+}
+
 // Handles user sign-in and returns custom graceful JSON objects for client form ui.
 type authClaims struct {
-	User models.Users
+	User interface{}
 	jwt.RegisteredClaims
 }
 
 func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
-
-	var user models.Users
+	var user models.Signin
 
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		h.internalServerErr(ctx, "Falha ao tentar converter a requisição.", err)
+		h.internalServerErr(ctx, "Falha ao identificar o formato dos dados.", err)
 		return
 	}
 
-	form := forms.New(&user)
-	form.SetField("Email").IsValidEmail()
-	form.SetField("Password").Length(8, 0)
+	var usr interface{}
 
-	if form.IsValid() != nil {
-		h.clientError(ctx, "Senha ou e-mail invalidos.")
-		return
+	usr, err = h.checkUserPassword(user.Email, user.Password)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			usr, err = h.checkInstitutionPassword(user.Email, user.Password)
+
+			if err == bcrypt.ErrMismatchedHashAndPassword {
+				h.internalServerErr(ctx, "Senha incorreta. ", err)
+				return
+			} else if errors.Is(err, gorm.ErrRecordNotFound) {
+				h.clientError(ctx, "Usuario não existe")
+				return
+			} else if err != nil {
+				h.internalServerErr(ctx, "Falha ao checar se o usuario existe. ", err)
+				return
+			}
+		} else if err == bcrypt.ErrMismatchedHashAndPassword {
+			h.internalServerErr(ctx, "Senha incorreta. ", err)
+			return
+		} else {
+			h.internalServerErr(ctx, "Falha ao checar se o usuario existe. ", err)
+			return
+		}
 	}
 
-	user, err = h.checkUserPassword(user.Email, user.Password)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		h.clientError(ctx, "Usuário não existe.")
-		return
-	} else if err == bcrypt.ErrMismatchedHashAndPassword {
-		h.clientError(ctx, "As senhas não coincidem.")
-		return
-	} else if err != nil {
-		h.internalServerErr(ctx, "Falha ao checar se o usuário existe.", err)
-		return
-	}
+	var token *jwt.Token
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims{
-		User: user,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
-			Issuer:    strconv.Itoa(user.ID),
-		},
-	})
+	institution, ok := usr.(*models.Institutions)
+	if ok {
+		token = jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims{
+			User: institution,
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
+				Issuer:    fmt.Sprintf("%d", institution.ID),
+			},
+		})
+	} else {
+		_user, ok := usr.(*models.Users)
+		if ok {
+			token = jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims{
+				User: _user,
+				RegisteredClaims: jwt.RegisteredClaims{
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
+					Issuer:    fmt.Sprintf("%d", _user.ID),
+				},
+			})
+		} else {
+			h.internalServerErr(ctx, "Tipo de usuario não encontrado", errors.New(" Failed to assert correctly users type "))
+			return
+		}
+	}
 
 	stringifiedToken, err := token.SignedString([]byte(h.env.JwtSecret))
 	if err != nil {
-		h.internalServerErr(ctx, "Falha ao logar o usuario.", err)
-		return
+		h.internalServerErr(ctx, " Falha ao validar o usuario. ", err)
 	}
 
 	ctx.SetCookie(
@@ -218,7 +241,7 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"error": nil,
-		"data":  user,
+		"data":  usr,
 	})
 }
 
@@ -236,27 +259,80 @@ func (h *RouterHandlers) SignoutHandler(ctx *gin.Context) {
 	ctx.Redirect(http.StatusFound, "/auth")
 }
 
+// SIGNUP RELATED HANDLERS
+func createUser(user models.CreateUsers) (*models.Users, error) {
+	formattedUser := models.Users{
+		CreateUsers: models.CreateUsers{
+			Name:          user.Name,
+			Email:         user.Email,
+			Password:      user.Password,
+			Role:          user.Role,
+			InstitutionId: user.InstitutionId,
+		},
+		ProfileImgUrl: "images/userDefaultPic.png",
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(formattedUser.Password), 16)
+
+	if err != nil {
+		return &formattedUser, err
+	}
+
+	formattedUser.Password = string(hashedPassword)
+
+	return &formattedUser, nil
+}
+
+func createInstitution(user models.CreateUsers) (*models.Institutions, error) {
+	formattedUser := models.Institutions{
+		CreateInstitutions: models.CreateInstitutions{
+			Email:    user.Email,
+			Password: user.Password,
+			Role:     user.Role,
+		},
+		Name:          user.Name,
+		ProfileImgUrl: "images/userDefaultPic.png",
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(formattedUser.Password), 16)
+
+	if err != nil {
+		return &formattedUser, err
+	}
+
+	formattedUser.Password = string(hashedPassword)
+
+	return &formattedUser, nil
+}
+
 func (h *RouterHandlers) SignupHandler(ctx *gin.Context) {
-	var user models.Users
+	var user models.CreateUsers
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		h.internalServerErr(ctx, "Falha ao tentar converter a requisição", err)
+		h.internalServerErr(ctx, "Dados em formato incorreto", err)
 		return
 	}
 
-	form := forms.New(&user)
-	form.Required("Name", "Surname", "Email", "Password")
-	form.SetFields("Name", "Surname").Length(6, 0)
-	form.SetField("Email").IsValidEmail()
-	form.SetField("Password").Length(8, 0)
-
-	if err := form.IsValid(); err != nil {
-		h.clientError(ctx, err.Error())
+	if user.Role != models.Student && user.Role != models.Teacher && user.Role != models.Institution {
+		h.clientError(ctx, "Cargo de usuário invalido.")
 		return
 	}
 
 	// Check if user already exists
-	_, exists, err := h.users.GetByEmail(user.Email)
+	var exists bool
+	var err error
+
+	_, exists, err = h.institutions.GetByEmail(user.Email)
+
+	if err != nil {
+		h.internalServerErr(ctx, "Falha ao checar se o email já está em uso.", err)
+		return
+	} else if exists {
+		h.clientError(ctx, "O e-mail já está em uso.")
+		return
+	}
+
+	_, exists, err = h.users.GetByEmail(user.Email)
 	if err != nil {
 		h.internalServerErr(ctx, "Falha ao checar se o email já está em uso.", err)
 		return
@@ -266,12 +342,51 @@ func (h *RouterHandlers) SignupHandler(ctx *gin.Context) {
 	}
 
 	// Create new user
-	newUser, err := h.CreateUser(user)
+	var formatedUser interface{}
 
+	switch user.Role {
+	case models.Teacher, models.Student:
+		formatedUser, err = createUser(user)
+	case models.Institution:
+		formatedUser, err = createInstitution(user)
+	}
+
+	var newUser interface{}
+
+	switch user.Role {
+	case models.Teacher, models.Student:
+		usr, ok := formatedUser.(*models.Users)
+		if !ok {
+			h.internalServerErr(ctx, "Falha ao formatar o usuario.", errors.New(" Failed in formatting user. "))
+			return
+		}
+
+		newUser, err = h.users.Insert(usr)
+		if err != nil {
+			h.internalServerErr(ctx, "Falha ao criar o usuario.", err)
+			return
+		}
+	case models.Institution:
+		usr, ok := formatedUser.(*models.Institutions)
+		if !ok {
+			h.internalServerErr(ctx, "Falha ao formatar o usuario.", errors.New(" Failed in formatting user. "))
+			return
+		}
+
+		h.LogInfo.Println("INSTITUTION OBJ")
+		h.LogInfo.Println(usr)
+
+		newUser, err = h.institutions.Insert(usr)
+		if err != nil {
+			h.internalServerErr(ctx, "Falha ao criar o usuario.", err)
+			return
+		}
+	}
 	if err != nil {
 		h.internalServerErr(ctx, "Falha ao criar o usuário.", err)
 		return
 	}
+
 	ctx.JSON(http.StatusCreated, gin.H{
 		"data":  newUser,
 		"error": nil,

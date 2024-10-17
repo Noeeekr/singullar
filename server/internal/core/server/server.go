@@ -5,13 +5,14 @@ import (
 
 	configs "github.com/noeeekr/sch-server/config"
 	logs "github.com/noeeekr/sch-server/internal/core/log"
-
+	models "github.com/noeeekr/sch-server/pkg/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 func ServeAndListen() error {
+	// GET VARIABLES
 	cfg, err := configs.GetConfig()
 	if err != nil {
 		return err
@@ -21,6 +22,7 @@ func ServeAndListen() error {
 
 	logs.LogInfo.Println("Connecting to database..")
 
+	// CONNECT & SYNC DB
 	db, err := gorm.Open(postgres.Open(
 		cfg.DatabaseWR_ConnectString),
 		&gorm.Config{
@@ -36,14 +38,24 @@ func ServeAndListen() error {
 	if err != nil {
 		return err
 	}
+
+	err = migrate(db)
+	if err != nil {
+		logs.LogErr.Fatal(err)
+	}
+
 	defer sql.Close()
 
 	logs.LogInfo.Println("Starting server..")
+
+	// SETUP ROUTER
 
 	router, err := getRouter(db)
 	if err != nil {
 		return err
 	}
+
+	// SETUP SERVER
 
 	server := http.Server{
 		Addr:     ":" + port,
@@ -56,4 +68,29 @@ func ServeAndListen() error {
 	err = server.ListenAndServe()
 
 	return err
+}
+
+func migrate(db *gorm.DB) error {
+	if err := db.Exec(`DO $$ 
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+				CREATE TYPE user_role AS ENUM ('student', 'teacher', 'institution');
+			END IF;
+		END $$;`).Error; err != nil {
+		return err
+	}
+
+	err := db.AutoMigrate(
+		&models.Users{},
+		&models.Institutions{},
+		&models.Classes{},
+		&models.Notifications{},
+		&models.UserNotifications{},
+		&models.UserClasses{},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
