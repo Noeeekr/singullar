@@ -3,9 +3,13 @@ import {
 } from 'react'
 
 export const NotificationContext = createContext<{
-    hasNotifications: boolean,
-    setHasNotifications: Function,
+    notifications: {
+        notifications: object[],
+        help: object[],
+    },
 }>({
-    hasNotifications: false,
-    setHasNotifications: () => { return },
+    notifications: {
+        notifications: [{}],
+        help: [{}],
+    },
 })

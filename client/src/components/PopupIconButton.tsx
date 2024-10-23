@@ -10,7 +10,7 @@ import {
 } from 'react'
 import {
     NotificationContext
-} from '../../../context/notificationsContext'
+} from '../context/notificationsContext'
 
 import SidePopup from './SidePopup'
 
@@ -18,6 +18,7 @@ interface INavbarItemGroupProps {
     // for toggle menu open click event handling
     id: string,
     isOpen?: string,
+    isCorner?: boolean,
     onClickCb: Function,
 
     icon: JSX.Element,
@@ -26,14 +27,15 @@ interface INavbarItemGroupProps {
 
     sx?: object,
 
-    structure?: "side" | "popup"
+    structure?: "side" | "bubble"
 }
 
-const PopupIconLabelBox = styled(({ children, ...props }: { children: JSX.Element }) => (
+const PopupIconLabelBox = styled(({ children, isCorner, ...props }: { isCorner?: boolean, children: JSX.Element }) => (
     <Box {...props}>{children}</Box>
-))(() => ({
+))<{ isCorner?: boolean }>(({ isCorner }) => ({
     position: "absolute",
     top: 55,
+    right: isCorner ? 0 : 'auto',
 
     display: "flex",
     alignItems: 'center',
@@ -54,6 +56,7 @@ const PopupIconLabelBox = styled(({ children, ...props }: { children: JSX.Elemen
     '&:before': {
         position: 'absolute',
         top: '-12px',
+        right: isCorner ? '12px' : 'auto',
 
         width: '0px',
         height: '5px',
@@ -67,10 +70,10 @@ const PopupIconLabelBox = styled(({ children, ...props }: { children: JSX.Elemen
 }))
 
 const PopupIconButton = styled((
-    { popupIsOpen, hasNotifications, children, onClickCb, title, ...props }: { hasNotifications?: boolean, popupIsOpen?: string, title: string, children: JSX.Element, onClickCb: MouseEventHandler<HTMLDivElement> }
+    { popupIsOpen, isCorner, hasNotifications, children, onClickCb, title, ...props }: { isCorner?: boolean, hasNotifications?: boolean, popupIsOpen?: string, title: string, children: JSX.Element, onClickCb: MouseEventHandler<HTMLDivElement> }
 ) => (
     <Box onClick={onClickCb || undefined} {...props}>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {
                 hasNotifications &&
                 <Box sx={{
@@ -81,14 +84,15 @@ const PopupIconButton = styled((
                     backgroundColor: (theme) => theme.palette.primary.contrast,
                     width: 7.6,
                     height: 7.6,
-                    borderRadius: 20
-                }}></Box>
+                    borderRadius: 20,
+                    alignSelf: 'flex-start'
+                }}/>
             }
             {children}
         </div>
         {
             !popupIsOpen &&
-            <PopupIconLabelBox>
+            <PopupIconLabelBox isCorner={isCorner}>
                 <Typography
                     color="primary.main"
                     variant="body1"
@@ -122,39 +126,44 @@ const PopupIconButton = styled((
 }))
 
 const SidePopupWithIcon = (props: INavbarItemGroupProps) => {
-    const { title, icon, isOpen, onClickCb } = props;
-    const { hasNotifications } = useContext(NotificationContext);
+    const { title, icon, isOpen, isCorner, onClickCb } = props;
+    const { notifications } = useContext(NotificationContext);
+
     const id = props.id ? props.id : "_"
+
+    const hasNotifications = Object.keys(notifications).includes(id);
 
     return (
         <div>
             <PopupIconButton
+                isCorner={isCorner}
                 title={title}
                 popupIsOpen={isOpen}
                 hasNotifications={hasNotifications}
-                onClickCb={() => (onClickCb(id) as MouseEventHandler<HTMLDivElement>)}
+                onClickCb={() => (onClickCb(id)) as MouseEventHandler<HTMLDivElement>}
             >
                 {icon}
             </PopupIconButton>
             {
                 (isOpen === id) &&
-                <SidePopup {...props} />
+                <SidePopup {...props} isOpen={true}/>
             }
         </div>
     )
 }
 
 const BubblePopupWithIcon = (props: INavbarItemGroupProps) => {
-    const { title, icon, children, isOpen, onClickCb, id, sx } = props;
+    const { title, isCorner, icon, children, isOpen, onClickCb, id, sx } = props;
 
     return (
         <div style={{ position: 'relative' }}>
             <PopupIconButton
                 title={title}
                 popupIsOpen={isOpen}
+                isCorner={isCorner}
 
                 sx={sx ? { ...sx } : {}}
-                onClickCb={() => (onClickCb(id) as MouseEventHandler<HTMLDivElement>)}
+                onClickCb={() => (onClickCb(id)) as MouseEventHandler<HTMLDivElement>}
             >
                 {icon}
             </PopupIconButton>
@@ -184,6 +193,8 @@ const NavbarItemPopup = (props: INavbarItemGroupProps) => {
     switch (props.structure) {
         case "side":
             return <SidePopupWithIcon {...props} />
+        case "bubble":
+            return <BubblePopupWithIcon {...props} />
         default:
             return <BubblePopupWithIcon {...props} />
     }

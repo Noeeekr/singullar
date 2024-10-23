@@ -19,24 +19,54 @@ const ProtectedRoutes = () => {
     const isPrivateRoute = routes.private.some((route) => (url.includes(route))) 
     
     // Authenticate user in every protected route
-    const { isSigned, isLoading } = useAuth()
+    const { isSigned, isLoading, user } = useAuth()
     
+    // Gets the default page (home) url for every role
+    const DefaultUserRouteByRole = (() => {
+        switch(user?.role) {
+            case "student":
+                return routes.student[0]
+            case "admin":
+                return routes.admin[0]
+            case "supervisor":
+                return routes.supervisor[0]
+            case "teacher":
+                return routes.teacher[0]
+            default:
+                return routes.auth[0]
+        }
+    })();
+
+    const isUserRoleRoute = (() => {
+        switch(user?.role) {
+            case "student":
+                return routes.student.some(route => (url.includes(route)))
+            case "teacher":
+                return routes.teacher.some(route => (url.includes(route)))
+            case "supervisor":
+                return routes.supervisor.some(route => (url.includes(route)))
+            case "admin":
+                return routes.admin.some(route => (url.includes(route)))
+            default:
+                return false
+        }
+    })();
+
     // Serves the routes
     if (isLoading) {        
         return <div>Redirecting...</div>
     }
     
     // redirect cases
-    if (url == "/" && isSigned) return <Navigate to="/home"/>;
     if (url == "/" && !isSigned) return <Navigate to="/auth"/>;
-
+    if (url == "/" && isSigned) return <Navigate to={DefaultUserRouteByRole}/>;
     if (!isSigned && isPrivateRoute) return <Navigate to="/auth"/>;
-
-    if (isSigned && isAuthRoute) return <Navigate to="/home"/>;
+    if (isSigned && isAuthRoute) return <Navigate to={DefaultUserRouteByRole}/>;
+    if (isSigned && !isUserRoleRoute) return <Navigate to={DefaultUserRouteByRole}/>;
     
     return (
         <Outlet/>
     )
 }
 
-export default ProtectedRoutes
+export default ProtectedRoutes;

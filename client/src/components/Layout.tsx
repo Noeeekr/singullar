@@ -13,7 +13,7 @@ import {
     AppNavbar,
     SideMenu,
     UserProfile,
-} from '../../components'
+} from './index'
 
 import { 
     Outlet,
@@ -78,9 +78,14 @@ const Layout = (): JSX.Element => {
 
             <Stack direction="row">
                 {
-                    !isMobile && <SideMenu onHoverOpen={toggleIsOpenRelative} isOpen={isOpen}/>
+                    !isMobile && <SideMenu 
+                        onHoverOpen={toggleIsOpenRelative} 
+                        isOpen={isOpen}
+                    />
                 }
                 <Outlet />
+
+                {/* DELETE THIS LATER */}
                 <Box sx={{
                     position: "absolute",
                     top: 150,

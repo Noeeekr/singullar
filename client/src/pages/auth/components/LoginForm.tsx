@@ -146,7 +146,6 @@ const Internal = (): JSX.Element => {
 
         const worked = await signin(fields.email, fields.password);
 
-        console.log(worked)
         if (worked) {
             navigate("/home")
         }
@@ -213,7 +212,11 @@ const Internal = (): JSX.Element => {
                     </InputLabel>
                     <OutlinedInput
                         {...register("password", {
-                            required: "por favor insira uma senha",
+                            required: "Por favor insira uma senha",
+                            minLength: { 
+                                value: 2, 
+                                message: "A senha deve ter no mínimo 2 caracteres"
+                            }
                         })}
                         type={showPassword ? 'text' : 'password'}
                         id="filled-adorment-password"
@@ -240,7 +243,7 @@ const Internal = (): JSX.Element => {
                     <Fade in={Boolean(errors?.password)}>
                         <div style={{ position: 'relative', marginBottom: errors?.password ? 20 : 1 }}>
                             <ErrorHelperText>
-                                Campo obrigatório. Digite sua senha.
+                               {errors?.password?.message}
                             </ErrorHelperText>
                         </div>
                     </Fade>

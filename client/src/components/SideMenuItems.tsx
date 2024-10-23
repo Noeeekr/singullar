@@ -1,23 +1,29 @@
 import {
+    useMemo,
+} from 'react'
+
+// components
+import {
     Stack,
     styled,
     StackProps,
 } from '@mui/material'
 
+import PopupButton from './SidePopupButton'
+import LinkButtonGroup from './ButtonGroup'
+import LinkButton from './LinkButton'
+import Button from './Button'
+
+// types
 import type {
     ISideMenuLinkButton,
     ISideMenuButtonGroup,
     ISideMenuPopupButton,
     ISideMenuButton,
-} from '../../../types/propsButtons'
+} from '../types/propsButtons'
 import type {
     IButtonBaseProps
 } from './Button'
-
-import PopupButton from './SidePopupButton'
-import LinkButtonGroup from './ButtonGroup'
-import LinkButton from './LinkButton'
-import Button from './Button'
 
 interface ISideMenuItemsProps extends IButtonBaseProps {
     items: (ISideMenuLinkButton | ISideMenuButtonGroup | ISideMenuPopupButton | ISideMenuButton)[],

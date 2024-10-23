@@ -17,7 +17,7 @@ import {
 } from '@mui/material/styles'
 
 import { MenuItemStack } from './SideMenuItems'
-import { ISideMenuButton } from '../../../types/propsButtons'
+import { ISideMenuButton } from '../types/propsButtons'
 
 export interface IButtonBaseProps {
     href?: string,

@@ -6,7 +6,7 @@ import {
 } from 'react'
 import {
     NotificationContext
-} from '../../../context/notificationsContext'
+} from '../context/notificationsContext'
 
 import {
     Box,
@@ -18,7 +18,7 @@ import { useTheme } from '@mui/material/styles'
 
 import { MenuItemStack } from './SideMenuItems'
 
-import { ISideMenuPopupButton } from '../../../types/propsButtons';
+import { ISideMenuPopupButton } from '../types/propsButtons';
 import SidePopup from './SidePopup'
 
 interface IPopupButtonProps extends ISideMenuPopupButton {

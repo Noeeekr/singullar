@@ -21,7 +21,7 @@ import {
 import {
     ISideMenuLinkButton,
     ISideMenuButton
-} from '../../../types/propsButtons'
+} from '../types/propsButtons'
 
 import MenuItems, { MenuItemStack } from './SideMenuItems'
 

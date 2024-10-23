@@ -5,15 +5,14 @@ import {
     Typography
 } from '@mui/material'
 
-import { RootState } from '../../../slices/store'
-import { useSelector } from 'react-redux'
+import { useAppSelector } from '../slices/store'
 
 interface IUserProfileProps {
     structure?: "center" | "left"
 }
 
 const UserProfile = (props: IUserProfileProps): JSX.Element => {
-    const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAppSelector((state) => state.auth.user);
 
     const { structure } = props;
 
@@ -63,7 +62,7 @@ const UserProfile = (props: IUserProfileProps): JSX.Element => {
                             marginBottom: structure === "center" ? 0.5 : 0,
                         }}
                     >
-                        Olá, {user?.name || "" } { user?.surname || ""}
+                        Olá, {user?.name || "" }
                     </Typography>
                     <Typography 
                         variant="subtitle2"

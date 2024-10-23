@@ -1,21 +1,35 @@
-import { GrBook } from "react-icons/gr";
-import { FaChalkboardTeacher, FaGithub, FaShareAlt } from "react-icons/fa";
-import { FaRegPenToSquare } from "react-icons/fa6";
-import { IoNewspaperOutline, IoPeopleOutline, IoExitOutline, IoBarcodeOutline } from "react-icons/io5";
-import { AiOutlineQuestionCircle } from "react-icons/ai";
-import { TbSmartHome } from "react-icons/tb";
-import { MdOutlineNotificationsNone } from "react-icons/md";
-import { BiDirections } from "react-icons/bi";
-import { LuPartyPopper, LuScanFace } from "react-icons/lu";
-import { GoPerson, GoLock } from "react-icons/go";
-import { TbSpeakerphone } from "react-icons/tb";
+// icons
 
-import { 
+import { GrBook } from "react-icons/gr";
+import { VscAccount } from "react-icons/vsc";
+import { BiDirections } from "react-icons/bi";
+import { GoPerson, GoLock } from "react-icons/go";
+import { FaRegPenToSquare } from "react-icons/fa6";
+import { AiOutlineQuestionCircle } from "react-icons/ai";
+import { LuPartyPopper, LuScanFace } from "react-icons/lu";
+import { MdOutlineNotificationsNone } from "react-icons/md";
+import { TbSmartHome,  TbSpeakerphone, TbGridDots } from "react-icons/tb";
+import { FaChalkboardTeacher, FaGithub, FaShareAlt } from "react-icons/fa";
+import { IoIosHelpCircleOutline, IoIosNotificationsOutline } from "react-icons/io";
+import { IoNewspaperOutline, IoPeopleOutline, IoExitOutline, IoBarcodeOutline } from "react-icons/io5";
+
+// components;
+
+import NotificationPopupContent from '../../components/NotificationPopupContent'
+
+import {
     Box,
     styled,
 } from '@mui/material'
 
-import { ISideMenuItems, ISideMenuLinkButton, ISideMenuButton } from '../../types/propsButtons'
+import { 
+    ISideMenuItems, 
+    ISideMenuLinkButton, 
+    ISideMenuButton 
+} from '../../types/propsButtons'
+
+import MyAccountPopupContent from '../../components/MyAccountPopupContent'
+import QuickAccessPopupContent from './components/QuickAccessPopupContent'
 
 const BorderIcon = styled(({ children, style = {}, ...other }: { children: JSX.Element, style?: object }) => (
     <Box style={{ ...style, color: 'black' }} {...other}>
@@ -41,46 +55,45 @@ const BorderIcon = styled(({ children, style = {}, ...other }: { children: JSX.E
     overflow: 'hidden',
 }))
 
-export const sideMenuData_MyAccount: (ISideMenuLinkButton | ISideMenuButton)[] = [
+const students_sidemenu_data_myaccount: (ISideMenuLinkButton | ISideMenuButton)[] = [
     {
         title: "Dados pessoais e acesso",
-        icon: <LuScanFace/>,
+        icon: <LuScanFace />,
         type: "link",
         href: "/",
     },
     {
         title: "Responsáveis vinculados",
-        icon: <IoPeopleOutline/>,
+        icon: <IoPeopleOutline />,
         type: "link",
         href: "/",
     },
     {
         title: "Código de acesso",
-        icon: <IoBarcodeOutline/>,
+        icon: <IoBarcodeOutline />,
         type: "link",
         href: "/",
     },
     {
         title: "Comunicações",
-        icon: <TbSpeakerphone/>,
+        icon: <TbSpeakerphone />,
         type: "link",
         href: "/",
     },
     {
         title: "Privacidade",
-        icon: <GoLock/>,
+        icon: <GoLock />,
         type: "link",
         href: "/",
     },
     {
         title: "Sair",
-        icon: <IoExitOutline/>,
+        icon: <IoExitOutline />,
         type: "button",
     },
 ];
-
-export const menuItems_Main: ISideMenuItems = {
-    title: "",
+const students_sidemenu_data_main: ISideMenuItems = {
+    title: "Principal",
     items: [
         {
             title: "Início",
@@ -92,24 +105,24 @@ export const menuItems_Main: ISideMenuItems = {
             title: "Notificações",
             icon: <MdOutlineNotificationsNone />, // might need the other version for hover effect
             type: "popup",
-            content: <div>DIVINISSIMA</div>,
+            content: <NotificationPopupContent />,
             notifications: true,
         },
         {
             title: "Ajuda",
             icon: <BiDirections />,
             type: "popup",
-            content: <div>DIVINISSIMA</div>,
+            content: <NotificationPopupContent />,
         },
         {
             title: "Minha conta",
             icon: <GoPerson />,
             type: "group",
-            items: sideMenuData_MyAccount,
+            items: students_sidemenu_data_myaccount
         },
     ],
 };
-export const menuItems_Classroom: ISideMenuItems = {
+const students_sidemenu_data_classroom: ISideMenuItems = {
     title: "Sala de aula",
     items: [
         {
@@ -170,13 +183,13 @@ export const menuItems_Classroom: ISideMenuItems = {
         },
     ],
 };
-export const menuItems_QuickAccess: { title: string, items: ISideMenuLinkButton[] } = {
+const students_sidemenu_data_quickaccess: { title: string, items: ISideMenuLinkButton[] } = {
     title: "Acesso Rápido",
     items: [
         {
             title: "Ir para o perfil do criador",
             description: "Aproveite para ver outros projetos!",
-            
+
             icon: <BorderIcon><FaGithub /></BorderIcon>,
             type: "link",
             href: "/",
@@ -198,3 +211,50 @@ export const menuItems_QuickAccess: { title: string, items: ISideMenuLinkButton[
         },
     ]
 };
+
+export const students_sidemenu_data: ISideMenuItems[] = [
+    students_sidemenu_data_main,
+    students_sidemenu_data_classroom,
+    students_sidemenu_data_quickaccess,
+]
+
+export type StudentNavbarPopupId = "help" | "notifications" | "myaccount" | "quickaccess" | "";
+
+export interface INavbarPopupData {
+    structure: "side" | "bubble",
+    title: string,
+    id: StudentNavbarPopupId,
+    icon: JSX.Element,
+    content: JSX.Element,
+}
+
+export const students_navbar_popup_data: INavbarPopupData[] = [
+    {
+        structure:"side",
+        title:"Central de ajuda",
+        id:"help",
+        icon: <IoIosHelpCircleOutline color="white" fontSize={26} />,
+        content: <div>Lorem Ipsum</div>,
+    },
+    {
+        structure:"side",
+        title:"Notificações",
+        id:"notifications",
+        icon: <IoIosNotificationsOutline color="white" fontSize={26} />,
+        content: <NotificationPopupContent/>,
+    },
+    {
+        structure: "bubble",
+        title:"Minha conta",
+        id:"myaccount",
+        icon: <VscAccount color="white" fontSize={22} />,
+        content: <MyAccountPopupContent items={students_sidemenu_data_myaccount} />,
+    },
+    {
+        structure: "bubble",
+        title:"Acesso Rápido",
+        id:"quickaccess",
+        icon: <TbGridDots color="white" fontSize={23} />,
+        content: <QuickAccessPopupContent items={students_sidemenu_data_quickaccess.items} />,
+    }
+]

@@ -41,13 +41,14 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 	r.NoRoute(handlers.StaticsHandler)
 
 	// Auth routes
-	r.POST("/api/user/signin", handlers.SigninHandler)  // For users and instituitions
-	r.GET("/api/user/signout", handlers.SignoutHandler) // For users and instituitions
+	r.POST("/api/user/signin", handlers.SigninHandler)  // For users and institutions
+	r.GET("/api/user/signout", handlers.SignoutHandler) // For users and institutions
 
-	r.GET("/api/user/auth", handlers.Authenticate) // For users and instituitions
+	r.GET("/api/user/auth", handlers.Authenticate) // For users and institutions
 
 	// CRUD
-	r.POST("/api/user/signup", handlers.SignupHandler) /// for users and instituitions
+
+	r.POST("/api/user/signup", handlers.UserSignupHandler) /// for users and institutions
 
 	// r.POST("/api/auth/notifications", handlers.CreateNotificationsHandler)
 	// r.GET("/api/auth/notifications", handlers.GetNotificationsHandler)

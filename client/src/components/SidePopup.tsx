@@ -1,7 +1,4 @@
 import {
-    MouseEventHandler,
-} from 'react'
-import {
     Box,
     Stack,
     Typography,
@@ -17,12 +14,14 @@ interface INavbarItemGroupProps {
     children: JSX.Element,
     title: string, // for small title popup
     
-    structure?: "side" | "popup"
+    structure?: "side" | "bubble"
 }
 
 const SidePopup = (props: INavbarItemGroupProps) => {
     const { children, isOpen, onClickCb, title, id } = props;
     
+    const togglePopup = () => { if (onClickCb) onClickCb(id); }
+
     return(
             <>
                     <Box
@@ -41,7 +40,7 @@ const SidePopup = (props: INavbarItemGroupProps) => {
                             pointerEvents: isOpen ? 'all' : 'none',
                         }}
 
-                        onClick={(!onClickCb) ? undefined : () => (onClickCb(id)) as MouseEventHandler<HTMLDivElement>}
+                        onClick={togglePopup}
                     >
                     </Box>
                     <Box
@@ -95,7 +94,7 @@ const SidePopup = (props: INavbarItemGroupProps) => {
 
                                     cursor: 'pointer',
                                 }}
-                                onClick={onClickCb as MouseEventHandler<HTMLDivElement> | undefined}
+                                onClick={togglePopup}
                             >
                                 <CloseRounded style={{ fontSize: 21 }}/>
                             </Box>

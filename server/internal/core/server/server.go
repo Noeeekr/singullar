@@ -74,7 +74,7 @@ func migrate(db *gorm.DB) error {
 	if err := db.Exec(`DO $$ 
 		BEGIN
 			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
-				CREATE TYPE user_role AS ENUM ('student', 'teacher', 'institution');
+				CREATE TYPE user_role AS ENUM ('student', 'teacher', 'admin', 'supervisor');
 			END IF;
 		END $$;`).Error; err != nil {
 		return err
@@ -85,8 +85,9 @@ func migrate(db *gorm.DB) error {
 		&models.Institutions{},
 		&models.Classes{},
 		&models.Notifications{},
-		&models.UserNotifications{},
-		&models.UserClasses{},
+		&models.UsersNotifications{},
+		&models.UsersClasses{},
+		&models.CreateUsers{},
 	)
 	if err != nil {
 		return err

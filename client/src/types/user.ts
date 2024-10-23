@@ -4,7 +4,7 @@ export interface IUser {
     "updated_at": Date,
     "deleted_at": Date | null,
     "email": string,
-    "role": "institution" | "student" | "teacher",
+    "role": "admin" | "student" | "teacher" | "supervisor",
     "name": string,
     "profile_img_url": string,
     "institution_id"?: number,

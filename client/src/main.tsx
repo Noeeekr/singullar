@@ -21,7 +21,7 @@ import {
 
 import ProtectedRoutes from './components/ProtectedRoutes'
 import AuthPage from './pages/auth/Auth'
-import Layout from './pages/home/Layout'
+import Layout from './components/Layout'
 
 const GlobalStyle = () => (
   <GlobalStyles
@@ -43,8 +43,18 @@ const App = (): JSX.Element => {
         <Route path="home" element={<Layout />}>
           <Route index element={<div>Home root page</div>} />
           <Route path="*" element={<div>Not found specific home</div>} />
-        </Route>
+        </Route>  
         <Route path="auth" element={<AuthPage />} />
+        <Route path="teacher" element={<div>Layout</div>}>
+          <Route index element={<div>Index page teach</div>} />
+        </Route>
+        <Route path="supervisor" element={<div>Layout</div>}>
+          <Route index element={<div>Index page superv</div>} />
+        </Route>
+        <Route path="admin" element={<Layout />}>
+          <Route index element={<div>Index page</div>} />
+          <Route path="*" element={<div>Not index page adm</div>} />
+        </Route>
         <Route path="*" element={<div>Not found general page</div>} />
       </Route>
     </Routes>
@@ -53,6 +63,7 @@ const App = (): JSX.Element => {
 
 
 createRoot(document.getElementById('root')!).render(
+  <StrictMode>
     <ThemeProvider theme={lightTheme}>
       <CssBaseline />
       <GlobalStyle />
@@ -62,4 +73,5 @@ createRoot(document.getElementById('root')!).render(
         </Router>
       </Provider>
     </ThemeProvider>
+  </StrictMode>
 )

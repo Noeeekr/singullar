@@ -121,7 +121,7 @@ func (h *RouterHandlers) Authenticate(ctx *gin.Context) {
 	}
 }
 
-func (h *RouterHandlers) checkInstitutionPassword(email string, password string) (user *models.Institutions, e error) {
+/*func (h *RouterHandlers) checkInstitutionPassword(email string, password string) (user *models.Institutions, e error) {
 	var _institutions models.Institutions
 
 	err := h.users.DB.Model(&models.Institutions{}).Where("email = ?", email).First(&_institutions).Error
@@ -137,7 +137,7 @@ func (h *RouterHandlers) checkInstitutionPassword(email string, password string)
 	_institutions.Password = ""
 
 	return &_institutions, nil
-}
+}*/
 
 func (h *RouterHandlers) checkUserPassword(email string, password string) (user *models.Users, e error) {
 	var _user models.Users
@@ -167,27 +167,15 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		h.internalServerErr(ctx, "Falha ao identificar o formato dos dados.", err)
+		h.clientError(ctx, "Campos em formato incorreto.")
 		return
 	}
 
-	var usr interface{}
-
-	usr, err = h.checkUserPassword(user.Email, user.Password)
+	usr, err := h.checkUserPassword(user.Email, user.Password)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			usr, err = h.checkInstitutionPassword(user.Email, user.Password)
-
-			if err == bcrypt.ErrMismatchedHashAndPassword {
-				h.internalServerErr(ctx, "Senha incorreta. ", err)
-				return
-			} else if errors.Is(err, gorm.ErrRecordNotFound) {
-				h.clientError(ctx, "Usuario não existe")
-				return
-			} else if err != nil {
-				h.internalServerErr(ctx, "Falha ao checar se o usuario existe. ", err)
-				return
-			}
+			h.clientError(ctx, "Usuario não existe")
+			return
 		} else if err == bcrypt.ErrMismatchedHashAndPassword {
 			h.internalServerErr(ctx, "Senha incorreta. ", err)
 			return
@@ -197,32 +185,13 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 		}
 	}
 
-	var token *jwt.Token
-
-	institution, ok := usr.(*models.Institutions)
-	if ok {
-		token = jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims{
-			User: institution,
-			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
-				Issuer:    fmt.Sprintf("%d", institution.ID),
-			},
-		})
-	} else {
-		_user, ok := usr.(*models.Users)
-		if ok {
-			token = jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims{
-				User: _user,
-				RegisteredClaims: jwt.RegisteredClaims{
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
-					Issuer:    fmt.Sprintf("%d", _user.ID),
-				},
-			})
-		} else {
-			h.internalServerErr(ctx, "Tipo de usuario não encontrado", errors.New(" Failed to assert correctly users type "))
-			return
-		}
-	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims{
+		User: usr,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
+			Issuer:    fmt.Sprintf("%d", usr.ID),
+		},
+	})
 
 	stringifiedToken, err := token.SignedString([]byte(h.env.JwtSecret))
 	if err != nil {
@@ -283,29 +252,7 @@ func createUser(user models.CreateUsers) (*models.Users, error) {
 	return &formattedUser, nil
 }
 
-func createInstitution(user models.CreateUsers) (*models.Institutions, error) {
-	formattedUser := models.Institutions{
-		CreateInstitutions: models.CreateInstitutions{
-			Email:    user.Email,
-			Password: user.Password,
-			Role:     user.Role,
-		},
-		Name:          user.Name,
-		ProfileImgUrl: "images/userDefaultPic.png",
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(formattedUser.Password), 16)
-
-	if err != nil {
-		return &formattedUser, err
-	}
-
-	formattedUser.Password = string(hashedPassword)
-
-	return &formattedUser, nil
-}
-
-func (h *RouterHandlers) SignupHandler(ctx *gin.Context) {
+func (h *RouterHandlers) UserSignupHandler(ctx *gin.Context) {
 	var user models.CreateUsers
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
@@ -313,7 +260,7 @@ func (h *RouterHandlers) SignupHandler(ctx *gin.Context) {
 		return
 	}
 
-	if user.Role != models.Student && user.Role != models.Teacher && user.Role != models.Institution {
+	if user.Role != models.Student && user.Role != models.Teacher && user.Role != models.Supervisor {
 		h.clientError(ctx, "Cargo de usuário invalido.")
 		return
 	}
@@ -321,16 +268,6 @@ func (h *RouterHandlers) SignupHandler(ctx *gin.Context) {
 	// Check if user already exists
 	var exists bool
 	var err error
-
-	_, exists, err = h.institutions.GetByEmail(user.Email)
-
-	if err != nil {
-		h.internalServerErr(ctx, "Falha ao checar se o email já está em uso.", err)
-		return
-	} else if exists {
-		h.clientError(ctx, "O e-mail já está em uso.")
-		return
-	}
 
 	_, exists, err = h.users.GetByEmail(user.Email)
 	if err != nil {
@@ -342,53 +279,54 @@ func (h *RouterHandlers) SignupHandler(ctx *gin.Context) {
 	}
 
 	// Create new user
-	var formatedUser interface{}
-
-	switch user.Role {
-	case models.Teacher, models.Student:
-		formatedUser, err = createUser(user)
-	case models.Institution:
-		formatedUser, err = createInstitution(user)
-	}
-
-	var newUser interface{}
-
-	switch user.Role {
-	case models.Teacher, models.Student:
-		usr, ok := formatedUser.(*models.Users)
-		if !ok {
-			h.internalServerErr(ctx, "Falha ao formatar o usuario.", errors.New(" Failed in formatting user. "))
-			return
-		}
-
-		newUser, err = h.users.Insert(usr)
-		if err != nil {
-			h.internalServerErr(ctx, "Falha ao criar o usuario.", err)
-			return
-		}
-	case models.Institution:
-		usr, ok := formatedUser.(*models.Institutions)
-		if !ok {
-			h.internalServerErr(ctx, "Falha ao formatar o usuario.", errors.New(" Failed in formatting user. "))
-			return
-		}
-
-		h.LogInfo.Println("INSTITUTION OBJ")
-		h.LogInfo.Println(usr)
-
-		newUser, err = h.institutions.Insert(usr)
-		if err != nil {
-			h.internalServerErr(ctx, "Falha ao criar o usuario.", err)
-			return
-		}
-	}
+	newUser, err := createUser(user)
 	if err != nil {
-		h.internalServerErr(ctx, "Falha ao criar o usuário.", err)
+		h.internalServerErr(ctx, "Falha ao gerar o usuario.", err)
+		return
+	}
+
+	resUser, err := h.users.Insert(newUser)
+	if err != nil {
+		h.internalServerErr(ctx, "Falha ao criar o usuario.", err)
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
-		"data":  newUser,
+		"data":  resUser,
 		"error": nil,
 	})
 }
+
+/*func (h *RouterHandlers) InstitutionSignupHandler(ctx *gin.Context) {
+	var inst models.Signin
+
+	if err := ctx.ShouldBindJSON(inst); err != nil {
+		h.internalServerErr(ctx, "Data em formato incorreto", err)
+		return
+	}
+
+	var code models.CreateInstitutionsCode
+
+	err := h.institutions.DB.
+		Model(&models.CreateInstitutionsCode{}).
+			Where("email = ?", inst.Email).
+				First(code).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			h.clientError(ctx, "Instituição não registrada")
+			return
+		}
+		h.internalServerErr(ctx, "Falha ao identificar a instituição.", err)
+		return
+	}
+
+	if code.Code != inst.Password {
+		h.clientError(ctx, "Código incorreto")
+	}
+
+	institution := &models.Institutions{
+
+	}
+}
+*/

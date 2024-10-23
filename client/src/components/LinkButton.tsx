@@ -1,11 +1,8 @@
-import {
-    Link,
-} from 'react-router-dom'
-
-import { ISideMenuLinkButton } from '../../../types/propsButtons'
-
+import { Link } from 'react-router-dom'
 import Button from './Button'
+
 import type { ISideMenuButtonProps, IButtonBaseProps } from './Button'
+import type { ISideMenuLinkButton } from '../types/propsButtons'
 
 export type ISideMenuLinkProps = ISideMenuLinkButton & IButtonBaseProps;
 

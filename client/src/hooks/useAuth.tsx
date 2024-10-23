@@ -7,6 +7,7 @@ import {
     useLocation
 } from 'react-router-dom'
 
+import type { IUser } from '../types/user'
 import type { AppDispatch } from '../slices/store';
 import { useDispatch } from 'react-redux'
 import { updateUser } from '../slices/authSlice'
@@ -14,13 +15,15 @@ import { updateUser } from '../slices/authSlice'
 const useAuth = (): {
     isSigned: boolean,
     isLoading: boolean,
+    user: IUser | null,
 } => {
     const url = useLocation().pathname;
     const lastUrl = useRef(url);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSigned, setIsSigned] = useState(false);
-    
+    const [user, setUser] = useState<null | IUser>(null);
+
     // Prevents isLoading from "flicking"
     //
     // Explanation: State starts true and then becomes false in the end of first use
@@ -49,9 +52,11 @@ const useAuth = (): {
                 if (response.ok && data.data) {
                     dispatch(updateUser(data.data))
                     setIsSigned(true)
+                    setUser(data.data)
                 } else {
                     dispatch(updateUser(null))
                     setIsSigned(false)
+                    setUser(null)
                 }
             } catch (err) {
                 // Tries to signout user..
@@ -62,6 +67,7 @@ const useAuth = (): {
                 if (response.ok) {
                     dispatch(updateUser(null))
                     setIsSigned(false)
+                    setUser(null)
                 }
             } finally {
                 setIsLoading(false)
@@ -71,7 +77,7 @@ const useAuth = (): {
         refreshToken()
     }, [url])
 
-    return { isSigned, isLoading }
+    return { isSigned, isLoading, user }
 }
 
 export default useAuth;
