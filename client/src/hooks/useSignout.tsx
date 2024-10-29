@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useDispatch } from 'react-redux'
-import { updateUser } from '../slices/authSlice'
+import { updateUser } from '../slices/userSlice'
 import { AppDispatch } from '../slices/store'
 
 const useSignout = () => {

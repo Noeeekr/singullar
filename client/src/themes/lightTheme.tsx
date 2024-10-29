@@ -16,6 +16,7 @@ declare module '@mui/material/styles' {
         whiteSemiLow?: string,
         whiteMedium?:  string,
         whiteSemiMedium?: string,
+        whiteSemiHigh?: string,
         whiteHigh?:  string,
 
         contrast?:  string,
@@ -33,11 +34,14 @@ declare module '@mui/material/styles' {
         whiteSemiLow?: string,
         whiteMedium?:  string,
         whiteSemiMedium?: string,
+        whiteSemiHigh?: string,
         whiteHigh?:  string,
 
         contrast?:  string,
     }
     interface BreakpointOverrides {
+        mobile: true;
+        xss: true;
         xs: true;
         sm: true;
         md: true;
@@ -67,6 +71,7 @@ const lightPaletteTheme = createTheme({
             whiteSemiLow: 'rgb(120,120,120)',
             whiteMedium: 'rgb(150,150,150)',
             whiteSemiMedium: 'rgb(150,150,150)',
+            whiteSemiHigh: 'rgb(185,185,185)',
             whiteHigh: 'rgb(240,240,240)',
 
             contrast: 'rgb(255, 102, 0)',
@@ -82,6 +87,8 @@ const lightPaletteTheme = createTheme({
 const lightTheme = createTheme({
     breakpoints: {
         values: {
+            mobile: 0,
+            xss: 600,         // Large mobile device
             xs: 760,          // Extra-small devices 
             sm: 900,          // Small devices 
             md: 1200,         // Medium devices 

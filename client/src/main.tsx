@@ -23,6 +23,8 @@ import ProtectedRoutes from './components/ProtectedRoutes'
 import AuthPage from './pages/auth/Auth'
 import Layout from './components/Layout'
 
+import RootAdmin from './pages/admin/Root';
+
 const GlobalStyle = () => (
   <GlobalStyles
     styles={{
@@ -52,7 +54,7 @@ const App = (): JSX.Element => {
           <Route index element={<div>Index page superv</div>} />
         </Route>
         <Route path="admin" element={<Layout />}>
-          <Route index element={<div>Index page</div>} />
+          <Route index element={<RootAdmin/>} />
           <Route path="*" element={<div>Not index page adm</div>} />
         </Route>
         <Route path="*" element={<div>Not found general page</div>} />

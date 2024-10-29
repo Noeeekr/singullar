@@ -1,26 +1,20 @@
-// features
-
-import { useAppSelector } from '../slices/store'; 
+// Features
+import { styled } from '@mui/material'
+import { useAppSelector } from '../slices/store';
 import {
     useMemo,
     Fragment,
-    MouseEventHandler,
 } from 'react'
 
-import type {
-    SxProps,
-    Theme,
-} from '@mui/material'
+// Types
+
+import type { BoxProps } from '@mui/material'
 // components
 
-import {
-    Box,
-    Stack,
-} from '@mui/material'
+import { Stack } from '@mui/material'
 import Divider from './Divider'
 import MenuItems from './SideMenuItems'
 import SectionTitle from './SectionTitle'
-
 
 // data 
 
@@ -29,17 +23,39 @@ import { supervisor_sidemenu_data } from '../pages/supervisor/data'
 import { teacher_sidemenu_data } from '../pages/teacher/data'
 import { students_sidemenu_data } from '../pages/home/data'
 
-/*
+interface ISideMenuLayout extends BoxProps {
+    isMobile?: boolean,
+    isOpen?: boolean,
+}
+
+const SideMenuLayout = styled('nav')<ISideMenuLayout>(
+    ({ theme, isMobile, isOpen }) => (
+        {
+            position: isMobile ? "initial" : "fixed",
+
+            backgroundColor: 'white',
+            width: isMobile ? '100vw' : isOpen ? 250 : 55,
+            height: "100%",
+            borderRight: `2px ${theme.palette.primary.whiteHigh} solid`,
+
+            transition: isMobile ? 'none' : 'width 200ms ease-in-out',
+
+            overflow: 'hidden',
+            zIndex: 3,
+        }
+    )
+)
+
+/**
 * onHover must be a toggle type of effect to work.
 */
 const SideMenu = (
-    { isMobile, isOpen, onHoverOpen, sx }: { sx?: SxProps<Theme>, isMobile?: boolean, isOpen?: boolean, onHoverOpen?: Function }
+    { isMobile, isOpen }: { isMobile?: boolean, isOpen?: boolean, onHoverOpen?: Function }
 ): JSX.Element => {
-
-    const user = useAppSelector((store) => store.auth.user)
+    const user = useAppSelector((store) => store.user.user)
 
     const data = useMemo(() => {
-        switch(user?.role) {
+        switch (user?.role) {
             case "student":
                 return students_sidemenu_data
             case "admin":
@@ -51,30 +67,26 @@ const SideMenu = (
             default:
                 return []
         }
-    },[user?.role])
+    }, [user?.role])
 
+    console.log(isOpen)
     return (
-        <Box
-            sx={{
-                backgroundColor: 'white',
-                borderRight: (theme) => `2px ${theme.palette.primary.whiteHigh} solid`,
-
-                overflow: 'hidden',
-
-                transition: isMobile ? 'none' : 'width 200ms ease-in-out',
-                ...sx
-            }}
-            height="auto"
-            width={isMobile ? '100vw' : isOpen ? 250 : 55}
-            padding={isMobile ? 2 : 1}
-
-            onMouseEnter={isOpen ? undefined : onHoverOpen as MouseEventHandler<HTMLDivElement>}
-            onMouseLeave={onHoverOpen as (MouseEventHandler<HTMLDivElement> | undefined)}
-        >
-            <div style={{ overflow: 'hidden' }}>
+        <SideMenuLayout isOpen={isOpen} isMobile={isMobile}>
                 <Stack
                     component="nav"
                     gap={isMobile ? 4 : 2}
+                    
+                    padding={isMobile ? 1.2 : 1}
+                    paddingBottom={3}
+                    height="100%"
+                    
+                    sx={{
+                        overflowY: 'scroll',
+                        scrollbarWidth: 'none',
+                        '&::WebkitScrollbar': {
+                            display: 'none',
+                        }
+                    }}
                 >
                     { /* INICIO */}
 
@@ -85,7 +97,7 @@ const SideMenu = (
                                     <Stack gap={1} marginTop={1} key={section.title}>
                                         <MenuItems
                                             showIcon={true}
-                                            isCompacted={!isOpen}
+                                            isOpen={isOpen}
                                             items={isMobile ? section.items : [section.items[0]]}
                                         />
                                     </Stack>
@@ -95,18 +107,18 @@ const SideMenu = (
                                 return (
                                     <Fragment key={section.title + i}>
                                         {
-                                            !isOpen && <Divider/>
+                                            !isOpen && <Divider />
                                         }
                                         <Stack gap={1}>
                                             {
-                                                isOpen && 
+                                                isOpen &&
                                                 <SectionTitle>
                                                     {section.title}
                                                 </SectionTitle>
                                             }
                                             <MenuItems
                                                 showIcon={true}
-                                                isCompacted={!isOpen}
+                                                isOpen={isOpen}
                                                 items={section.items}
                                             />
                                         </Stack>
@@ -116,19 +128,17 @@ const SideMenu = (
                             return (
                                 <Fragment key={section.title + i}>
                                     {
-                                        isOpen && !isMobile
-                                            ? <></>
-                                            : <Divider/>
+                                        !isOpen && <Divider />
                                     }
                                     <Stack gap={1}>
                                         {
-                                            (isOpen || isMobile) && <SectionTitle>
+                                            isOpen && <SectionTitle>
                                                 {section.title}
                                             </SectionTitle>
                                         }
                                         <MenuItems
                                             showIcon={true}
-                                            isCompacted={!isOpen}
+                                            isOpen={isOpen}
                                             items={section.items}
                                         />
                                     </Stack>
@@ -137,88 +147,8 @@ const SideMenu = (
                         })
                     }
                 </Stack>
-            </div>
-
-        </Box>
+        </SideMenuLayout>
     )
 }
 
 export default SideMenu
-
-/**
-<Box marginTop={isMobile ? 0 : 2}>
-                        {
-                            <LinkButton
-                                showIcon={true}
-                                type="link"
-                                href="/home"
-                                title={menuItems_Main.items[0].title}
-                                icon={menuItems_Main.items[0].icon} />
-                        }
-                        {
-                            isMobile
-                                ? (
-                                    <>
-                                        <SidePopupButton
-                                            type="popup"
-                                            title={menuItems_Main.items[1].title}
-                                            showIcon={true}
-                                            icon={menuItems_Main.items[1].icon}
-                                            content={<NotificationPopup />}
-                                        />
-                                        <SidePopupButton
-                                            type="popup"
-                                            title={menuItems_Main.items[2].title}
-                                            showIcon={true}
-                                            icon={menuItems_Main.items[2].icon}
-                                            content={<NotificationPopup />} // THE CONTENT HERE WILL GET A SET HAVE NOTIFICATION CB TO CHANGE HAS NOTIFICATION PARAM
-                                        />
-                                        <ButtonGroup
-                                            title={menuItems_Main.items[3].title}
-                                            icon={menuItems_Main.items[3].icon}
-                                            items={sideMenuData_MyAccount}
-                                        />
-                                    </>
-                                )
-                                : <></>
-                        }
-                    </Box>
-                    {
-                        isOpen && !isMobile
-                            ? <></>
-                            : <Divider />
-                    }
-
-                    { /* SALA DE AULA }
-
-                    <Stack gap={1}>
-                        {
-                            (isOpen || isMobile) && <SectionTitle>
-                                {menuItems_Classroom.title}
-                            </SectionTitle>
-                        }
-                        <MenuItems
-                            showIcon={true}
-                            isCompacted={!isOpen}
-                            items={menuItems_Classroom.items}
-                        />
-                    </Stack>
-                    {/* ACESSO RÁPIDO }
-                    {
-                        isMobile && (
-                            <>
-                                <Divider />
-                                <Stack gap={1}>
-                                    <SectionTitle>
-                                        {menuItems_QuickAccess.title}
-                                    </SectionTitle>
-                                    <MenuItems
-                                        showIcon={true}
-                                        isCompacted={!isOpen}
-                                        items={menuItems_QuickAccess.items}
-                                    />
-                                </Stack>
-                            </>
-                        )
-                    }
- */

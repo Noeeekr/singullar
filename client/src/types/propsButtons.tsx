@@ -1,3 +1,10 @@
+import type {
+    AdminNavbarPopupId
+} from '../pages/admin/data';
+import type {
+    StudentNavbarPopupId
+} from '../pages/home/data';
+
 export interface ISideMenuButtonBase {
     title: string,
     icon: JSX.Element,
@@ -12,10 +19,11 @@ export interface ISideMenuLinkButton extends ISideMenuButtonBase {
 export interface ISideMenuPopupButton extends ISideMenuButtonBase {
     type: "popup"
     content: JSX.Element
-    notifications?: boolean
+    id: AdminNavbarPopupId | StudentNavbarPopupId
+    structure: "side" | "bubble"
 }
 
-// type button will have onclick events
+// Type button will have onclick events
 export interface ISideMenuButton extends ISideMenuButtonBase {
     type: "button"
 }

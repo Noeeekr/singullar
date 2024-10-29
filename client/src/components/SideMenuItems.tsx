@@ -1,8 +1,4 @@
-import {
-    useMemo,
-} from 'react'
-
-// components
+// Components
 import {
     Stack,
     styled,
@@ -28,7 +24,7 @@ import type {
 interface ISideMenuItemsProps extends IButtonBaseProps {
     items: (ISideMenuLinkButton | ISideMenuButtonGroup | ISideMenuPopupButton | ISideMenuButton)[],
 
-    isCompacted?: boolean,
+    isOpen?: boolean,
     gap?: number,
 }
 
@@ -46,7 +42,11 @@ const MenuItemStack = styled(({ children, onClick, ...props }: StackProps) => (
     borderRadius: 6,
     "&:hover > .MuiBox-root": {
         opacity: 1,
-        transition: 'opacity 200ms ease-in-out'
+        transition: 'opacity 200ms ease-in-out',
+    },
+    "&:hover > .MuiBox-root > .MuiBox-root": {
+        opacity: 1,
+        transition: 'opacity 200ms ease-in-out',
     },
     "&:active": {
         backgroundColor: theme.palette.primary.purpleLightInv
@@ -62,7 +62,7 @@ const SideMenuItems = ({ items, ...props}: ISideMenuItemsProps): JSX.Element => 
                         case "link":
                             return <LinkButton key={item.title} {...props} {...item} />;
                         case "popup":
-                            return <PopupButton key={item.title} notifications={item?.notifications ? item.notifications : false} {...props} {...item} />;
+                            return <PopupButton key={item.title} {...props} {...item} />;
                         case "group":
                             return <LinkButtonGroup key={item.title} {...props} {...item} />;
                         case "button":

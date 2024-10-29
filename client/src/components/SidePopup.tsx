@@ -38,6 +38,7 @@ const SidePopup = (props: INavbarItemGroupProps) => {
 
                             opacity: isOpen ? '1' : '0',
                             pointerEvents: isOpen ? 'all' : 'none',
+                            zIndex: 10,
                         }}
 
                         onClick={togglePopup}
@@ -57,7 +58,7 @@ const SidePopup = (props: INavbarItemGroupProps) => {
                             paddingX: 4,
                             paddingY: 2,
 
-                            zIndex: 2,
+                            zIndex: 10,
 
                             opacity: isOpen ? '1' : '0',
                             pointerEvents: isOpen ? 'all' : 'none',
@@ -67,6 +68,7 @@ const SidePopup = (props: INavbarItemGroupProps) => {
                             direction="row"
                             justifyContent="space-between"
                             alignItems='center'
+                            paddingBottom={2}
                         >
                             <Typography
                                 variant="h4"

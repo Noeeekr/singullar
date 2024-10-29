@@ -1,8 +1,8 @@
-import SectionTitle from '../../../components/SectionTitle'
-import SideMenuItems from '../../../components/SideMenuItems'
+import SectionTitle from './SectionTitle'
+import SideMenuItems from './SideMenuItems'
 
-import type { ISideMenuLinkProps } from '../../../components/LinkButton'
-import type { ISideMenuButtonProps } from '../../../components/Button'
+import type { ISideMenuLinkProps } from './LinkButton'
+import type { ISideMenuButtonProps } from './Button'
 
 import {
     Box,

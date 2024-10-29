@@ -1,5 +1,6 @@
 import {
     cloneElement,
+    useCallback,
     useContext,
     useState,
     useMemo,
@@ -34,12 +35,15 @@ const PopupButton = (props: IPopupButtonProps) => {
     const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
 
     const [isOpen, setIsOpen] = useState(false)
-    const toggleIsOpen = () => (setIsOpen(prevState => !prevState))
+    const toggleIsOpen = useCallback(
+        () => (setIsOpen(prevState => !prevState))
+    ,[])
 
     const {
         title,
         content,
 
+        id,
         icon,
         showIcon,
 
@@ -55,9 +59,7 @@ const PopupButton = (props: IPopupButtonProps) => {
                 {
                     cloneElement(icon,
                         {
-                            style: {
-                                fontSize: iconSize || 21,
-                            },
+                            fontSize: iconSize || 21,
                             color: theme.palette.primary.purpleDark,
                         }
                     )
@@ -66,7 +68,10 @@ const PopupButton = (props: IPopupButtonProps) => {
             : <></>
     }, [showIcon]);
 
-    const { hasNotifications } = useContext(NotificationContext)
+    const { notifications } = useContext(NotificationContext)
+    const hasNotifications = useMemo(
+        () => (Object.keys(notifications).includes(id))
+    ,[id])
 
     return (
         <>
@@ -97,7 +102,7 @@ const PopupButton = (props: IPopupButtonProps) => {
                             backgroundColor: (theme) => theme.palette.primary.contrast,
                             width: 7.6,
                             height: 7.6,
-                            borderRadius: 20
+                            borderRadius: 20,
                         }} />
                     }
                 </Box>

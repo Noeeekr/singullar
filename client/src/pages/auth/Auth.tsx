@@ -71,7 +71,7 @@ const AuthPage = (): JSX.Element => {
                             <Box sx={{
                                 flex: 2.5
                             }}>
-                                mascot image if I had one.jpeg
+                                Mascot image
                             </Box>
                         </Stack>
                     )

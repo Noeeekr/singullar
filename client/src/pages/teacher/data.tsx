@@ -1,7 +1,7 @@
 import type { 
     ISideMenuItems, 
-    ISideMenuLinkButton, 
-    ISideMenuButton
+    // ISideMenuLinkButton, 
+    // ISideMenuButton
 } from '../../types/propsButtons'
 
 export const teacher_sidemenu_data: ISideMenuItems[] = [

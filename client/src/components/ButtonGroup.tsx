@@ -1,7 +1,8 @@
 import {
     useState,
     useEffect,
-    cloneElement
+    useCallback,
+    cloneElement,
 } from 'react'
 
 import {
@@ -31,39 +32,36 @@ interface ILinkButtonGroupProps {
     items: (ISideMenuLinkButton | ISideMenuButton)[],
 
     fontSize?: number,
-    isCompacted?: boolean,
+    isOpen?: boolean,
 }
 
 const MenuItemGroup = (props: ILinkButtonGroupProps): JSX.Element => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
 
-    const { icon, title, items, fontSize, isCompacted } = props;
+    const { icon, title, items, fontSize, isOpen } = props;
 
     const Icon = cloneElement(
         icon,
         {
-            style: {
-                fontSize: fontSize || 21,
-            },
+            fontSize: fontSize || 21,
             color: theme.palette.primary.purpleDark,
         }
     )
 
-    const [isOpen, setIsOpen] = useState(false);
-    const toggleDrawer = () => (setIsOpen(prevState => !prevState));
+    const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
+    const toggleDrawer = useCallback(() => { 
+        if (isOpen) setIsWardrobeOpen(prevState => !prevState);
+    },[isOpen]);
 
     useEffect(() => {
-        if (isCompacted && isOpen) {
-            toggleDrawer()
+        if (!isOpen && isWardrobeOpen) {
+            setIsWardrobeOpen(false)
         }
-    }, [isCompacted])
+    }, [isOpen])
 
     return (
-        <Stack
-            component="ul"
-            gap={0.5}
-        >
+        <Stack component="ul" gap={0.5}>
             <MenuItemStack
                 paddingX={1}
                 paddingY={isMobile ? 1.5 : 1}
@@ -78,20 +76,20 @@ const MenuItemGroup = (props: ILinkButtonGroupProps): JSX.Element => {
                     {title}
                 </Typography>
                 <FaCaretUp
+                    fontSize={10}
                     style={{
                         height: '100%',
                         margin: 'auto 5px auto auto',
-                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transform: isWardrobeOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                         transition: 'transform 200ms ease-in-out'
                     }}
                 />
             </MenuItemStack>
             {
-                isOpen
-                    ? <Box sx={{ paddingLeft: 2.6 }}>
+                isWardrobeOpen &&
+                    <Box sx={{ paddingLeft: 2.6 }}>
                         <MenuItems items={items} fontWeight={350} fontSize={13.5} />
                     </Box>
-                    : <></>
             }
         </Stack>
     )

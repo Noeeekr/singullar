@@ -57,7 +57,7 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
         })
     },[])
 
-    const role = useAppSelector((state) => state.auth.user?.role)
+    const role = useAppSelector((state) => state.user.user?.role)
 
     const datas = useMemo(() => {
         switch (role) {
@@ -97,16 +97,15 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
         showMenu,
     } = props;
 
-
     return (
         <Box sx={{ zIndex: 4 }}>
             <Box
                 top="0"
                 left="0"
                 width="100vw"
-                height={showMenu && isMobile ? '100vh' : 'auto'}
                 sx={{
-                    overflow: isMobile ? 'auto' : 'visible',
+                    height: showMenu && isMobile ? '100vh' : 'auto',
+                    overflow: isMobile ? 'scroll' : 'visible',
                     backgroundColor: 'white',
                 }}
             >
@@ -188,11 +187,11 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
 
                     <Box>
                         {
-                            isMobile && showMenu
-                                ? (children.map((child) => {
+                            isMobile && showMenu && (
+                                children.map((child) => {
                                     return child
-                                }))
-                                : <></>
+                                })
+                            )
                         }
                     </Box>
                 </NotificationContext.Provider>

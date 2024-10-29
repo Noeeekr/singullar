@@ -10,7 +10,7 @@ import {
 import type { IUser } from '../types/user'
 import type { AppDispatch } from '../slices/store';
 import { useDispatch } from 'react-redux'
-import { updateUser } from '../slices/authSlice'
+import { updateUser } from '../slices/userSlice'
 
 const useAuth = (): {
     isSigned: boolean,

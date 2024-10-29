@@ -85,7 +85,7 @@ const PopupIconButton = styled((
                     width: 7.6,
                     height: 7.6,
                     borderRadius: 20,
-                    alignSelf: 'flex-start'
+                    alignSelf: 'flex-start',
                 }}/>
             }
             {children}

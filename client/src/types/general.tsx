@@ -1,5 +1,6 @@
 import { IUser } from './user';
 
-export interface AuthState {
+export interface UserState {
     user: null | IUser,
+    mostVisitedUrls: { [key: string]: number },
 }

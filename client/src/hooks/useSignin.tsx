@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { IUserRequest } from '../types/user'
 
-import { updateUser } from '../slices/authSlice'
+import { updateUser } from '../slices/userSlice'
 import { AppDispatch } from '../slices/store'
 import { useDispatch } from 'react-redux'
 
