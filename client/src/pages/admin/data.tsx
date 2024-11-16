@@ -1,4 +1,4 @@
-// Icons
+// Icons;
 import { BiDirections } from "react-icons/bi";
 import { LuScanFace,LuBarChart3 } from 'react-icons/lu'
 import { MdOutlineNotificationsNone } from "react-icons/md";
@@ -37,18 +37,18 @@ export interface INavbarPopupData {
     id: AdminNavbarPopupId,
     icon: JSX.Element,
     content: JSX.Element,
-}
+};
 
 const admin_sidemenu_data_myaccount: (ISideMenuLinkButton | ISideMenuButton)[] = [
     {
         title: "Dados pessoais e acesso",
-        icon: <LuScanFace />,
+        icon: <LuScanFace/>,
         type: "link",
         href: "/",
     },
     {
         title: "Comunicações",
-        icon: <TbSpeakerphone />,
+        icon: <TbSpeakerphone/>,
         type: "link",
         href: "/",
     },
@@ -125,7 +125,7 @@ export const admin_sidemenu_data: ISideMenuItems[] = [
             {
                 title: "Minhas turmas",
                 type: "link",
-                href: "/admin/classes",
+                href: "/admin/search",
                 icon: <IoSchool/>,
             },
             {

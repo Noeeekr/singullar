@@ -72,11 +72,11 @@ func main() {
 	logs.LogInfo.Println("Creating Institution")
 
 	inst := &models.Institutions{
-		Name:          "(Sem nome)",
+		Name:          "Nome não definido",
 		ProfileImgUrl: "./assets/defaultpfp.jpg",
 	}
 
-	if err := tx.Model(&models.Institutions{}).Create(inst).Error; err != nil {
+	if err := tx.Model(&models.Institutions{}).Create(&inst).Error; err != nil {
 		tx.Rollback()
 		logs.LogErr.Fatalf("Fail in transaction: %s", err.Error())
 	}
@@ -89,14 +89,20 @@ func main() {
 			Email:         *email,
 			Password:      string(hashedPassword),
 			Role:          "admin",
-			InstitutionId: inst.CommonDbFields.ID,
+			InstitutionId: inst.ID,
 		},
+		Institutions:  []models.Institutions{*inst},
 		ProfileImgUrl: "./assets/defaultpfp.jpg",
 	}
 
-	if err := tx.Model(&models.Users{}).Create(user).Error; err != nil {
+	if err := tx.Model(&user).Create(user).Error; err != nil {
 		tx.Rollback()
 		logs.LogErr.Fatalf("Fail in transaction: %s", err.Error())
+	}
+
+	if err := tx.Model(&user).Association("Institutions").Append(&inst); err != nil {
+		tx.Rollback()
+		logs.LogErr.Fatalf("Fail while trying to oficialize transaction: %s", err.Error())
 	}
 
 	if err := tx.Commit().Error; err != nil {

@@ -10,16 +10,16 @@ declare module '@mui/material/styles' {
         purpleDark?: string,
 
         paperLight?: string,
-        
+
         whiteNone?: string,
-        whiteLow?:  string,
+        whiteLow?: string,
         whiteSemiLow?: string,
-        whiteMedium?:  string,
+        whiteMedium?: string,
         whiteSemiMedium?: string,
         whiteSemiHigh?: string,
-        whiteHigh?:  string,
+        whiteHigh?: string,
 
-        contrast?:  string,
+        contrast?: string,
     }
     interface SimplePaletteColorOptions { // Extra types config
         purpleExtraLight?: string,
@@ -28,16 +28,16 @@ declare module '@mui/material/styles' {
         purpleDark?: string,
 
         paperLight?: string,
-        
+
         whiteNone?: string,
-        whiteLow?:  string,
+        whiteLow?: string,
         whiteSemiLow?: string,
-        whiteMedium?:  string,
+        whiteMedium?: string,
         whiteSemiMedium?: string,
         whiteSemiHigh?: string,
-        whiteHigh?:  string,
+        whiteHigh?: string,
 
-        contrast?:  string,
+        contrast?: string,
     }
     interface BreakpointOverrides {
         mobile: true;
@@ -100,11 +100,11 @@ const lightTheme = createTheme({
     components: {
         MuiSvgIcon: {
             styleOverrides: {
-              root: {
-                fontSize: '1.6rem', // Set a default size
-                WebkitFontSmoothing: 'antialiased',
-                MozOsxFontSmoothing: 'grayscale',
-              },
+                root: {
+                    fontSize: '1.6rem', // Set a default size
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale',
+                },
             },
         },
         MuiTypography: {
@@ -136,7 +136,7 @@ const lightTheme = createTheme({
                 h4: { // OLDER H6
                     fontSize: 20
                 },
-                h3: { 
+                h3: {
                     fontSize: 22
                 },
                 h2: {
@@ -157,6 +157,8 @@ const lightTheme = createTheme({
         MuiInputBase: {
             styleOverrides: {
                 root: {
+                    width: '100%',
+                    position: 'relative',
                     justifyContent: 'end',
                     '& input:-webkit-autofill': {
                         position: 'absolute',
@@ -165,6 +167,46 @@ const lightTheme = createTheme({
                         height: '10px',
                         width: 'calc(100% - 16px)',
                     },
+                }
+            }
+        },
+        MuiSelect: {
+            styleOverrides: {
+                root: {
+                    zIndex: 4,
+                }
+            },
+            defaultProps: {
+                MenuProps: {
+                    disablePortal: true,
+                    PaperProps: {
+                        sx: {
+                            padding: 0.5,
+                            borderRadius: 2,
+                        }
+                    },
+                    MenuListProps: {
+                        sx: {
+                            padding: 0,
+                        }
+                    },
+                },
+            }
+        },
+        MuiMenuItem: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 2,
+                    paddingX: 0.5,
+                    '&:hover': {
+                        color: 'primary.purpleLight',
+                    },
+                    '&:hover .MuiTouchRipple-root': {
+                        backgroundColor: lightPaletteTheme.palette?.primary?.purpleDark,
+                        opacity: 0.1,
+                    },
+                    minHeight: 39,
+                    margin: 0,
                 }
             }
         },
@@ -206,6 +248,8 @@ const lightTheme = createTheme({
         MuiInputLabel: {
             styleOverrides: {
                 outlined: {
+                    position: "absolute",
+
                     zIndex: 4,
                     translate: '0px -6px',
                     color: 'rgb(120,120,120)',

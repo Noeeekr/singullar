@@ -1,6 +1,8 @@
 package pgsql
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 
 	"github.com/noeeekr/sch-server/pkg/models"
@@ -11,7 +13,24 @@ type InstitutionModel struct {
 	DB *gorm.DB
 }
 
-func (model *InstitutionModel) GetByEmail(email string) (User *models.Institutions, Exists bool, Error error) {
+func (model *InstitutionModel) FindByUserId(userId uint) (Institution *[]models.Institutions, Exists bool, Error error) {
+	var institutions *[]models.Institutions
+
+	if err := model.DB.Table("institutions").
+		Select("*").
+		Joins("JOIN users_institutions ON users_institutions.institutions_id = institutions.id").
+		Where("users_institutions.users_id = ?", userId).
+		Scan(&institutions).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+
+	return institutions, true, nil
+}
+
+func (model *InstitutionModel) GetClasses(email string) (User *models.Institutions, Exists bool, Error error) {
 	// var _institutions models.Institutions
 	// err := model.DB.Model(&models.Institutions{}).Where("email = ?", email).First(&_institutions).Error
 	// if err != nil {
@@ -25,7 +44,7 @@ func (model *InstitutionModel) GetByEmail(email string) (User *models.Institutio
 	return nil, false, nil
 }
 
-func (model *InstitutionModel) Insert(user *models.Institutions) (*models.Institutions, error) {
+func (model *InstitutionModel) GetUsers(user *models.Institutions) (*models.Institutions, error) {
 	// err := model.DB.Model(&models.Institutions{}).Create(user).Error
 	// if err != nil {
 	// 	return user, err
@@ -39,13 +58,3 @@ func (model *InstitutionModel) Insert(user *models.Institutions) (*models.Instit
 // Returns User, Exists, Error.
 //
 // Ignores Errors like Gorm RecordsNotFound since it is implemented in exists value.
-
-func (m *InstitutionModel) Delete(u *models.Users) error {
-	//
-	return nil
-}
-
-func (m *InstitutionModel) Update(u *models.Users) error {
-	// Update user profile
-	return nil
-}

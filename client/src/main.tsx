@@ -19,11 +19,15 @@ import {
   Route,
 } from "react-router-dom"
 
-import ProtectedRoutes from './components/ProtectedRoutes'
-import AuthPage from './pages/auth/Auth'
-import Layout from './components/Layout'
+import AuthPage from './pages/auth/Auth';
+import {
+  InstitutionSelection,
+  Classes,
+} from './pages/admin';
 
-import RootAdmin from './pages/admin/Root';
+import ProtectedRoutes from './components/ProtectedRoutes'
+import Layout from './components/Layout'
+import Root from './components/DefaultRoot';
 
 const GlobalStyle = () => (
   <GlobalStyles
@@ -47,14 +51,16 @@ const App = (): JSX.Element => {
           <Route path="*" element={<div>Not found specific home</div>} />
         </Route>  
         <Route path="auth" element={<AuthPage />} />
-        <Route path="teacher" element={<div>Layout</div>}>
+        <Route path="teacher" element={<Root/>}>
           <Route index element={<div>Index page teach</div>} />
         </Route>
         <Route path="supervisor" element={<div>Layout</div>}>
-          <Route index element={<div>Index page superv</div>} />
+          <Route index element={<Root/>} />
         </Route>
         <Route path="admin" element={<Layout />}>
-          <Route index element={<RootAdmin/>} />
+          <Route index element={<Root/>} />
+          <Route path="search" element={<InstitutionSelection/>} />
+          <Route path="classes/:id" element={<Classes/>} />
           <Route path="*" element={<div>Not index page adm</div>} />
         </Route>
         <Route path="*" element={<div>Not found general page</div>} />

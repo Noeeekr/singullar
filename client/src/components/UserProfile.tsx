@@ -12,7 +12,7 @@ interface IUserProfileProps {
 }
 
 const UserProfile = (props: IUserProfileProps): JSX.Element => {
-    const user = useAppSelector((state) => state.auth.user);
+    const user = useAppSelector((state) => state.user.user);
 
     const { structure } = props;
 

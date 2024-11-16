@@ -37,7 +37,7 @@ const Layout = (): JSX.Element => {
                 menuButtonCallback={() => (setIsOpen(prevState => !prevState))}
             >
                 <UserProfile structure="left" />
-                <SideMenu isMobile={true} />
+                <SideMenu isMobile={true} isOpen={isOpen}/>
             </AppNavbar>
 
             <Stack direction="row" sx={{ position: 'relative', width: '100vw', overflow: 'scroll' }}>

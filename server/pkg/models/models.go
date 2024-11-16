@@ -38,12 +38,12 @@ type CreateUsers struct { // FOR JSON
 type Users struct {
 	CommonDbFields
 	CreateUsers
-	Institution Institutions `gorm:"foreignKey:InstitutionId;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"-"`
+	Institutions []Institutions `gorm:"many2many:users_institutions;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"-"`
 
 	ProfileImgUrl string `gorm:"default:'./assets/defaultpfp.jpg'" json:"profile_img_url" binding:"required"`
 
-	Notifications []Notifications `gorm:"many2many:user_notifications" json:"-"`
-	Classes       []Classes       `gorm:"many2many:user_classes;" json:"-"` // Many-to-many relationship with classes
+	Notifications []Notifications `gorm:"many2many:users_notifications" json:"-"`
+	Classes       []Classes       `gorm:"many2many:users_classes;" json:"-"` // Many-to-many relationship with classes
 }
 
 type Institutions struct {
@@ -51,8 +51,8 @@ type Institutions struct {
 	Name          string `gorm:"size:255; not null" json:"name" binding:"required"`
 	ProfileImgUrl string `gorm:"default:'./assets/defaultpfp.jpg'" json:"profile_img_url" binding:"required"`
 
-	Classes      []Classes `gorm:"foreignKey:InstitutionId;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"`
-	Participants []Users   `gorm:"foreignKey:InstitutionId;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"` // This will hold both teachers and students
+	Classes []Classes `gorm:"foreignKey:InstitutionId;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"`
+	Users   []Users   `gorm:"many2many:users_institutions;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"` // This will hold both teachers and students
 }
 
 type CreateClasses struct {
@@ -71,7 +71,7 @@ type Classes struct {
 	Name string `gorm:"size:255" json:"name"`
 
 	// Store student IDs directly instead of a slice of Users to avoid recursion
-	Students      []Users         `gorm:"many2many:user_classes;constraint:OnDelete:CASCADE" json:"students"` // Store users directly linked to this class
+	Students      []Users         `gorm:"many2many:users_classes;constraint:OnDelete:CASCADE" json:"students"` // Store users directly linked to this class
 	Notifications []Notifications `gorm:"foreignKey:ClassId;constraint:OnDelete:CASCADE" json:"notifications"`
 }
 
@@ -88,15 +88,5 @@ type Notifications struct {
 	CommonDbFields
 	CreateNotifications
 
-	Students []Users `gorm:"many2many:user_notifications"` // Array of student IDs (foreign keys)
-}
-
-type UsersNotifications struct {
-	UsersID        uint `gorm:"primaryKey"`
-	NotificationId uint `gorm:"primaryKey"`
-}
-
-type UsersClasses struct {
-	UsersID   uint `gorm:"primaryKey"`
-	ClassesID uint `gorm:"primaryKey"`
+	Students []Users `gorm:"many2many:users_notifications"` // Array of student IDs (foreign keys)
 }

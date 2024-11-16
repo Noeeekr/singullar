@@ -42,7 +42,8 @@ const useAuth = (): {
             try {
                 // Request to refresh end-point. Returns user data if signed
                 const response = await fetch("http://localhost:8000/api/user/auth", {
-                    credentials: "include"
+                    credentials: "include",
+                    
                 })
 
                 const data = await response.json()

@@ -1,5 +1,5 @@
 // Features
-import { useAppSelector } from '../../slices/store'
+import { useAppSelector } from '../slices/store'
 import { useMemo } from 'react'
 
 // Components
@@ -8,20 +8,20 @@ import {
     Typography,
     Grid2 as Grid,
 } from '@mui/material'
-import BannerSlider from './components/BannerSlider';
-import LinkButton from '../../components/LinkButton';
+import BannerSlider from './BannerSlider';
+import LinkButton from './LinkButton';
 
 // Data
-import { admin_sidemenu_data } from './data'               
-import { supervisor_sidemenu_data } from '../supervisor/data'
-import { teacher_sidemenu_data } from '../teacher/data'
-import { students_sidemenu_data } from '../home/data'
+import { admin_sidemenu_data } from '../pages/admin/data'               
+import { supervisor_sidemenu_data } from '../pages/supervisor/data'
+import { teacher_sidemenu_data } from '../pages/teacher/data'
+import { students_sidemenu_data } from '../pages/home/data'
 
 // Types
 import type { 
     ISideMenuItems,
     ISideMenuLinkButton,
-} from '../../types/propsButtons';
+} from '../types/propsButtons';
 
 const Root = (): JSX.Element => {
     const { user, mostVisitedUrls } = useAppSelector((state) => state.user);

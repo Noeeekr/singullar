@@ -14,6 +14,8 @@ require (
 	gorm.io/gorm v1.25.12
 )
 
+require github.com/mitchellh/mapstructure v1.5.0 // indirect
+
 require (
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect

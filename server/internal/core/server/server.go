@@ -85,9 +85,6 @@ func migrate(db *gorm.DB) error {
 		&models.Institutions{},
 		&models.Classes{},
 		&models.Notifications{},
-		&models.UsersNotifications{},
-		&models.UsersClasses{},
-		&models.CreateUsers{},
 	)
 	if err != nil {
 		return err

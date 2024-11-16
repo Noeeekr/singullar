@@ -25,6 +25,10 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 		institutions: &pgsql.InstitutionModel{DB: database},
 	}
 
+	middlewares := RouterMiddlewares{
+		env: cfg,
+	}
+
 	r := gin.Default()
 
 	// User auth session and store for authentication
@@ -46,9 +50,14 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 
 	r.GET("/api/user/auth", handlers.Authenticate) // For users and institutions
 
-	// CRUD
-
+	// CREATE
 	r.POST("/api/user/signup", handlers.UserSignupHandler) /// for users and institutions
+
+	// READ
+	r.GET("/api/user/institutions", middlewares.Authenticate, handlers.GetInstitutions)
+
+	// r.GET("/api/institution/users", middlewares.Authenticate.GetInstitutionUsers)
+	// r.GET("/api/institution/classes", middlewares.Authenticate.GetInstitutionClasses)
 
 	// r.POST("/api/auth/notifications", handlers.CreateNotificationsHandler)
 	// r.GET("/api/auth/notifications", handlers.GetNotificationsHandler)

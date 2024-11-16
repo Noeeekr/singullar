@@ -41,7 +41,7 @@ const SideMenuLayout = styled('nav')<ISideMenuLayout>(
             transition: isMobile ? 'none' : 'width 200ms ease-in-out',
 
             overflow: 'hidden',
-            zIndex: 3,
+            zIndex: 6,
         }
     )
 )
@@ -69,7 +69,6 @@ const SideMenu = (
         }
     }, [user?.role])
 
-    console.log(isOpen)
     return (
         <SideMenuLayout isOpen={isOpen} isMobile={isMobile}>
                 <Stack
@@ -79,7 +78,8 @@ const SideMenu = (
                     padding={isMobile ? 1.2 : 1}
                     paddingBottom={3}
                     height="100%"
-                    
+                    zIndex="4"
+
                     sx={{
                         overflowY: 'scroll',
                         scrollbarWidth: 'none',

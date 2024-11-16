@@ -2,18 +2,17 @@ package server
 
 import (
 	"errors"
+	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime/debug"
 	"time"
 
-	"fmt"
-	"log"
-
-	"net/http"
+	"github.com/noeeekr/sch-server/pkg/paths"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	// COOKIE BASED AUTH
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -22,7 +21,7 @@ import (
 	"github.com/noeeekr/sch-server/config"
 	"github.com/noeeekr/sch-server/pkg/models"
 	pqsql "github.com/noeeekr/sch-server/pkg/models/pgsql"
-	"github.com/noeeekr/sch-server/pkg/paths"
+	"gorm.io/gorm"
 )
 
 type RouterHandlers struct {
@@ -120,24 +119,6 @@ func (h *RouterHandlers) Authenticate(ctx *gin.Context) {
 		})
 	}
 }
-
-/*func (h *RouterHandlers) checkInstitutionPassword(email string, password string) (user *models.Institutions, e error) {
-	var _institutions models.Institutions
-
-	err := h.users.DB.Model(&models.Institutions{}).Where("email = ?", email).First(&_institutions).Error
-	if err != nil {
-		return nil, err
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(_institutions.Password), []byte(password))
-	if err != nil {
-		return nil, err
-	}
-
-	_institutions.Password = ""
-
-	return &_institutions, nil
-}*/
 
 func (h *RouterHandlers) checkUserPassword(email string, password string) (user *models.Users, e error) {
 	var _user models.Users
@@ -297,36 +278,42 @@ func (h *RouterHandlers) UserSignupHandler(ctx *gin.Context) {
 	})
 }
 
-/*func (h *RouterHandlers) InstitutionSignupHandler(ctx *gin.Context) {
-	var inst models.Signin
-
-	if err := ctx.ShouldBindJSON(inst); err != nil {
-		h.internalServerErr(ctx, "Data em formato incorreto", err)
+func (h *RouterHandlers) GetInstitutions(ctx *gin.Context) {
+	user, exists := ctx.Get("User")
+	if !exists {
+		h.internalServerErr(ctx, "Falha ao encontrar os dados do usuário", errors.New(" Failed to get user via from cookie, from context passed by auth middleware"))
 		return
 	}
 
-	var code models.CreateInstitutionsCode
+	usr, ok := user.(map[string]interface{})
+	if !ok {
+		h.internalServerErr(ctx, "Dados de usuário no formato errado", errors.New(" Failed to type assert the given context"))
+		return
+	}
 
-	err := h.institutions.DB.
-		Model(&models.CreateInstitutionsCode{}).
-			Where("email = ?", inst.Email).
-				First(code).Error
+	id, exists := usr["id"]
+	if !exists {
+		h.internalServerErr(ctx, "Falha ao recuperar o id de usuário", errors.New(" Failed to get the id"))
+		return
+	}
 
+	_id, ok := id.(float64)
+	if !ok {
+		h.internalServerErr(ctx, "Falha ao recuperar o id de usuário", errors.New(" Failed to get the id"))
+		return
+	}
+
+	Institutions, exists, err := h.institutions.FindByUserId(uint(_id))
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			h.clientError(ctx, "Instituição não registrada")
-			return
-		}
-		h.internalServerErr(ctx, "Falha ao identificar a instituição.", err)
+		h.internalServerErr(ctx, "Falha ao buscar as instituições", err)
+		return
+	} else if !exists {
+		h.clientError(ctx, "Nenhuma instituição encontrada")
 		return
 	}
 
-	if code.Code != inst.Password {
-		h.clientError(ctx, "Código incorreto")
-	}
-
-	institution := &models.Institutions{
-
-	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data":  Institutions,
+		"error": nil,
+	})
 }
-*/

@@ -98,7 +98,7 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
     } = props;
 
     return (
-        <Box sx={{ zIndex: 4 }}>
+        <Box sx={{ zIndex: 10 }}>
             <Box
                 top="0"
                 left="0"
