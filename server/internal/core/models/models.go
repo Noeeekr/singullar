@@ -68,7 +68,9 @@ type Classes struct {
 	CommonDbFields
 	CreateClasses
 
-	Name string `gorm:"size:255" json:"name"`
+	Name    string `gorm:"size:255" json:"name"`
+	Segment string `gorm:"not null" json:"segment"`
+	Series  string `gorm:"not null" json:"series"`
 
 	// Store student IDs directly instead of a slice of Users to avoid recursion
 	Students      []Users         `gorm:"many2many:users_classes;constraint:OnDelete:CASCADE" json:"students"` // Store users directly linked to this class

@@ -5,7 +5,7 @@ import (
 
 	configs "github.com/noeeekr/sch-server/config"
 	logs "github.com/noeeekr/sch-server/internal/core/log"
-	models "github.com/noeeekr/sch-server/pkg/models"
+	models "github.com/noeeekr/sch-server/internal/core/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

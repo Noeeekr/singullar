@@ -19,8 +19,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/noeeekr/sch-server/config"
-	"github.com/noeeekr/sch-server/pkg/models"
-	pqsql "github.com/noeeekr/sch-server/pkg/models/pgsql"
+	"github.com/noeeekr/sch-server/internal/core/models"
+	pqsql "github.com/noeeekr/sch-server/internal/models/pgsql"
 	"gorm.io/gorm"
 )
 

@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/noeeekr/sch-server/pkg/models"
+	"github.com/noeeekr/sch-server/internal/core/models"
 )
 
 // database model methods initializer

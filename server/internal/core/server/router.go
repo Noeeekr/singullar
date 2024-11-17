@@ -7,7 +7,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
-	"github.com/noeeekr/sch-server/pkg/models/pgsql"
+	"github.com/noeeekr/sch-server/internal/models/pgsql"
 	"gorm.io/gorm"
 )
 
