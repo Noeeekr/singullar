@@ -10,7 +10,19 @@ export interface IUser {
     "institution_id"?: number,
 }
 
-export interface IUserRequest {
+export interface IDefaultRequest {
     data: null | IUser,
     error: null | string,
+}
+
+export interface IInstitutions {
+    id: number,
+    
+    name: string,
+    segment: string,
+    series: string,
+    
+    created_at: Date,
+    deleted_at: Date | null,
+    updated_at: Date,
 }
