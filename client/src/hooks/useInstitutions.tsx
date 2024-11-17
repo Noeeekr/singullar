@@ -1,6 +1,6 @@
 import {
-    useEffect,
-    useState
+    useState,
+    useCallback,
 } from 'react';
 
 import {
@@ -11,7 +11,7 @@ import {
     setInstitutions as actionSetInstitutions,
 } from '../slices/institutionsSlice'
 
-import type { InstitutionsState } from '../types/general';
+import type { InstitutionsState } from '../types/data';
 
 const useInstitutions = (): ([InstitutionsState[] | [], Function]) => {
     const insts = useAppSelector((store) => store.institutions);
@@ -19,7 +19,7 @@ const useInstitutions = (): ([InstitutionsState[] | [], Function]) => {
 
     const dispatch = useAppDispatch();
 
-    const getInstitutions = () => {
+    const getInstitutions = useCallback(() => {
         fetch("http://localhost:8000/api/user/institutions",{
             "headers": {
                 "Content-Type": "application/json"
@@ -38,12 +38,8 @@ const useInstitutions = (): ([InstitutionsState[] | [], Function]) => {
                 dispatch(actionSetInstitutions(res.data)).payload
             );
         });
-    }
+    },[])
 
-    useEffect(() => {
-       getInstitutions(); 
-    },[]);
-    
     return [institutions, getInstitutions];
 };
 

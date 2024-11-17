@@ -9,7 +9,7 @@ import { incrementUrlVisitedCount } from '../slices/userSlice'
 
 // Types
 import type { ISideMenuButtonProps, IButtonBaseProps } from './Button'
-import type { ISideMenuLinkButton } from '../types/propsButtons'
+import type { ISideMenuLinkButton } from '../types/buttonProps'
 
 export interface ISideMenuLinkProps extends ISideMenuLinkButton, IButtonBaseProps {
     href: string,

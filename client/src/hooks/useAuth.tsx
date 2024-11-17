@@ -7,7 +7,7 @@ import {
     useLocation
 } from 'react-router-dom'
 
-import type { IUser } from '../types/user'
+import type { IUser } from '../types/server'
 import type { AppDispatch } from '../slices/store';
 import { useDispatch } from 'react-redux'
 import { updateUser } from '../slices/userSlice'
@@ -51,13 +51,15 @@ const useAuth = (): {
                 // If there's data refresh user state otherwise signs out user 
                 // because we could verify its authenticity
                 if (response.ok && data.data) {
-                    dispatch(updateUser(data.data))
                     setIsSigned(true)
-                    setUser(data.data)
+                    setUser(
+                        dispatch(updateUser(data.data)).payload
+                    )
                 } else {
-                    dispatch(updateUser(null))
                     setIsSigned(false)
-                    setUser(null)
+                    setUser(
+                        dispatch(updateUser(null)).payload
+                    )
                 }
             } catch (err) {
                 // Tries to signout user..
@@ -66,9 +68,10 @@ const useAuth = (): {
                 })
 
                 if (response.ok) {
-                    dispatch(updateUser(null))
                     setIsSigned(false)
-                    setUser(null)
+                    setUser(
+                        dispatch(updateUser(null)).payload
+                    )
                 }
             } finally {
                 setIsLoading(false)

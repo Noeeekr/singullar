@@ -11,10 +11,10 @@ import useSignout from '../hooks/useSignout'
 // COMPONENTS
 import UserProfile from './UserProfile'
 import Divider from './Divider'
-import SideMenuItems from './SideMenuItems'
+import SideMenuItems from './SideMenuButtons'
 import Button from './Button'
 
-import { ISideMenuLinkProps } from './LinkButton'
+import { ISideMenuLinkProps } from './ButtonLink'
 import { ISideMenuButtonProps } from './Button'
 
 const MyAccountPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenuButtonProps)[] }) => {

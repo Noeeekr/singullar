@@ -9,7 +9,7 @@ import {
     Grid2 as Grid,
 } from '@mui/material'
 import BannerSlider from './BannerSlider';
-import LinkButton from './LinkButton';
+import LinkButton from './ButtonLink';
 
 // Data
 import { admin_sidemenu_data } from '../pages/admin/data'               
@@ -21,7 +21,7 @@ import { students_sidemenu_data } from '../pages/home/data'
 import type { 
     ISideMenuItems,
     ISideMenuLinkButton,
-} from '../types/propsButtons';
+} from '../types/buttonProps';
 
 const Root = (): JSX.Element => {
     const { user, mostVisitedUrls } = useAppSelector((state) => state.user);

@@ -10,7 +10,7 @@ import { NotificationContext } from '../context/notificationsContext'
 import { useAppSelector } from '../slices/store'
 
 // COMPONENTS
-import NavbarItemPopup from './PopupIconButton'
+import NavbarItemPopup from './ButtonIconPopup'
 import MenuIcon from './NavbarIconButton'
 
 import {

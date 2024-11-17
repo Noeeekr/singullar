@@ -19,8 +19,6 @@ export interface IInstitutions {
     id: number,
     
     name: string,
-    segment: string,
-    series: string,
     
     created_at: Date,
     deleted_at: Date | null,

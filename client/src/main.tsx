@@ -60,6 +60,7 @@ const App = (): JSX.Element => {
         <Route path="admin" element={<Layout />}>
           <Route index element={<Root/>} />
           <Route path="search" element={<InstitutionSelection/>} />
+          <Route path="classes/create" element={<div>Create page not created</div>} />
           <Route path="classes/:id" element={<Classes/>} />
           <Route path="*" element={<div>Not index page adm</div>} />
         </Route>

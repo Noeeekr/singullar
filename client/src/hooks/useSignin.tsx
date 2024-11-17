@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { IUserRequest } from '../types/user'
+import { IDefaultRequest } from '../types/server'
 
 import { updateUser } from '../slices/userSlice'
 import { AppDispatch } from '../slices/store'
@@ -31,7 +31,7 @@ const useSignin = (): {
                 })
             })
 
-            const res: IUserRequest = await response.json()
+            const res: IDefaultRequest = await response.json()
 
             if (!response.ok) {
                 setSigninError(res.error)

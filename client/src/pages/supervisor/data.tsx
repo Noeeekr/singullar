@@ -2,7 +2,7 @@ import type {
     ISideMenuItems, 
     // ISideMenuLinkButton, 
     // ISideMenuButton
-} from '../../types/propsButtons'
+} from '../../types/buttonProps'
 
 export const supervisor_sidemenu_data: ISideMenuItems[] = [
 

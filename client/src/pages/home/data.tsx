@@ -10,15 +10,15 @@ import { IoPeopleOutline, IoExitOutline, IoBarcodeOutline } from "react-icons/io
 
 // components;
 import NotificationPopupContent from '../../components/NotificationPopupContent'
-import MyAccountPopupContent from '../../components/MyAccountPopupContent'
-import QuickAccessPopupContent from '../../components/QuickAccessPopupContent'
+import MyAccountPopupContent from '../../components/PopupContentMyAccount'
+import QuickAccessPopupContent from '../../components/PopupContentQuickAccess'
 
 // Types
 import { 
     ISideMenuItems, 
     ISideMenuLinkButton, 
     ISideMenuButton 
-} from '../../types/propsButtons'
+} from '../../types/buttonProps'
 
 // Data
 import { 

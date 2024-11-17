@@ -7,6 +7,7 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import InputLabel from '@mui/material/InputLabel'
 import Grid from '@mui/material/Grid2'
+import LinkButton from '../../../components/ButtonLink'
 
 // Features
 import { useAppSelector } from '../../../slices/store';
@@ -20,7 +21,7 @@ const PageClasses = (): JSX.Element => {
     const navigate = useNavigate()
     return (
         <div>
-            <Stack direction="row" alignItems="start" gap={1}>
+            <Stack direction="row" alignItems="start" width="100%" gap={1}>
                 <CircularButton
                     onClickCb={() => { navigate(-1) }}
                 >
@@ -34,6 +35,15 @@ const PageClasses = (): JSX.Element => {
                         {insts.find(i => i.id.toString() == id)?.name || "Nome desconhecido"}
                     </Typography>
                 </Stack>
+                <div style={{ margin: '0px 0px 0px auto' }}>
+                    <LinkButton 
+                        type="link" 
+                        icon={<div>D</div>} 
+                        title="Cadastrar turmas" 
+                        variant="solid"
+                        href="/admin/classes/create"
+                    />
+                </div>
             </Stack>
             <form style={{ marginTop: '60px' }}>
                 <Grid container spacing={2}>

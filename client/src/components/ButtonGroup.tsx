@@ -22,9 +22,9 @@ import {
 import {
     ISideMenuLinkButton,
     ISideMenuButton
-} from '../types/propsButtons'
+} from '../types/buttonProps'
 
-import MenuItems, { MenuItemStack } from './SideMenuItems'
+import MenuItems, { MenuItemStack } from './SideMenuButtons'
 
 interface ILinkButtonGroupProps {
     title: string,

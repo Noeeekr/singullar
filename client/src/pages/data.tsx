@@ -13,7 +13,7 @@ import { FaGithub, FaShareAlt, FaChalkboardTeacher } from "react-icons/fa";
 import type {
     ISideMenuLinkButton,
     ISideMenuItems
-} from '../types/propsButtons';
+} from '../types/buttonProps';
 
 // Features
 import { styled } from '@mui/material'

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 import type { PayloadAction } from '@reduxjs/toolkit'
-import type { InstitutionsState } from '../types/general';
+import type { InstitutionsState } from '../types/data';
 
 const inst: InstitutionsState[] = [];
 

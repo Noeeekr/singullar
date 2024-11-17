@@ -9,8 +9,8 @@ import { TbSmartHome,  TbSpeakerphone, TbGridDots } from "react-icons/tb";
 
 // components;
 import NotificationPopupContent from '../../components/NotificationPopupContent'
-import MyAccountPopupContent from '../../components/MyAccountPopupContent'
-import QuickAccessPopupContent from '../../components/QuickAccessPopupContent'
+import MyAccountPopupContent from '../../components/PopupContentMyAccount'
+import QuickAccessPopupContent from '../../components/PopupContentQuickAccess'
 
 // Types
 import type { 
@@ -18,7 +18,7 @@ import type {
     ISideMenuButton,
     ISideMenuLinkButton, 
     ISideMenuPopupButton,
-} from '../../types/propsButtons'
+} from '../../types/buttonProps'
 
 // Data
 import { 

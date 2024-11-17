@@ -5,9 +5,9 @@ import {
     StackProps,
 } from '@mui/material'
 
-import PopupButton from './SidePopupButton'
+import PopupButton from './ButtonSidePopup'
 import LinkButtonGroup from './ButtonGroup'
-import LinkButton from './LinkButton'
+import LinkButton from './ButtonLink'
 import Button from './Button'
 
 // types
@@ -16,7 +16,7 @@ import type {
     ISideMenuButtonGroup,
     ISideMenuPopupButton,
     ISideMenuButton,
-} from '../types/propsButtons'
+} from '../types/buttonProps'
 import type {
     IButtonBaseProps
 } from './Button'

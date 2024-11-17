@@ -1,7 +1,7 @@
 import SectionTitle from './SectionTitle'
-import SideMenuItems from './SideMenuItems'
+import SideMenuItems from './SideMenuButtons'
 
-import type { ISideMenuLinkProps } from './LinkButton'
+import type { ISideMenuLinkProps } from './ButtonLink'
 import type { ISideMenuButtonProps } from './Button'
 
 import {

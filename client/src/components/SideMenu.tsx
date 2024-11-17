@@ -13,7 +13,7 @@ import type { BoxProps } from '@mui/material'
 
 import { Stack } from '@mui/material'
 import Divider from './Divider'
-import MenuItems from './SideMenuItems'
+import MenuItems from './SideMenuButtons'
 import SectionTitle from './SectionTitle'
 
 // data 

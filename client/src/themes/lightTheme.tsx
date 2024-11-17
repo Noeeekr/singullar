@@ -250,7 +250,7 @@ const lightTheme = createTheme({
                 outlined: {
                     position: "absolute",
 
-                    zIndex: 4,
+                    zIndex: 5,
                     translate: '0px -6px',
                     color: 'rgb(120,120,120)',
                     transition: 'linear 150ms all',
