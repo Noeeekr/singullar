@@ -7,7 +7,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
-	"github.com/noeeekr/sch-server/internal/models/pgsql"
+	"github.com/noeeekr/sch-server/internal/core/models/pgsql"
 	"gorm.io/gorm"
 )
 
@@ -47,12 +47,12 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 	// Auth routes
 	r.POST("/api/user/signin", handlers.SigninHandler)  // For users and institutions
 	r.GET("/api/user/signout", handlers.SignoutHandler) // For users and institutions
+	r.POST("/api/user/signup", handlers.UserSignupHandler) /// for users and institutions
 
 	r.GET("/api/user/auth", handlers.Authenticate) // For users and institutions
 
 	// CREATE
-	r.POST("/api/user/signup", handlers.UserSignupHandler) /// for users and institutions
-
+	
 	// READ
 	r.GET("/api/user/institutions", middlewares.Authenticate, handlers.GetInstitutions)
 

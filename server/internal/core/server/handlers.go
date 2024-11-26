@@ -20,7 +20,7 @@ import (
 
 	"github.com/noeeekr/sch-server/config"
 	"github.com/noeeekr/sch-server/internal/core/models"
-	pqsql "github.com/noeeekr/sch-server/internal/models/pgsql"
+	pqsql "github.com/noeeekr/sch-server/internal/core/models/pgsql"
 	"gorm.io/gorm"
 )
 

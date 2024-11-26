@@ -61,16 +61,16 @@ type CreateClasses struct {
 
 	InstitutionId uint         `gorm:"not null;index" json:"institution_id" binding:"required"` // Foreign key to institution
 	Institution   Institutions `gorm:"foreignKey:InstitutionId;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"`
+
+	Name    string `gorm:"size:255" json:"name"`
+	Segment string `gorm:"not null" json:"segment"`
+	Series  string `gorm:"not null" json:"series"`
 }
 
 // Class Model (Many Students, One Teacher)
 type Classes struct {
 	CommonDbFields
 	CreateClasses
-
-	Name    string `gorm:"size:255" json:"name"`
-	Segment string `gorm:"not null" json:"segment"`
-	Series  string `gorm:"not null" json:"series"`
 
 	// Store student IDs directly instead of a slice of Users to avoid recursion
 	Students      []Users         `gorm:"many2many:users_classes;constraint:OnDelete:CASCADE" json:"students"` // Store users directly linked to this class
