@@ -14,15 +14,15 @@ import {
 } from './themes'
 
 import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
+  createBrowserRouter,
+  RouterProvider,
 } from "react-router-dom"
 
-import AuthPage from './pages/auth/Auth';
+import PgAuthentication from './pages/auth/Auth';
 import {
-  InstitutionSelection,
-  Classes,
+  InstitutionSelection as PgInstitutionSelection, LoaderInstitutionSelection,
+  Classes as PgClasses,
+  Create as PgCreate,
 } from './pages/admin';
 
 import ProtectedRoutes from './components/ProtectedRoutes'
@@ -42,34 +42,121 @@ const GlobalStyle = () => (
 
 // This and route provider component might become App.tsx file
 // so I can put redux store and things like that there.
-const App = (): JSX.Element => {
-  return (
+/*const router = createBrowserRouter(
+  createRoutesFromElements(
     <Routes>
       <Route path="/" element={<ProtectedRoutes />}>
+        <Route path="auth" element={<PgAuthentication />} />
         <Route path="home" element={<Layout />}>
           <Route index element={<div>Home root page</div>} />
           <Route path="*" element={<div>Not found specific home</div>} />
-        </Route>  
-        <Route path="auth" element={<AuthPage />} />
-        <Route path="teacher" element={<Root/>}>
+        </Route>
+        <Route path="teacher" element={<Root />}>
           <Route index element={<div>Index page teach</div>} />
         </Route>
         <Route path="supervisor" element={<div>Layout</div>}>
-          <Route index element={<Root/>} />
+          <Route index element={<Root />} />
         </Route>
         <Route path="admin" element={<Layout />}>
-          <Route index element={<Root/>} />
-          <Route path="search" element={<InstitutionSelection/>} />
-          <Route path="classes/create" element={<div>Create page not created</div>} />
-          <Route path="classes/:id" element={<Classes/>} />
+          <Route index element={<Root />} />
+          <Route path="search" element={<PgInstitutionSelection />} loader={InstitutionSelectionLoader} />
+          <Route path="classes/create" element={<PgCreate />} />
+          <Route path="classes/:id" element={<PgClasses />} />
           <Route path="*" element={<div>Not index page adm</div>} />
         </Route>
         <Route path="*" element={<div>Not found general page</div>} />
       </Route>
     </Routes>
   )
-}
-
+)
+  */
+ 
+const r2 = createBrowserRouter([
+  {
+    path: "/",
+    element: <ProtectedRoutes />,
+    errorElement: <div>Error element1</div>,
+    children: [
+      {
+        path: "auth",
+        element: <PgAuthentication/>
+      },
+      {
+        path: "home",
+        element: <Layout />,
+        children: [
+          {
+            index: true, 
+            element: <div>Home root page</div>,
+          },
+          {
+            path: "*",
+            element: <div>Any path home page</div>,
+          }
+        ]
+      },
+      {
+        path: "teacher",
+        element: <Layout />,
+        children: [
+          {
+            index: true, 
+            element: <div>Teacher root page</div>,
+          },
+          {
+            path: "*",
+            element: <div>Teacher path home page</div>,
+          }
+        ]
+      },
+      {
+        path: "supervisor",
+        element: <Layout />,
+        children: [
+          {
+            index: true, 
+            element: <div>Supervisor root page</div>,
+          },
+          {
+            path: "*",
+            element: <div>Supervisor path home page</div>,
+          }
+        ]
+      },
+      {
+        path: "admin",
+        element: <Layout />,
+        children: [
+          {
+            index: true,
+            element: <Root/>,
+          },
+          {
+            path: "search",
+            element: <PgInstitutionSelection/>,
+            loader: LoaderInstitutionSelection,
+          },
+          {
+            path: "classes/create",
+            element: <PgCreate/>,
+          },
+          {
+            path: "classes/:id",
+            element: <PgClasses/>
+          },
+          {
+            path: "*",
+            element: <div>Any path admin page</div>,
+          },
+        ]
+      },
+      {
+        path: "*",
+        element: <div>Any route default page</div>,
+      }
+    ]
+  }
+])
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -77,9 +164,7 @@ createRoot(document.getElementById('root')!).render(
       <CssBaseline />
       <GlobalStyle />
       <Provider store={store}>
-        <Router>
-          <App />
-        </Router>
+        <RouterProvider router={r2} />
       </Provider>
     </ThemeProvider>
   </StrictMode>

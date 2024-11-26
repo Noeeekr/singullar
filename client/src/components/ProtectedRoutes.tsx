@@ -13,7 +13,7 @@ import routes from '../routes'
 */
 const ProtectedRoutes = () => {
     const url = useLocation().pathname;
-    
+
     // Changing to maps is a option to improve speed if there are too many routes
     const isAuthRoute = routes.auth.some((route) => (url.includes(route)))
     const isPrivateRoute = routes.private.some((route) => (url.includes(route))) 
@@ -58,12 +58,21 @@ const ProtectedRoutes = () => {
     }
     
     // redirect cases
-    if (url == "/" && !isSigned) return <Navigate to="/auth"/>;
-    if (url == "/" && isSigned) return <Navigate to={DefaultUserRouteByRole}/>;
-    if (!isSigned && isPrivateRoute) return <Navigate to="/auth"/>;
-    if (isSigned && isAuthRoute) return <Navigate to={DefaultUserRouteByRole}/>;
-    if (isSigned && !isUserRoleRoute) return <Navigate to={DefaultUserRouteByRole}/>;
+    if (!isSigned) {
+        if (url === "/" || isPrivateRoute) {
+          return <Navigate to="/auth" />;
+        }
+      }
     
+      if (isSigned) {
+        if (url === "/") {
+          return <Navigate to={DefaultUserRouteByRole} />;
+        }
+        if (isAuthRoute || !isUserRoleRoute) {
+          return <Navigate to={DefaultUserRouteByRole} />;
+        }
+      }
+          
     return (
         <Outlet/>
     )
