@@ -1,19 +1,23 @@
+// Components
 import Box from '@mui/material/Box'
 
+// Icons 
 import { FaChevronLeft } from "react-icons/fa6";
 
+// Features
 import { styled } from '@mui/material';
 
+// Types
 import type { BoxProps } from '@mui/material/Box';
 
 const CircularButton = styled(({ children, onClickCb, ...props }: BoxProps & { onClickCb: Function }) => <>
     {
         children 
-        ? <Box {...props} onClick={onClickCb}>
+        ? <Box {...props} onClick={() => { onClickCb() }}>
             {children}
         </Box>
-        : <Box {...props} onClick={onClickCb}>
-            <FaChevronLeft/>
+        : <Box {...props} onClick={() => { onClickCb() }}>
+            <FaChevronLeft fontSize={13}/>
         </Box>
     }
 
