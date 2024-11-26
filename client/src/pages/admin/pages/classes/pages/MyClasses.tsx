@@ -1,50 +1,37 @@
 // COmponents
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import CircularButton from '../../../components/ButtonCircular';
 import FormControl from '@mui/material/FormControl'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import InputLabel from '@mui/material/InputLabel'
 import Grid from '@mui/material/Grid2'
-import LinkButton from '../../../components/ButtonLink'
+import LinkButton from '@components/ButtonLink'
+import SectionHeader from '@components/SectionHeader';
 
 // Features
-import { useAppSelector } from '../../../slices/store';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useAppSelector } from '@slices/store';
+import { useParams } from 'react-router-dom';
 
 const PageClasses = (): JSX.Element => {
     const insts = useAppSelector((store) => store.institutions)
 
     const { id } = useParams()
-
-    const navigate = useNavigate()
+    
     return (
         <div>
-            <Stack direction="row" alignItems="start" width="100%" gap={1}>
-                <CircularButton
-                    onClickCb={() => { navigate(-1) }}
-                >
-                    &lt;
-                </CircularButton>
-                <Stack gap={1.5}>
-                    <Typography component="h4" variant="h3" fontWeight="600">
-                        Turmas
-                    </Typography>
-                    <Typography component="p" variant="body1" fontWeight="600" color="primary.whiteLow">
-                        {insts.find(i => i.id.toString() == id)?.name || "Nome desconhecido"}
-                    </Typography>
-                </Stack>
+            <SectionHeader
+                title="Turmas"
+                subtitle={insts.find(i => i.id.toString() == id)?.name || "Nome desconhecido"}
+            >
                 <div style={{ margin: '0px 0px 0px auto' }}>
-                    <LinkButton 
-                        type="link" 
-                        icon={<div>D</div>} 
-                        title="Cadastrar turmas" 
+                    <LinkButton
+                        type="link"
+                        icon={<div>D</div>}
+                        title="Cadastrar turmas"
                         variant="solid"
                         href="/admin/classes/create"
                     />
                 </div>
-            </Stack>
+            </SectionHeader>
             <form style={{ marginTop: '60px' }}>
                 <Grid container spacing={2}>
                     <Grid size={4}>
