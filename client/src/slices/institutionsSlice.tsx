@@ -15,7 +15,7 @@ const InstitutionsSlice = createSlice({
         addInstitutions: (state, action: PayloadAction<InstitutionsState[]>) => {
             state.push(...action.payload)
         },
-        clearInstitutions: (state) => {
+        clearInstitutions: () => {
             return []
         },
     }
