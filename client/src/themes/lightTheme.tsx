@@ -181,8 +181,10 @@ const lightTheme = createTheme({
                     disablePortal: true,
                     PaperProps: {
                         sx: {
+                            minheight: '40px',
                             padding: 0.5,
                             borderRadius: 2,
+                            zIndex: 5,
                         }
                     },
                     MenuListProps: {
@@ -205,12 +207,12 @@ const lightTheme = createTheme({
                         backgroundColor: lightPaletteTheme.palette?.primary?.purpleDark,
                         opacity: 0.1,
                     },
-                    minHeight: 39,
+                    minHeight: '40px',
                     margin: 0,
                 }
             }
         },
-        MuiOutlinedInput: {
+        MuiOutlinedInput: { 
             styleOverrides: {
                 root: {
                     zIndex: 2,
@@ -263,7 +265,6 @@ const lightTheme = createTheme({
                         color: 'rgb(120,120,120)',
                     }
                 },
-
             },
         },
     }

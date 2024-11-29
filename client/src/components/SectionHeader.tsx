@@ -6,9 +6,11 @@ import { Link } from 'react-router-dom'
 // Features
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMemo } from 'react';
-
+        
 /**
- * Contains 
+ * Contains the title, a button to navigate back and a text subtitle that is a breadcrumbs by default.
+ * 
+ * Loads children in right side.
  */
 const SectionHeader = ({ children, title, subtitle }: { children?: JSX.Element, title: string, subtitle?: string }): JSX.Element => {
     const navigate = useNavigate();
@@ -49,7 +51,7 @@ const SectionHeader = ({ children, title, subtitle }: { children?: JSX.Element, 
                                 <Typography sx={{
                                     display: "inline",
 
-                                    color: "primary.WhiteSemiLow",
+                                    color: "primary.whiteLow",
                                     cursor: 'pointer',
                                     
                                     '&:hover': {

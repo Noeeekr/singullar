@@ -78,7 +78,7 @@ const SideMenu = (
                     padding={isMobile ? 1.2 : 1}
                     paddingBottom={3}
                     height="100%"
-                    zIndex="4"
+                    zIndex="8"
 
                     sx={{
                         overflowY: 'scroll',

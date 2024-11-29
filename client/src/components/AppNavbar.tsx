@@ -77,8 +77,8 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
     type PopupKeys =
         typeof role extends "student" ? StudentNavbarPopupId
         : typeof role extends "admin" ? AdminNavbarPopupId
-        : typeof role extends "supervisor" ? SupervisorNavbarPopupId
         : typeof role extends "teacher" ? TeacherNavbarPopupId
+        : typeof role extends "supervisor" ? SupervisorNavbarPopupId
         : "";
 
     const [isOpen, setIsOpen] = useState<PopupKeys>("")
@@ -117,7 +117,7 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                         gap={1}
                         height={55}
                         sx={{
-                            backgroundColor: (theme) => theme.palette.primary.purpleDark
+                            backgroundColor: (theme) => theme.palette.primary.purpleLight
                         }}
                     >
                         <MenuIcon

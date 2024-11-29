@@ -6,6 +6,8 @@ import InputLabel from '@mui/material/InputLabel'
 import Grid from '@mui/material/Grid2'
 import LinkButton from '@components/ButtonLink'
 import SectionHeader from '@components/SectionHeader';
+import ButtonBase from '@mui/material/ButtonBase';
+import Button from '@components/Button';
 
 // Features
 import { useAppSelector } from '@slices/store';
@@ -32,8 +34,8 @@ const PageClasses = (): JSX.Element => {
                     />
                 </div>
             </SectionHeader>
-            <form style={{ marginTop: '60px' }}>
-                <Grid container spacing={2}>
+            <form style={{ marginTop: '60px', display: "flex", gap: '10px', flexDirection: "row", minWidth: "100%" }}>
+                <Grid container spacing={2} sx={{ width: "100%"}}>
                     <Grid size={4}>
                         <FormControl
                             aria-labelledby="school-select-label-id-ano-letivo"
@@ -88,6 +90,9 @@ const PageClasses = (): JSX.Element => {
                         </FormControl>
                     </Grid>
                 </Grid>
+                <ButtonBase type="submit" disableRipple={true}>
+                    <Button title="Filtrar" variant="solid" type="button" icon={<></>}/>
+                </ButtonBase>
             </form>
         </div>
     )

@@ -28,7 +28,7 @@ const UserProfile = (props: IUserProfileProps): JSX.Element => {
                 backgroundColor: (theme) => {
                     return structure === "center"
                         ? "white"
-                        : theme.palette.primary.purpleDark
+                        : theme.palette.primary.purpleLight
                 }
             }}
         >
