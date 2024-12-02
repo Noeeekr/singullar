@@ -20,9 +20,11 @@ import {
 
 import PgAuthentication from './pages/auth/Auth';
 import {
-  InstitutionSelection as PgInstitutionSelection, LoaderInstitutionSelection,
-  Classes as PgClasses,
-  Create as PgCreate,
+  PgInstitutionSelection as PgInstitutionSelection, LoaderInstitutionSelection,
+  PgMyClasses,
+  PgClassesCreate,
+
+  PgStudentsCreate,
 } from './pages/admin';
 
 import ProtectedRoutes from './components/ProtectedRoutes'
@@ -132,17 +134,21 @@ const r2 = createBrowserRouter([
             element: <Root/>,
           },
           {
-            path: "search",
-            element: <PgInstitutionSelection/>,
+            path: "search/students",
+            element: <PgStudentsCreate />
+          },
+          {
+            path: "search/classes",
+            element: <PgInstitutionSelection />,
             loader: LoaderInstitutionSelection,
           },
           {
             path: "classes/create",
-            element: <PgCreate/>,
+            element: <PgClassesCreate />,
           },
           {
             path: "classes/:id",
-            element: <PgClasses/>
+            element: <PgMyClasses />
           },
           {
             path: "*",
