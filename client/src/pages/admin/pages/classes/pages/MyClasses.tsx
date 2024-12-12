@@ -7,7 +7,7 @@ import Grid from '@mui/material/Grid2'
 import LinkButton from '@components/ButtonLink'
 import SectionHeader from '@components/SectionHeader';
 import ButtonBase from '@mui/material/ButtonBase';
-import Button from '@components/Button';
+import Button from '@components/ButtonSolid';
 
 // Features
 import { useAppSelector } from '@slices/store';
@@ -26,12 +26,14 @@ const PageClasses = (): JSX.Element => {
             >
                 <div style={{ margin: '0px 0px 0px auto' }}>
                     <LinkButton
-                        type="link"
-                        icon={<div>D</div>}
-                        title="Cadastrar turmas"
+                        title=""
+                        icon={<></>}
                         variant="solid"
+                        type="link"
                         href="/admin/classes/create"
-                    />
+                    >
+                        Cadastrar turmas
+                    </LinkButton>
                 </div>
             </SectionHeader>
             <form style={{ marginTop: '60px', display: "flex", gap: '10px', flexDirection: "row", minWidth: "100%" }}>
@@ -91,7 +93,7 @@ const PageClasses = (): JSX.Element => {
                     </Grid>
                 </Grid>
                 <ButtonBase type="submit" disableRipple={true}>
-                    <Button title="Filtrar" variant="solid" type="button" icon={<></>}/>
+                    <Button>Title</Button>
                 </ButtonBase>
             </form>
         </div>

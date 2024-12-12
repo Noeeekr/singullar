@@ -15,7 +15,7 @@ import {
 import { MenuItemStack } from './SideMenuButtons'
 
 // Types
-import type { ISideMenuButton } from '../types/buttonProps'
+import type { ISideMenuButton } from '../types/buttonProps';
 
 export interface IButtonBaseProps {
     href?: string,
@@ -27,7 +27,7 @@ export interface IButtonBaseProps {
     hasHoverEffect?: boolean,
     showDescription?: boolean,
     hasNotifications?: boolean,
-    variant?: "button" | "paper" | "solid",
+    variant?: "button" | "paper",
 }
 
 export type ISideMenuButtonProps = ISideMenuButton & IButtonBaseProps;
@@ -172,39 +172,12 @@ const PaperButton = (props: ISideMenuButtonProps): JSX.Element => {
     )
 }
 
-const SolidButton = (props: ISideMenuButtonProps): JSX.Element => {
-    const { title } = props;
-    return(
-        <Box sx={{
-            backgroundColor: (theme) => theme.palette.primary.purpleLight,
-            borderRadius: 6,
-            padding: "8px 22px",
-
-            fontSize: 14,
-            fontWeight: 'bold',
-            color: 'white',
-
-
-            '&:hover': {
-                transform: "scale(1.03)",
-            },
-            transition: "transform 150ms linear",
-            
-            cursor: "pointer",
-            userSelect: "none",
-        }}>
-            { title }
-        </Box>
-    )
-}
 const Button = (props: ISideMenuButtonProps) => {
     switch(props.variant) {
         case "button":
             return <DefaultButton {...props}/>
         case "paper":
             return <PaperButton {...props}/>
-        case "solid":
-            return <SolidButton {...props}/>
         default: 
             return <DefaultButton {...props}/>
     }

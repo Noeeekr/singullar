@@ -1,6 +1,7 @@
 // Components
 import { Link } from 'react-router-dom'
-import Button from './Button'
+import Button from './ButtonSolid'
+import Buttons from './Button'
 
 // Features
 
@@ -13,10 +14,11 @@ import type { ISideMenuLinkButton } from '../types/buttonProps'
 
 export interface ISideMenuLinkProps extends ISideMenuLinkButton, IButtonBaseProps {
     href: string,
+    children?: string,
 };
 
 const LinkButton = (props: ISideMenuLinkProps): JSX.Element => {
-    const { href } = props;
+    const { href, children, variant } = props;
     
     const dispatch = useAppDispatch();
     
@@ -28,9 +30,15 @@ const LinkButton = (props: ISideMenuLinkProps): JSX.Element => {
             style={{ textDecoration: 'none' }}
             onClick={() => (dispatch(incrementUrlVisitedCount(href)))}
         >
-            <Button {...clonedProps}/>
+            {
+                variant === "solid" 
+                ? <Button {...clonedProps}>
+                    { children ? children : "Children not found"}
+                </Button>
+                : <Buttons {...clonedProps}/>
+            }
         </Link>
     )
 }
 
-export default LinkButton
+export default LinkButton;
