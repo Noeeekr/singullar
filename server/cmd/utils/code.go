@@ -49,7 +49,7 @@ func main() {
 
 	logs.LogInfo.Println("Hashing password")
 
-	hashedPassword, err := bcrypt.GenerateFromPassword(strongPassword, 16)
+	hashedPassword, err := bcrypt.GenerateFromPassword(strongPassword, 10)
 	if err != nil {
 		logs.LogErr.Fatalf("Failed to hash password %s", err.Error())
 	}

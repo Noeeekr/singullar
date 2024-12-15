@@ -20,7 +20,7 @@ type Signin struct { // FOR JSON
 }
 
 type CommonDbFields struct {
-	ID        uint       `gorm:"primary_key" json:"id" binding:"required"`
+	ID        uint       `gorm:"primary_key;autoincrement:true;unique" json:"id" binding:"required"`
 	CreatedAt time.Time  `json:"created_at" binding:"required"`
 	UpdatedAt time.Time  `json:"updated_at" binding:"required"`
 	DeletedAt *time.Time `json:"deleted_at"`

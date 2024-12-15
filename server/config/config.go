@@ -6,33 +6,30 @@ import (
 
 	"github.com/caarlos0/env"
 	dotenv "github.com/joho/godotenv"
-	logs "github.com/noeeekr/sch-server/internal/core/log"
 	"github.com/noeeekr/sch-server/pkg/paths"
 )
 
 type Configuration struct {
-	FrontendUrl string `env:"FRONTEND_URL,required"`
-	Addr        string `env:"ADDR" envDefault:"8000"`
+	FrontendUrl string `env:"FRONTEND_URL,required"` // For cors security. This represents the permitted url. 
+	Addr        string `env:"ADDR" envDefault:"80"` // The port to listen to. The default is internet 80 port.
 
-	StaticsPath string `env:"STATICS_PATH" envDefault:"./static"`
+	StaticsPath string `env:"STATICS_PATH" envDefault:"./static"` // Client files.
 
-	DatabaseWR_ConnectString string `env:"DB_WR_CONNECTION_STR,required"`
+	DatabaseWR_ConnectString string `env:"DB_WR_CONNECTION_STR,required"` // For reading and creating data only.
 
-	JwtSecret           string `env:"JWT_SECRET,required"`
-	UserAuthStoreSecret string `env:"USER_AUTH_STORE_SECRET,required"`
+	JwtSecret           string `env:"JWT_SECRET,required"` // Secret for json web token for client auth.
+	UserAuthStoreSecret string `env:"USER_AUTH_STORE_SECRET,required"` 
 }
 
 func NewConfig(files ...string) (*Configuration, error) {
 	if len(files) == 0 {
-		logs.LogInfo.Println(" No env file location provided. starting a server without proper configuration is dangeous. ")
-		return nil, errors.New(" No env file location provided. starting a server without proper configuration is dangeous. ")
+		return nil, errors.New(" No env file location provided. Starting a server without proper configuration is dangeous. Please provide a config file in --env flag, or create a default config file in ./config/* as dev.env. ")
 	}
 
 	_files := filePathsToAbs(files)
 
 	err := dotenv.Load(_files...)
 	if err != nil {
-		logs.LogErr.Println("Failed to load enviroment files. It is not secure to start the program without proper setup.")
 		return nil, errors.New(" Failed to load enviroment files. It is not secure to start the program without proper setup. ")
 	}
 
