@@ -1,6 +1,6 @@
 // Icons;
 import { BiDirections } from "react-icons/bi";
-import { LuScanFace,LuBarChart3 } from 'react-icons/lu'
+import { LuScanFace, LuAtom } from 'react-icons/lu'
 import { MdOutlineNotificationsNone } from "react-icons/md";
 import { FaChalkboardTeacher, FaEdit } from "react-icons/fa";
 import { IoSchool, IoPeopleSharp, IoExitOutline } from 'react-icons/io5';
@@ -119,7 +119,7 @@ export const admin_sidemenu_data: ISideMenuItems[] = [
             {
                 title: "Dados escolares",
                 type: "link",
-                icon: <LuBarChart3 color="white" fontSize={22}/>,
+                icon: <LuAtom color="white" fontSize={22}/>,
                 href: "/admin/school",
             },
             {
