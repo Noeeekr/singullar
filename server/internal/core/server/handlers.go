@@ -151,8 +151,8 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 		h.clientError(ctx, "Campos em formato incorreto.")
 		return
 	}
-
 	usr, err := h.checkUserPassword(user.Email, user.Password)
+
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			h.clientError(ctx, "Usuario não existe")
@@ -222,7 +222,7 @@ func createUser(user models.CreateUsers) (*models.Users, error) {
 		ProfileImgUrl: "images/userDefaultPic.png",
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(formattedUser.Password), 16)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(formattedUser.Password), 10)
 
 	if err != nil {
 		return &formattedUser, err
