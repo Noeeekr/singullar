@@ -21,6 +21,8 @@ const SolidButton = styled(({ children, ...props }: BoxProps) => (
     fontWeight: 'bold',
     color: 'white',
 
+    flex: '0 0 auto',
+
     '&:hover': {
         transform: "scale(1.03)",    
     },

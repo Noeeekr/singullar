@@ -99,25 +99,26 @@ const CreateClassForm = ({ form }: { form: ({ title: string, subtitle: string, c
                                                 </Typography>
                                             }
                                         </Stack>
-
+                                        
                                         {
                                             // REDO BUTTON ;
-                                            i + 1 > 1 && sectionsStatus === i + 1 &&
-                                            <ButtonSolid 
-                                                onClick={() => {
-                                                    if (sectionsStatus == 2) {
-                                                        setValue("currentYear",-1)
-                                                        setValue("segment", -1)
-                                                        setValue("series",-1)
-                                                    }
-                                                    setSectionStatus(prev => (prev - 1) as 1 | 2 );
-                                                }}
-                                                sx={{ 
-                                                    margin: '0px 0px 0px auto', 
-                                                }}
-                                            >
-                                                Refazer última etápa
-                                            </ButtonSolid>
+                                            i + 1 > 1 && sectionsStatus === i + 1 && <div style={{ margin: '0 0 0 auto'}}>
+                                                <ButtonSolid 
+                                                    onClick={() => {
+                                                        if (sectionsStatus == 2) {
+                                                            setValue("currentYear",-1)
+                                                            setValue("segment", -1)
+                                                            setValue("series",-1)
+                                                        }
+                                                        if (sectionsStatus == 3) {
+                                                            setValue("studentSheet",-1)
+                                                        }
+                                                        setSectionStatus(prev => (prev - 1) as 1 | 2 );
+                                                    }}
+                                                >
+                                                    Refazer última etápa
+                                                </ButtonSolid>
+                                            </div>
                                         }
 
                                     </Stack>

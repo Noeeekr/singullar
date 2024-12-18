@@ -9,14 +9,18 @@ import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
 
+import StudentTable from '../components/StudentTable';
+
 // Features
 import { useState } from 'react';
+import { parseFileData } from '../components/StudentTable';
 
 // Types
 import type { ChangeEvent } from 'react';
+import type { TableData } from '../components/StudentTable'
 
 export interface ISecondSectionData {
-    studentSheet: any
+    studentSheet: object | -1
 }
 
 /**
@@ -27,21 +31,7 @@ export interface ISecondSectionData {
  */
 const SecondFormSection = (): JSX.Element => {
     const [isOpen, setIsOpen] = useState(false);
-
-    const parseFileData = (rawData: string) => {
-        const rowDividerRegExp = /\w+,\d+,[123]/g;
-
-        const rows = [...rawData.matchAll(rowDividerRegExp)];
-
-        const data = []
-        for (let row of rows) {
-            let [name, id, segment] = String(row).split(",");
-
-            data.push({ name, id, segment })
-        }
-
-        return data     
-    }
+    const [tableData, setTableData] = useState<null | TableData>(null);
 
     const handleFileInput = async (e: ChangeEvent<HTMLInputElement>) => {
         let files = e.target.files;
@@ -52,8 +42,7 @@ const SecondFormSection = (): JSX.Element => {
 
         let data = parseFileData(text);
 
-        console.log(data)
-    
+        setTableData(data);
         // TODO: Turn file data into sheet
     }
 
@@ -108,7 +97,9 @@ const SecondFormSection = (): JSX.Element => {
                     </Typography>
                 </Box>
             </Dialog>
-            <Grid container spacing={1} sx={{ marginTop: 2 }}>
+            {
+                tableData === null &&
+                <Grid container spacing={1} sx={{ marginTop: 2 }}>
 
                 <Grid size={{ mobile: 12, xs: 6 }}>
                     <FormControl>
@@ -160,6 +151,8 @@ const SecondFormSection = (): JSX.Element => {
                     </Button>
                 </Grid>
             </Grid>
+            }
+            <StudentTable data={tableData}/>
             <Stack direction="row" gap={2} sx={{
                 padding: 2
             }}>

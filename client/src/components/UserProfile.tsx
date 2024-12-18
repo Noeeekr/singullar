@@ -81,7 +81,7 @@ const UserProfile = (props: IUserProfileProps): JSX.Element => {
                             color: structure === "center" ? 'rgba(0,0,0,0.8)' :'rgba(255,255,255,0.86)',
                         }}
                     >
-                        Plataforma ID {user?.id ? Number(user?.id) + 1000000 : "Plataforma ID: Desconhecido" }
+                        Plataforma ID {user?.id || "Plataforma ID: Desconhecido" }
                     </Typography>
             </Stack>
         </Stack>
