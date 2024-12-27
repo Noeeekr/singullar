@@ -12,7 +12,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 
 // Types
-import type { InstitutionsState } from '../../../../../types/data';
+import type { InstitutionsState } from '../../../types/data';
 
 export async function Loader() {
     const institutions = await fetch("http://localhost:8000/api/user/institutions",{
@@ -26,18 +26,24 @@ export async function Loader() {
         if (res.error) {
             return []
         }         
+        console.log(res.data)
         return res.data;
     });
 
     return institutions;
 }
 
-const PageInstitutionSelection = (): JSX.Element => {
+/**
+ * A page with an input to choose a school to manage
+ * 
+ * @param nextUrl the href of the page where it should send after selection.
+ */
+const PageInstitutionSelection = ({ nextUrl }: { nextUrl: string }): JSX.Element => {
     const institutions = useLoaderData() as InstitutionsState[];
-    
+
     const dispatch = useAppDispatch();
     useEffect(() => {
-        dispatch(ActionSetInstitutions(institutions))
+        dispatch(ActionSetInstitutions({ current: null, institutions: institutions }))
     },[])
 
     const [selectValue, setSelectValue] = useState("");
@@ -71,10 +77,6 @@ const PageInstitutionSelection = (): JSX.Element => {
                             label="Selecione uma escola"
                             onChange={(e) => {
                                 setSelectValue(e.target.value)
-
-                                if (e.target.value) {
-                                    navigate("/admin/classes/" + e.target.value);
-                                }
                             }}
                             value={selectValue}
                         >
@@ -83,6 +85,12 @@ const PageInstitutionSelection = (): JSX.Element => {
                                     return <MenuItem
                                         value={inst.id}
                                         key={inst.id + inst.name}
+                                        onClick={() => {
+                                            let i = institutions.find(ins => ins.id == inst.id);
+                                            
+                                            dispatch(ActionSetInstitutions({ current: i ? i : null, institutions: institutions }));
+                                            navigate(nextUrl);
+                                        }}
                                     >{inst.name}</MenuItem>
                                 })
                             }

@@ -3,20 +3,31 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { InstitutionsState } from '../types/data';
 
-const inst: InstitutionsState[] = [];
+interface IInstitutionSlice {
+    institutions:    InstitutionsState[]
+    current:       InstitutionsState | null
+}
+
+const inst: IInstitutionSlice = {
+    institutions: [],
+    current: null
+};
 
 const InstitutionsSlice = createSlice({
     name: "institutions",
     initialState: inst,
     reducers: {
-        setInstitutions: (state, action: PayloadAction<InstitutionsState[]>) => {
-            return action.payload;
+        setInstitutions: (_state, action: PayloadAction<IInstitutionSlice>) => {
+            return action.payload
         },
         addInstitutions: (state, action: PayloadAction<InstitutionsState[]>) => {
-            state.push(...action.payload)
+            state = { ...state, institutions: [ ...state.institutions, ...action.payload ] }
         },
         clearInstitutions: () => {
-            return []
+            return {
+                institutions: [],
+                current: null
+            };
         },
     }
 })

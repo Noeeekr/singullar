@@ -7,7 +7,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	"github.com/noeeekr/sch-server/internal/core/models"
 	"github.com/noeeekr/sch-server/internal/core/models/pgsql"
+
 	"gorm.io/gorm"
 )
 
@@ -45,25 +47,19 @@ func getRouter(database *gorm.DB) (*gin.Engine, error) {
 	r.NoRoute(handlers.StaticsHandler)
 
 	// Auth routes
-	r.POST("/api/user/signin", handlers.SigninHandler)  // For users and institutions
-	r.GET("/api/user/signout", handlers.SignoutHandler) // For users and institutions
+	r.POST("/api/user/signin", handlers.SigninHandler)     // For users and institutions
+	r.GET("/api/user/signout", handlers.SignoutHandler)    // For users and institutions
 	r.POST("/api/user/signup", handlers.UserSignupHandler) /// for users and institutions
 
 	r.GET("/api/user/auth", handlers.Authenticate) // For users and institutions
 
 	// CREATE
-	
+	// r.POST("/api/class/create", middlewares.Authenticate, handlers.CreateClass)
+
 	// READ
-	r.GET("/api/user/institutions", middlewares.Authenticate, handlers.GetInstitutions)
+	r.GET("/api/user/institutions", middlewares.Authenticate(models.Student,models.Admin,models.Teacher,models.Supervisor), handlers.GetInstitutions)
 
-	// r.GET("/api/institution/users", middlewares.Authenticate.GetInstitutionUsers)
-	// r.GET("/api/institution/classes", middlewares.Authenticate.GetInstitutionClasses)
-
-	// r.POST("/api/auth/notifications", handlers.CreateNotificationsHandler)
-	// r.GET("/api/auth/notifications", handlers.GetNotificationsHandler)
-
-	// r.Post("/api/auth/classes", handlers.CreateClassesHandler)
-	// r.GET("/api/auth/classes", handlers.GetClassesHandler)
+	r.POST("/api/user/students/sheet", middlewares.Authenticate(models.Admin), handlers.GetStudents)
 
 	return r, nil
 }

@@ -138,8 +138,8 @@ func (h *RouterHandlers) checkUserPassword(email string, password string) (user 
 }
 
 // Handles user sign-in and returns custom graceful JSON objects for client form ui.
-type authClaims struct {
-	User interface{}
+type AuthClaims struct {
+	User models.Users
 	jwt.RegisteredClaims
 }
 
@@ -166,8 +166,8 @@ func (h *RouterHandlers) SigninHandler(ctx *gin.Context) {
 		}
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, authClaims{
-		User: usr,
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, AuthClaims{
+		User: *usr,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
 			Issuer:    fmt.Sprintf("%d", usr.ID),
@@ -285,25 +285,13 @@ func (h *RouterHandlers) GetInstitutions(ctx *gin.Context) {
 		return
 	}
 
-	usr, ok := user.(map[string]interface{})
+	usr, ok := user.(models.Users)
 	if !ok {
 		h.internalServerErr(ctx, "Dados de usuário no formato errado", errors.New(" Failed to type assert the given context"))
 		return
 	}
 
-	id, exists := usr["id"]
-	if !exists {
-		h.internalServerErr(ctx, "Falha ao recuperar o id de usuário", errors.New(" Failed to get the id"))
-		return
-	}
-
-	_id, ok := id.(float64)
-	if !ok {
-		h.internalServerErr(ctx, "Falha ao recuperar o id de usuário", errors.New(" Failed to get the id"))
-		return
-	}
-
-	Institutions, exists, err := h.institutions.FindByUserId(uint(_id))
+	Institutions, exists, err := h.institutions.FindByUserId(usr.ID)
 	if err != nil {
 		h.internalServerErr(ctx, "Falha ao buscar as instituições", err)
 		return
@@ -314,6 +302,45 @@ func (h *RouterHandlers) GetInstitutions(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"data":  Institutions,
+		"error": nil,
+	})
+}
+
+type GetStudentsRequest struct {
+	Students      []models.CreateStudent `json:"students" binding:"required"`
+	InstitutionId uint                   `json:"institutionId" binding:"required"`
+}
+
+func (h *RouterHandlers) GetStudents(ctx *gin.Context) {
+	var Req GetStudentsRequest
+
+	if err := ctx.ShouldBindJSON(&Req); err != nil {
+		h.internalServerErr(ctx, "Dados em formato incorreto", err)
+		return
+	}
+
+	var StudentsNames []string
+
+	for i := 0; i < len(Req.Students); i++ {
+		StudentsNames = append(StudentsNames, Req.Students[i].Name)
+	}
+
+	usrs, exist, err := h.users.QueryByNames(StudentsNames, Req.InstitutionId)
+	if err != nil {
+		h.internalServerErr(ctx, "Dados em formato incorreto", err)
+		return
+	}
+
+	if !exist {
+		ctx.JSON(201, gin.H{
+			"data":  nil,
+			"error": "Nenhum usuário encontrado.",
+		})
+		return
+	}
+
+	ctx.JSON(201, gin.H{
+		"data":  usrs,
 		"error": nil,
 	})
 }

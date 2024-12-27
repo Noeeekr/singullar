@@ -31,7 +31,7 @@ const LinkButton = (props: ISideMenuLinkProps): JSX.Element => {
             onClick={() => (dispatch(incrementUrlVisitedCount(href)))}
         >
             {
-                variant === "solid" 
+                variant === undefined
                 ? <Button {...clonedProps}>
                     { children ? children : "Children not found"}
                 </Button>

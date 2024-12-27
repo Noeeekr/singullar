@@ -60,7 +60,7 @@ const SideMenuItems = ({ items, ...props}: ISideMenuItemsProps): JSX.Element => 
                 items.map((item) => {
                     switch(item.type) {
                         case "link":
-                            return <LinkButton key={item.title} {...props} {...item} />;
+                            return <LinkButton key={item.title} {...props} {...item} variant="ghost" />;
                         case "popup":
                             return <PopupButton key={item.title} {...props} {...item} />;
                         case "group":

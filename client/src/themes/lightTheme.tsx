@@ -240,7 +240,12 @@ const lightTheme = createTheme({
                     },
                     '&.Mui-disabled:hover .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'rgba(0, 0, 0, 0.26)',
-                    }
+                    },
+                    input: {
+                        '&:-webkit-autofill': {
+                            position: 'relative'
+                        },
+                      },
                 },
                 notchedOutline: {
                     borderColor: 'rgb(230,230,230)',

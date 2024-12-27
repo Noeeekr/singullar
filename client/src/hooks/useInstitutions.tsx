@@ -15,7 +15,7 @@ import type { InstitutionsState } from '../types/data';
 
 const useInstitutions = (): ([InstitutionsState[] | [], Function]) => {
     const insts = useAppSelector((store) => store.institutions);
-    const [institutions, setInstitutions] = useState<InstitutionsState[]>(insts)
+    const [institutions, setInstitutions] = useState<InstitutionsState[]>(insts.institutions)
 
     const dispatch = useAppDispatch();
 
@@ -30,12 +30,12 @@ const useInstitutions = (): ([InstitutionsState[] | [], Function]) => {
         .then(res => {
             if (res.error) {
                 setInstitutions(
-                    dispatch(actionSetInstitutions([])).payload
+                    dispatch(actionSetInstitutions({ current: null, institutions: [] })).payload.institutions
                 );
                 return;
             }         
             setInstitutions(
-                dispatch(actionSetInstitutions(res.data)).payload
+                dispatch(actionSetInstitutions({ current: null, institutions: res.data })).payload.institutions
             );
         });
     },[])

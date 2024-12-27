@@ -24,6 +24,7 @@ import {
   PgMyClasses,
   PgClassesCreate,
 
+  PgStudentsSearch,
   PgStudentsCreate,
 } from './pages/admin';
 
@@ -134,12 +135,21 @@ const r2 = createBrowserRouter([
             element: <Root/>,
           },
           {
-            path: "search/students",
+            path: "students/search",
+            element: <PgInstitutionSelection nextUrl="/admin/students" />,
+            loader: LoaderInstitutionSelection,
+          },
+          {
+            path: "students",
+            element: <PgStudentsSearch />
+          },
+          {
+            path: "students/create",
             element: <PgStudentsCreate />
           },
           {
-            path: "search/classes",
-            element: <PgInstitutionSelection />,
+            path: "classes/search",
+            element: <PgInstitutionSelection nextUrl="/admin/classes" />,
             loader: LoaderInstitutionSelection,
           },
           {
@@ -147,7 +157,7 @@ const r2 = createBrowserRouter([
             element: <PgClassesCreate />,
           },
           {
-            path: "classes/:id",
+            path: "classes",
             element: <PgMyClasses />
           },
           {

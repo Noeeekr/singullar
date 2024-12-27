@@ -92,3 +92,11 @@ type Notifications struct {
 
 	Students []Users `gorm:"many2many:users_notifications"` // Array of student IDs (foreign keys)
 }
+
+// OTHER MODELS
+
+type CreateStudent struct {
+	Name  string `json:"name" binding:"required"`
+	ID    uint   `json:"id" binding:"required"`
+	Email string `json:"email" binding:"required"`
+}

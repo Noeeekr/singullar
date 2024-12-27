@@ -1,102 +1,224 @@
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import SectionHeader from '@components/SectionHeader';
-import SectionTitle from '@components/SectionTitle';
-import Grid from '@mui/material/Grid2';
-import Button from '@components/ButtonSolid';
-import Stack from '@mui/material/Stack';
+// Components
+import OutlinedInput from "@mui/material/OutlinedInput";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Stack from "@mui/material/Stack";
+import SectionHeader from "@components/SectionHeader";
+import Grid from "@mui/material/Grid2";
+import ButtonSolid from "@components/ButtonSolid";
+import ErrorHelperText from "@components/ErrorHelperText";
 
-import { useState } from 'react';
+// Features
+import { useRef } from "react";
+import { useForm } from "react-hook-form";
 
-const CreatePage = (): JSX.Element => {
-    const [filterForm, setFilterForm] = useState<{
-        name: string | -1,
-        segment: number,
-        id: number,
-    }>({
-        name: -1,
-        segment: -1,
-        id: -1,
-    })
+// Types
+import { SubmitHandler } from "react-hook-form";
 
-    return (
-        <div>
-            <SectionHeader 
-                title="Selecione um estudante" 
+interface INewbornStudent {
+  email: string;
+  name: string;
+}
+
+interface IReqCreateStudents {
+  students: {
+    [index: string]: string;
+  };
+  institutionId: number;
+}
+
+interface IFormNecessities extends INewbornStudent {
+  emailsInUse: {
+    [index: string]: boolean;
+  };
+}
+const CreateStudent = (): JSX.Element => {
+  const {
+    handleSubmit,
+    register,
+    watch,
+    setError,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<IReqCreateStudents & IFormNecessities>({
+    defaultValues: {
+      name: "",
+      email: "",
+      institutionId: 1,
+      students: {},
+      emailsInUse: {},
+    },
+  });
+
+  const secondInput = useRef<HTMLInputElement>();
+  const submitButton = useRef<HTMLInputElement | null>(null);
+
+  const students = watch("students");
+
+  const onSubmit: SubmitHandler<INewbornStudent> = (data) => {
+    let stds = getValues().students;
+    let emailsInUse = getValues().emailsInUse;
+
+    if (stds[data.name.trim()]) {
+      // Get older email to remove it from emails already in use
+      let oldEmail = stds[data.name.trim()];
+
+      emailsInUse[oldEmail] = false;
+    } else if (emailsInUse[data.email]) {
+      // Check if e-mail is in use and throws err
+      setError("email", {
+        message:
+          "E-mail já selecionado. Para continuar, mude o e-mail do estudante. ",
+      });
+      return;
+    }
+
+    stds[data.name.trim()] = data.email;
+    emailsInUse[data.email] = true;
+
+    setValue("emailsInUse", emailsInUse);
+    setValue("students", stds);
+  };
+
+  return (
+    <div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <SectionHeader
+          title="Adicionar estudantes"
+          subtitle="Defina as informações necessárias para adicionar os estudantes"
+        >
+          <ButtonSolid sx={{ margin: "0 0 0 auto" }} disabled={true}>
+            Enviar formulário
+          </ButtonSolid>
+        </SectionHeader>
+        <Stack gap={2} direction="row" sx={{ alignItems: "center" }}>
+          <Grid
+            container
+            spacing={2}
+            sx={{ width: "100%", margin: "20px 0px" }}
+          >
+            <Grid size={{ mobile: 12, xss: 6 }}>
+              <FormControl>
+                <InputLabel htmlFor="student-create-email-input">
+                  Nome completo do estudante
+                </InputLabel>
+                <OutlinedInput
+                  {...register("name", {
+                    required: "Por favor insira um nome.",
+                    pattern: {
+                      value: /^[a-zA-Záàãâäéè êëíìîïóòõôöúùûüçÇ]+$/g,
+                      message: "Por favor insira um nome válido",
+                    },
+                    minLength: {
+                      value: 5,
+                      message: "O nome deve ter no minímo cinco caracteres.",
+                    },
+                  })}
+                  error={Boolean(errors?.name)}
+                  id="student-create-email-input"
+                  label="nome-completo-do-estudante"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      secondInput?.current?.focus();
+                    }
+                  }}
+                />
+                <ErrorHelperText show={Boolean(errors?.name)}>
+                  {errors?.name?.message}
+                </ErrorHelperText>
+              </FormControl>
+            </Grid>
+            <Grid size={{ mobile: 12, xss: 6 }}>
+              <FormControl>
+                <InputLabel htmlFor="student-create-plataformId-input">
+                  Email do estudante
+                </InputLabel>
+                <OutlinedInput
+                  {...register("email", {
+                    required: "Por favor insira um e-mail.",
+                    pattern: {
+                      value:
+                        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                      message: "Por favor insira um email válido.",
+                    },
+                  })}
+                  error={Boolean(errors?.email)}
+                  inputRef={secondInput}
+                  label="email-do-estudante"
+                  id="student-create-plataformId-input"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      submitButton?.current?.click();
+                    }
+                  }}
+                />
+                <ErrorHelperText show={Boolean(errors?.email)}>
+                  {errors?.email?.message}
+                </ErrorHelperText>
+              </FormControl>
+            </Grid>
+            <Grid
+              size={{ mobile: 12, xss: 6 }}
+              sx={{ margin: "0 0 auto auto", maxWidth: "250px" }}
             >
-                <Button
-                        sx={{
-                            width: '160px',
-                            margin: '10px 0px 0px auto',
-                        }}
-                    >
-                    Filtrar
-                </Button>
-            </SectionHeader>
-            <Stack direction="row" gap={2}>
-                <Grid container spacing={{ mobile: 0, xs: 4 }} sx={{ flex: 1}}>
-                    <Grid size={{ mobile: 12, xs: 4 }}>
-                        <SectionTitle sx={{
-                            margin: '30px 0px 10px 0px'
-                        }}>
-                            Filtrar por nome
-                        </SectionTitle>
-                        <FormControl>
-                            <InputLabel htmlFor="student-search-filter-name-input">
-                                Digite o nome do estudante
-                            </InputLabel>
-                            <OutlinedInput
-                                label="digite-o-nome-do-estudante"
-                                id="student-search-filter-name-input"
-                            />
-                        </FormControl>
-                    </Grid>
-                    <Grid size={{ mobile: 12, xs: 4 }}>
-                        <SectionTitle sx={{
-                            margin: '30px 0px 10px 0px'
-                        }}>
-                            Filtrar por segmento
-                        </SectionTitle>
-                        <FormControl>
-                            <InputLabel htmlFor="student-search-filter-name-input">
-                                Digite o segmento do estudante
-                            </InputLabel>
-                            <Select
-                                label="digite-o-segmento-do-estudante"
-                                id="student-search-filter-name-input"
-                                value={filterForm.name}
-                                onChange={(e) => { setFilterForm(prevVal => ({ ...prevVal, name: e.target.value })) }}
-                            >
-                                <MenuItem value={-1}>Escolha uma opção</MenuItem>
-                                <MenuItem value={1}>Ensino Fundamental 1</MenuItem>
-                                <MenuItem value={2}>Ensino Fundamental 2</MenuItem>
-                                <MenuItem value={3}>Ensino Médio</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid size={{ mobile: 12, xs: 4 }}>
-                        <SectionTitle sx={{
-                            margin: '30px 0px 10px 0px'
-                        }}>
-                            Filtrar por matricula/ID
-                        </SectionTitle>
-                        <FormControl>
-                            <InputLabel htmlFor="student-search-filter-name-input">
-                                Digite o ID do estudante
-                            </InputLabel>
-                            <OutlinedInput
-                                label="digite-o-ID-do-estudante"
-                                id="student-search-filter-name-input"
-                            />
-                        </FormControl>
-                    </Grid>
-                </Grid>
-            </Stack>
-        </div>
-    )
+              <ButtonSolid
+                onClick={() => {
+                  submitButton.current?.click();
+                }}
+              >
+                Adicionar Estudante
+              </ButtonSolid>
+            </Grid>
+          </Grid>
+        </Stack>
+        <input
+          ref={submitButton}
+          type="submit"
+          style={{ pointerEvents: "none", opacity: 0 }}
+        />
+      </form>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px"}}>
+        {Object.entries(students).map((std_info) => (
+          <div style={{ minHeight: '70px', width: '100%', display: 'flex', boxShadow: '0px  5px 5px 1px rgb(0,0,0,0.1)'}}>
+            <div
+              style={{
+                width: '100%',
+                gap: "10px",
+                padding: "10px 7px",
+                display: "flex",
+                justifyContent: 'flex-between',
+                alignItems: "center",
+                backgroundColor: 'white',
+              }}
+            >
+                <p style={{ width: '50%', textWrap: 'nowrap', textOverflow: "ellipsis", margin: 'auto 10px auto auto', boxSizing: 'border-box', overflow: 'hidden' }}>{std_info[0]}</p>
+                <p style={{ width: '50%', textOverflow: "ellipsis", margin: 'auto 10px auto auto', boxSizing: 'border-box', overflow: 'hidden' }}>{std_info[1]}</p>
+            </div>
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+                  backgroundColor: "rgba(255,100,100,1)",
+                  borderRadius: '0px 10px 10px 0px'
+            }}>
+              <p
+                style={{
+                  cursor: "pointer",
+                  color: "rgba(255,255,255,0.8)",
+                  margin: "0px 0px 0px 10px",
+                  padding: "5px 12px",
+                  fontWeight: "bold",
+                }}
+              >
+                Excluir
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-export default CreatePage;
+export default CreateStudent;

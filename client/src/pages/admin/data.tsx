@@ -120,24 +120,24 @@ export const admin_sidemenu_data: ISideMenuItems[] = [
                 title: "Dados escolares",
                 type: "link",
                 icon: <LuAtom color="white" fontSize={22}/>,
-                href: "/admin/school",
+                href: "/admin/school/info",
             },
             {
                 title: "Minhas turmas",
                 type: "link",
-                href: "/admin/search/classes",
+                href: "/admin/classes/search",
                 icon: <IoSchool/>,
             },
             {
                 title: "Meus professores",
                 type: "link",
-                href: "/admin/search/teachers",
+                href: "/admin/teachers/search",
                 icon: <FaChalkboardTeacher/>,
             },
             {
                 title: "Meus alunos",
                 type: "link",
-                href: "/admin/search/students",
+                href: "/admin/students/search",
                 icon: <IoPeopleSharp/>,
             },
         ]

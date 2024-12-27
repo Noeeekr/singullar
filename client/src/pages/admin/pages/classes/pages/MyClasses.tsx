@@ -11,24 +11,20 @@ import Button from '@components/ButtonSolid';
 
 // Features
 import { useAppSelector } from '@slices/store';
-import { useParams } from 'react-router-dom';
 
 const PageClasses = (): JSX.Element => {
     const insts = useAppSelector((store) => store.institutions)
 
-    const { id } = useParams()
-    
     return (
         <div>
             <SectionHeader
                 title="Turmas"
-                subtitle={insts.find(i => i.id.toString() == id)?.name || "Nome desconhecido"}
+                subtitle={insts.institutions.find(i => i.id.toString() == insts.current.id)?.name || "Nome desconhecido"}
             >
                 <div style={{ margin: '0px 0px 0px auto' }}>
                     <LinkButton
                         title=""
                         icon={<></>}
-                        variant="solid"
                         type="link"
                         href="/admin/classes/create"
                     >

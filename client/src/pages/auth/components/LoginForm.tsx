@@ -1,122 +1,41 @@
-import { 
-    useState, 
-    ReactNode,  
-} from 'react'
+// Components
+import Typography from '@mui/material/Typography'
+import FormControl from '@mui/material/FormControl'
+import FormHelperText from '@mui/material/FormHelperText'
+import OutlinedInput from '@mui/material/OutlinedInput'
+import InputAdornment from '@mui/material/InputAdornment'
+import InputLabel from '@mui/material/InputLabel'
+import IconButton from '@mui/material/IconButton'
+import ButtonBase from '@mui/material/ButtonBase'
+import Button from '@mui/material/Button'
+import Box from '@mui/material/Box'
+import ErrorBubble from '@components/ErrorBubble';
+import ErrorHelperText from '@components/ErrorHelperText';
 
-import { useNavigate } from 'react-router-dom'
-
-import { useForm } from 'react-hook-form'
-import type { SubmitHandler } from 'react-hook-form'
-
-import {
-    Typography,
-    FormControl,
-    FormHelperText,
-    OutlinedInput,
-    InputAdornment,
-    InputLabel,
-    IconButton,
-    ButtonBase,
-    Button,
-    Stack,
-    Box,
-    Fade
-} from '@mui/material'
+// Icons
 import { 
     Visibility, 
     VisibilityOff,
     HighlightOff
 } from '@mui/icons-material'
+
+// Features
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
+
 import { useTheme } from '@mui/material/styles'
 import { useMediaQuery } from '@mui/system'
 
-import useSignin from '../../../hooks/useSignin'
+import useSignin from '@hooks/useSignin'
+
+// Types
+import type { SubmitHandler } from 'react-hook-form'
+
 
 interface Fields {
     password: string
     email: string
-}
-
-const ErrorHelperText = (
-    { children }: { children: ReactNode }
-): JSX.Element => {
-
-    return (
-        <Box
-            sx={{
-                position: 'absolute',
-                bottom: -25,
-                backgroundColor: (theme) => (theme.palette.error.whiteHigh),
-                paddingX: 2,
-                paddingTop: 2,
-                paddingBottom: 0.5,
-                borderEndEndRadius: 10,
-                borderEndStartRadius: 10,
-                zIndex: 1,
-                width: '100%',
-            }}
-        >
-            <Typography
-                variant="body1"
-                color="error.dark"
-            >
-                {children}
-            </Typography>
-        </Box>
-    )
-}
-const ErrorBubble = (
-    { err }: { err: string }
-): JSX.Element => {
-
-    return (
-        <Box
-            sx={{
-                marginY: 2,
-                padding: 2,
-                borderRadius: 3.5,
-                backgroundColor: (theme) => `${theme.palette.error.light}`,
-            }}>
-            <Stack
-                direction="row"
-                spacing={1}
-                sx={{
-                    alignItems: 'center',
-                }}
-            >
-                <Box
-                    sx={{
-                        position: 'relative',
-                        display: 'flex',
-                        '&:before': {
-                            position: 'absolute',
-                            top: -16,
-                            content: '""',
-                            backgroundColor: (theme) => theme.palette.error.main,
-                            width: '80%',
-                            height: 5,
-                            marginLeft: '2px',
-                            borderRadius: 2,
-                        }
-                    }}
-                >
-
-                    <HighlightOff
-                        color="error"
-                    />
-                </Box>
-                <Typography
-                    color="error.dark"
-                    variant="body1"
-                    sx={{
-                        fontWeight: 'bold',
-                    }}
-                >
-                    {err}
-                </Typography>
-            </Stack>
-        </Box>
-    )
 }
 
 const Internal = (): JSX.Element => {
@@ -198,13 +117,9 @@ const Internal = (): JSX.Element => {
                             </InputAdornment>
                         }
                     />
-                    <Fade in={Boolean(errors?.email)}>
-                        <div style={{ position: 'relative', marginBottom: errors?.email ? 20 : 1 }}>
-                            <ErrorHelperText>
-                                Campo obrigatório. Digite seu email corretamente.
-                            </ErrorHelperText>
-                        </div>
-                    </Fade>
+                    <ErrorHelperText show={Boolean(errors?.email)}>
+                        Campo obrigatório. Digite seu email corretamente.
+                    </ErrorHelperText>
                 </FormControl>
                 <FormControl margin="normal">
                     <InputLabel htmlFor="filled-adorment-password">
@@ -240,13 +155,9 @@ const Internal = (): JSX.Element => {
                         disabled={isLoading}
                         error={Boolean(errors?.password)}
                     />
-                    <Fade in={Boolean(errors?.password)}>
-                        <div style={{ position: 'relative', marginBottom: errors?.password ? 20 : 1 }}>
-                            <ErrorHelperText>
-                               {errors?.password?.message}
-                            </ErrorHelperText>
-                        </div>
-                    </Fade>
+                    <ErrorHelperText show={Boolean(errors?.password)}>
+                       {errors?.password?.message}
+                    </ErrorHelperText>
                     <FormHelperText sx={{ textAlign: 'end' }}>
                         <ButtonBase
                             disableRipple={true}

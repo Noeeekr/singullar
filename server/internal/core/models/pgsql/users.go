@@ -42,6 +42,26 @@ func (model *UserModel) GetByEmail(email string) (User models.Users, Exists bool
 	return user, true, nil
 }
 
+func (model *UserModel) QueryByNames(names []string, institutionId uint) (User []models.Users, Exists bool, Error error) {
+	var users []models.Users
+
+	err := model.DB.Joins("JOIN users_institutions ui ON ui.users_id = users.id").
+		Where("users.name IN ?", names).                // Filter by user name
+		Where("ui.institutions_id = ?", institutionId). // Filter by institution ID in the join table
+		Preload("Institutions").                        // Preload institutions to fetch related data
+		Find(&users).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return users, false, nil
+		} else {
+			return users, false, err
+		}
+	}
+
+	return users, false, err
+}
+
 func (m *UserModel) Delete(u *models.Users) error {
 	//
 	return nil
