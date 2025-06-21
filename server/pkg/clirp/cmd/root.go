@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Noeeekr/singullar/server/pkg/clirp/proxy"
 	"github.com/Noeeekr/singullar/server/pkg/common/logs"
-	"github.com/Noeeekr/singullar/server/pkg/reverse-proxy/proxy"
 	"github.com/spf13/cobra"
 )
 

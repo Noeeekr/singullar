@@ -1,5 +1,0 @@
-// [WHAT IS THIS]
-
-// [WHY I WANTED TO DO IT]
-
-// [THE FEATURES]

@@ -22,17 +22,24 @@ Currently using vercel Postgres SQL database. Soon will be a local Singular **P*
 
 # Todo list
 
-[Done] Create a reverse proxy.
-    -> Make it capable of starting Api.
-        -> Make api startable.
-    -> Make it capable of starting Static File Server.
-        [Done] Make static file server startable.
-
--> Decouple postgres SQL code from api folder structure.
+IN ORDER: 
+-> Decouple postgres SQL code from SMAPI structure.
     -> Implement local postgres SQL.
-    -> Implemenet it in an internal folder.
+    -> Implement it in an internal folder.
+    -> Make Postgres Dockerfile
+    -> Make Migrations
+    -> Make Backup utilities
+    -> Make Seeds
+
+-> Make SMAPI implementation functional
+    -> Connect to PMI
+    -> Make startable
+
+-> Implement Clirp service statup features
+    -> Make it capable of starting Smapi.
+    -> Make it capable of starting Pmi.
+    -> Make it capable of starting Sas
     
--> Conteinerize the application.
 -> Implement cobra for CLI
     [Done] Clirp.
     [Done] Smapi.
