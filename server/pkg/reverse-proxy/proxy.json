@@ -1,0 +1,10 @@
+{
+    "singss": {
+        "amount": 1,
+        "environmentPath": "./singss.env"
+    },
+    "singapi": {
+        "amount": 1,
+        "environmentPath": "./singapi.env"
+    }
+}

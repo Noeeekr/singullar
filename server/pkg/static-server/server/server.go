@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/Noeeekr/singullar/server/common/logs"
+	"github.com/Noeeekr/singullar/server/pkg/common/logs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

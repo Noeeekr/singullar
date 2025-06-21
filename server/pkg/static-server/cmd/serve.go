@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/Noeeekr/singullar/server/common/logs"
-	"github.com/Noeeekr/singullar/server/static-server/internal/server"
+	"github.com/Noeeekr/singullar/server/pkg/common/logs"
+	"github.com/Noeeekr/singullar/server/pkg/static-server/server"
 	"github.com/spf13/cobra"
 )
 
