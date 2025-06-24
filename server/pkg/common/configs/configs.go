@@ -4,7 +4,7 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/Noeeekr/singullar/server/api/pkg/paths"
+	"github.com/Noeeekr/singullar/server/pkg/common/paths"
 	"github.com/caarlos0/env"
 	dotenv "github.com/joho/godotenv"
 )
@@ -28,16 +28,14 @@ func Parse(files ...string) error {
 		return errors.New(" No env file location provided. Starting a server without proper configuration is dangeous. Please provide a config file in --env flag, or create a default config file in ./config/* as dev.env. ")
 	}
 
-	_files := filePathsToAbs(files)
-
-	if err := dotenv.Load(_files...); err != nil {
-		return errors.New(" Failed to load enviroment files. It is not secure to start the program without proper setup. ")
+	if err := dotenv.Load(files...); err != nil {
+		return errors.New(" Failed to load enviroment file. " + err.Error())
 	}
 	return nil
 }
 
 // Populates v with all variables. V must be a struct with all fields to be parsed
-func Get(v any) error {
+func Scan(v any) error {
 	if err := env.Parse(v); err != nil {
 		return err
 	}
