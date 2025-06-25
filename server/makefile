@@ -1,33 +1,54 @@
+PMI_PATH=./pkg/pim
+PMI_ENV_PATH=$(PMI_PATH)/postgres.env
+
+.PHONY: docker-run-test-container
+docker-run-test-container:
+	-docker network create internal
+	docker run \
+	--network internal \
+	-it --rm \
+	-v $(PWD):/go/singullar \
+	test-container:1.0.0
+
+.PHONY: docker-build-test-container 
+docker-build-test-container:
+	$(eval include $(PMI_ENV_PATH))
+	docker build -t test-container:1.0.0 .
+
 .PHONY: docker-run-database
-
-PMI_ENV_PATH=./pkg/pmi/postgres.env
-
 docker-run-database: 
 	$(eval include $(PMI_ENV_PATH))
 	@echo Executing: Running postgres container
 	@echo With User: $(POSTGRES_USER)
 	@echo With Password: $(POSTGRES_PASSWORD)
-	@echo With Container Name: $(CONTAINER_NAME)
-	@echo With volume: $(CONTAINER_VOLUME)
+	@echo With Container Name: $(PG_CONTAINER_NAME)
+	@echo With volume: $(PG_CONTAINER_VOLUME)
 	@echo On Image: Postgres:17.5
-	docker volume create "$(CONTAINER_VOLUME)"
+	-docker network create internal
+	docker volume create "$(PG_CONTAINER_VOLUME)"
 	docker run \
-	--name "$(CONTAINER_NAME)" \
-	-v $(CONTAINER_VOLUME):/var/lib/postgresql/data \
+	--name "$(PG_CONTAINER_NAME)" \
+	-v $(PG_CONTAINER_VOLUME):/var/lib/postgresql/data \
 	-p 5432:5432 \
+	--network internal \
 	-e POSTGRES_USER="$(POSTGRES_USER)" \
 	-e POSTGRES_PASSWORD="$(POSTGRES_PASSWORD)" \
 	-d postgres:17.5
 
+.PHONY: docker-stop-database 
 docker-stop-database: 
 	$(eval include $(PMI_ENV_PATH))
-	@echo Stopping container $(CONTAINER_NAME)
-	@docker container stop $(CONTAINER_NAME)
+	@echo Stopping container $(PG_CONTAINER_NAME)
+	@docker container stop $(PG_CONTAINER_NAME)
 
+.PHONY: docker-start-database 
 docker-start-database: 
-	@docker container start $(CONTAINER_NAME)
-
+	$(eval include $(PMI_ENV_PATH))
+	@docker container start $(PG_CONTAINER_NAME)
+	
+.PHONY: docker-delete-database
 docker-delete-database: docker-stop-database
 	$(eval include $(PMI_ENV_PATH))
-	@echo Deleting container $(CONTAINER_NAME)
-	@docker container rm $(CONTAINER_NAME)
+	docker network rm internal
+	@echo Deleting container $(PG_CONTAINER_NAME)
+	@docker container rm $(PG_CONTAINER_NAME)
