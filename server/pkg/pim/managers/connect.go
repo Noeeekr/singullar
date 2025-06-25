@@ -1,4 +1,4 @@
-package pim
+package managers
 
 import (
 	"database/sql"
