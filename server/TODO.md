@@ -1,5 +1,7 @@
 # Todo list
 
+* Implement tools to check test coverage.
+
 * Refactor database features from API to PIM service  
     * `DONE` Implement local postgres container for test purposes. 
     * `IN PROGRESS` Make Migrations in PIM  

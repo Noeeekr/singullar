@@ -1,7 +1,7 @@
 PIM_PATH=./pkg/pim
 PIM_ENV_PATH=$(PIM_PATH)/postgres.env
 
-.PHONY: docker-run-test-container
+.PHONY: run-test-container
 docker-run-test-container:
 	-docker network create internal
 	docker run \
@@ -10,12 +10,12 @@ docker-run-test-container:
 	-v $(PWD):/go/singullar \
 	test-container:1.0.0
 
-.PHONY: docker-build-test-container 
+.PHONY: build-test-container 
 docker-build-test-container:
 	$(eval include $(PIM_ENV_PATH))
 	docker build -t test-container:1.0.0 .
 
-.PHONY: docker-run-database
+.PHONY: run-database-container
 docker-run-database: 
 	$(eval include $(PIM_ENV_PATH))
 	@echo Executing: Running postgres container
@@ -35,18 +35,18 @@ docker-run-database:
 	-e POSTGRES_PASSWORD="$(POSTGRES_PASSWORD)" \
 	-d postgres:17.5
 
-.PHONY: docker-stop-database 
+.PHONY: stop-database-container 
 docker-stop-database: 
 	$(eval include $(PIM_ENV_PATH))
 	@echo Stopping container $(PG_CONTAINER_NAME)
 	@docker container stop $(PG_CONTAINER_NAME)
 
-.PHONY: docker-start-database 
+.PHONY: start-database-container 
 docker-start-database: 
 	$(eval include $(PIM_ENV_PATH))
 	@docker container start $(PG_CONTAINER_NAME)
 	
-.PHONY: docker-delete-database
+.PHONY: delete-database-container
 docker-delete-database: docker-stop-database
 	$(eval include $(PIM_ENV_PATH))
 	docker network rm internal
