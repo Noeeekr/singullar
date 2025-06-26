@@ -3,20 +3,18 @@ package models
 // TypeName marks the name of all types created in database
 type TypeName string
 
-// The name of database custom type
+// Names of types present in database
 const (
-	RoleTypeName TypeName = "roles"
+	UserRoleName TypeName = "roles"
 )
 
-// Types marks all types created in database
-type Types string
+type UserRole string
 
-type Roles Types
-
-// Enums of type "Roles" in database
+// Values of type UserRole
 const (
-	RoleStudent    Roles = "student"
-	RoleTeacher    Roles = "teacher"
-	RoleSupervisor Roles = "supervisor"
-	RoleAdmin      Roles = "admin"
+	Unknown    UserRole = ""
+	Student    UserRole = "student"
+	Teacher    UserRole = "teacher"
+	Supervisor UserRole = "supervisor"
+	Admin      UserRole = "admin"
 )

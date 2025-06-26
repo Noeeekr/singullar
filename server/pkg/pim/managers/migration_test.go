@@ -44,7 +44,7 @@ func init() {
 	connString := managers.ParseConnectionString(
 		env.POSTGRES_CONTAINER_NAME,
 		env.POSTGRES_USER,
-		env.POSTGRES_PASSWORD,
+		env.POSTGRES_USER_PASSWORD,
 	)
 	var err error
 
@@ -84,14 +84,14 @@ func TestMigrations(t *testing.T) {
 	})
 
 	t.Run("CREATE ENUM ROLES", func(t *testing.T) {
-		res := manager.CreateType(models.RoleTypeName)
+		res := manager.CreateType(models.UserRoleName)
 		if res.Status != managers.StatusSuccess {
 			t.Fatal(res.Description)
 		}
 	})
 
 	t.Run("DELETE ENUM ROLES", func(t *testing.T) {
-		res := manager.DropType(models.RoleTypeName)
+		res := manager.DropType(models.UserRoleName)
 		if res.Status != managers.StatusSuccess {
 			t.Fatal(res.Description)
 		}

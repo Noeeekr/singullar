@@ -7,14 +7,6 @@ import (
 	"github.com/Noeeekr/singullar/server/pkg/pim/models"
 )
 
-// Should be put appended before other fields
-var defaultFields = `
-ID        INT         PRIMARY KEY,
-CreatedAt TIMESTAMPTZ NOT NULL,
-UpdatedAt TIMESTAMPTZ NOT NULL,
-DeletedAt TIMESTAMPTZ NOT NULL,
-`
-
 type MigrationsManager struct {
 	*TransactionManager
 }
@@ -29,7 +21,7 @@ func NewMigrationManager(db *sql.DB) *MigrationsManager {
 
 func (m *MigrationsManager) CreateType(role models.TypeName) *Response {
 	switch role {
-	case models.RoleTypeName:
+	case models.UserRoleName:
 		return m.createTypeRoles()
 	default:
 		return &Response{
@@ -40,8 +32,8 @@ func (m *MigrationsManager) CreateType(role models.TypeName) *Response {
 }
 func (m *MigrationsManager) CreateTable(table models.TableName, disableDefaults bool) *Response {
 	switch table {
-	case models.UsersTableName:
-		return m.createTableUsers(disableDefaults)
+	case models.UsersTable.Name:
+		return m.createTableUsers()
 	default:
 		return &Response{
 			Status:      StatusUnregisteredMigration,
@@ -68,64 +60,23 @@ func (m *MigrationsManager) DropType(role models.TypeName) *Response {
 		Method: DROP,
 		Query: fmt.Sprintf(`
 			DROP TYPE IF EXISTS %s;
-		`, models.RoleTypeName),
+		`, models.UserRoleName),
 	})
 }
 
-func (m *MigrationsManager) createTableUsers(disableDefaults bool) *Response {
-	if disableDefaults {
-		defaultFields = ""
-	}
-
-	query := fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS users (
-			%s
-			Name     VARCHAR(256)   NOT NULL,
-			Email    VARCHAR(256)   NOT NULL UNIQUE,
-			Password VARCHAR(256)   NOT NULL
-		)
-	`, defaultFields)
-
-	tx, err := m.db.Begin()
-	if err != nil {
-		return &Response{
-			Status:      StatusFailedTransactionStart,
-			Description: "Unable to start transaction. " + err.Error(),
-		}
-	}
-
-	if _, err := tx.Exec(query); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return &Response{
-				Status:      StatusFailedTransactionRollback,
-				Description: "Migration transaction failed. Unable to rollback: " + err.Error(),
-			}
-		}
-		return &Response{
-			Status:      StatusFailedTransaction,
-			Description: "Migration transaction failed. Rollback executed: " + err.Error(),
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return &Response{
-			Status:      StatusFailedTransaction,
-			Description: "Transaction Failed: " + err.Error(),
-		}
-	}
-
-	return &Response{
-		Status:      StatusSuccess,
-		Description: "Migration transaction sucessfull.",
-	}
+func (m *MigrationsManager) createTableUsers() *Response {
+	return m.Transaction(&Query{
+		Query:  models.UsersTable.Query,
+		Method: CREATE,
+	})
 }
 func (m *MigrationsManager) createTypeRoles() *Response {
 	var roles string = fmt.Sprintf(
 		"'%s','%s','%s','%s'",
-		models.RoleAdmin,
-		models.RoleStudent,
-		models.RoleSupervisor,
-		models.RoleTeacher,
+		models.Admin,
+		models.Student,
+		models.Supervisor,
+		models.Teacher,
 	)
 
 	query := fmt.Sprintf(`
@@ -135,7 +86,7 @@ func (m *MigrationsManager) createTypeRoles() *Response {
 					CREATE TYPE %s AS ENUM (%s);
 				END IF;
 			END $$;
-		`, models.RoleTypeName, models.RoleTypeName, roles)
+		`, models.UserRoleName, models.UserRoleName, roles)
 
 	parsedQuery := &Query{
 		Method: CREATE,
