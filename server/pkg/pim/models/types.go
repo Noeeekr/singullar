@@ -12,7 +12,7 @@ type UserRole string
 
 // Values of type UserRole
 const (
-	Unknown    UserRole = ""
+	Unknown    UserRole = "unknown"
 	Student    UserRole = "student"
 	Teacher    UserRole = "teacher"
 	Supervisor UserRole = "supervisor"

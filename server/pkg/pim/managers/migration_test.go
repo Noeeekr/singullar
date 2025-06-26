@@ -65,7 +65,7 @@ func TestMigrations(t *testing.T) {
 	})
 
 	t.Run("DROP TABLE USERS", func(t *testing.T) {
-		query := manager.DropTable(models.UsersTableName)
+		query := manager.DropTable(models.UsersTable.TableName())
 		if query.Status != managers.StatusSuccess {
 			t.Log("DESCRIPTION: ", query.Description)
 			t.Log("STATUS: ", query.Status)
@@ -74,7 +74,7 @@ func TestMigrations(t *testing.T) {
 	})
 
 	t.Run("CREATE TABLE USERS", func(t *testing.T) {
-		query := manager.CreateTable(models.UsersTableName, false)
+		query := manager.CreateTable(models.UsersTable.TableName(), false)
 
 		if query.Status != managers.StatusSuccess {
 			t.Log("DESCRIPTION: ", query.Description)

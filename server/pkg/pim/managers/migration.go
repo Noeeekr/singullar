@@ -32,7 +32,7 @@ func (m *MigrationsManager) CreateType(role models.TypeName) *Response {
 }
 func (m *MigrationsManager) CreateTable(table models.TableName, disableDefaults bool) *Response {
 	switch table {
-	case models.UsersTable.Name:
+	case models.UsersTable.TableName():
 		return m.createTableUsers()
 	default:
 		return &Response{
@@ -43,18 +43,22 @@ func (m *MigrationsManager) CreateTable(table models.TableName, disableDefaults 
 }
 func (m *MigrationsManager) DropTable(table models.TableName) *Response {
 	switch table {
-	case models.UsersTableName:
+	case models.NotificationsTable.TableName():
+	case models.InstitutionsTable.TableName():
+	case models.ClassesTable.TableName():
+	case models.UsersTable.TableName():
 		return m.Transaction(&Query{
 			Query:  fmt.Sprintf("DROP TABLE IF EXISTS %s;", table),
 			Method: DROP,
 		})
-	default:
-		return &Response{
-			Status:      StatusUnregisteredMigration,
-			Description: "Unable to drop. " + string(table) + " is not a registered table.",
-		}
+	}
+
+	return &Response{
+		Status:      StatusUnregisteredMigration,
+		Description: "Unable to drop. " + string(table) + " is not a registered table.",
 	}
 }
+
 func (m *MigrationsManager) DropType(role models.TypeName) *Response {
 	return m.Transaction(&Query{
 		Method: DROP,
@@ -66,17 +70,18 @@ func (m *MigrationsManager) DropType(role models.TypeName) *Response {
 
 func (m *MigrationsManager) createTableUsers() *Response {
 	return m.Transaction(&Query{
-		Query:  models.UsersTable.Query,
+		Query:  models.UsersTable.TableQuery(),
 		Method: CREATE,
 	})
 }
 func (m *MigrationsManager) createTypeRoles() *Response {
 	var roles string = fmt.Sprintf(
-		"'%s','%s','%s','%s'",
+		"'%s','%s','%s','%s','%s'",
 		models.Admin,
 		models.Student,
 		models.Supervisor,
 		models.Teacher,
+		models.Unknown,
 	)
 
 	query := fmt.Sprintf(`
