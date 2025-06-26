@@ -2,7 +2,7 @@ PIM_PATH=./pkg/pim
 PIM_ENV_PATH=$(PIM_PATH)/postgres.env
 
 .PHONY: run-test-container
-docker-run-test-container:
+run-test-container:
 	-docker network create internal
 	docker run \
 	--network internal \
@@ -11,12 +11,12 @@ docker-run-test-container:
 	test-container:1.0.0
 
 .PHONY: build-test-container 
-docker-build-test-container:
+build-test-container:
 	$(eval include $(PIM_ENV_PATH))
 	docker build -t test-container:1.0.0 .
 
 .PHONY: run-database-container
-docker-run-database: 
+run-database-container: 
 	$(eval include $(PIM_ENV_PATH))
 	@echo Executing: Running postgres container
 	@echo With User: $(POSTGRES_USER)
@@ -36,18 +36,18 @@ docker-run-database:
 	-d postgres:17.5
 
 .PHONY: stop-database-container 
-docker-stop-database: 
+stop-database-container: 
 	$(eval include $(PIM_ENV_PATH))
 	@echo Stopping container $(PG_CONTAINER_NAME)
 	@docker container stop $(PG_CONTAINER_NAME)
 
 .PHONY: start-database-container 
-docker-start-database: 
+start-database-container: 
 	$(eval include $(PIM_ENV_PATH))
 	@docker container start $(PG_CONTAINER_NAME)
 	
 .PHONY: delete-database-container
-docker-delete-database: docker-stop-database
+delete-database-container: docker-stop-database
 	$(eval include $(PIM_ENV_PATH))
 	docker network rm internal
 	@echo Deleting container $(PG_CONTAINER_NAME)
