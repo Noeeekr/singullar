@@ -19,84 +19,65 @@ func NewMigrationManager(db *sql.DB) *MigrationsManager {
 	}
 }
 
-func (m *MigrationsManager) CreateType(role models.TypeName) *Response {
-	switch role {
-	case models.UserRoleName:
-		return m.createTypeRoles()
-	default:
+func (m *MigrationsManager) CreateType(typ *models.TypeInfo) *Response {
+	return m.Transaction(&Query{
+		Query:  typ.Query(),
+		Method: CREATE,
+	})
+}
+func (m *MigrationsManager) CreateTable(table *models.TableInfo) *Response {
+	tx, err := m.db.Begin()
+	if err != nil {
 		return &Response{
-			Description: "Migration not registered.",
-			Status:      StatusUnregisteredMigration,
+			Status:      StatusFailedTransactionStart,
+			Description: "Unable to start transaction. " + err.Error(),
 		}
 	}
-}
-func (m *MigrationsManager) CreateTable(table models.TableName, disableDefaults bool) *Response {
-	switch table {
-	case models.UsersTable.TableName():
-		return m.createTableUsers()
-	default:
-		return &Response{
-			Status:      StatusUnregisteredMigration,
-			Description: "Migration Not Registered",
+
+	for _, typ := range table.Dependencies.Types {
+		res := m.transaction(tx, typ.Query())
+		if res.Status != StatusSuccess {
+			return res
 		}
 	}
-}
-func (m *MigrationsManager) DropTable(table models.TableName) *Response {
-	switch table {
-	case models.NotificationsTable.TableName():
-	case models.InstitutionsTable.TableName():
-	case models.ClassesTable.TableName():
-	case models.UsersTable.TableName():
-		return m.Transaction(&Query{
-			Query:  fmt.Sprintf("DROP TABLE IF EXISTS %s;", table),
-			Method: DROP,
-		})
+
+	for _, subtable := range table.Dependencies.Tables {
+		res := m.transaction(tx, subtable.TableQuery())
+		if res.Status != StatusSuccess {
+			return res
+		}
+	}
+
+	res := m.transaction(tx, table.TableQuery())
+	if res.Status != StatusSuccess {
+		return res
+	}
+
+	if err := tx.Commit(); err != nil {
+		return &Response{
+			Status:      StatusFailedTransaction,
+			Description: "Unable to commit transaction. " + err.Error(),
+		}
 	}
 
 	return &Response{
-		Status:      StatusUnregisteredMigration,
-		Description: "Unable to drop. " + string(table) + " is not a registered table.",
+		Status:      StatusSuccess,
+		Description: "Transaction commited successfully.",
 	}
 }
 
-func (m *MigrationsManager) DropType(role models.TypeName) *Response {
+func (m *MigrationsManager) DropTable(table *models.TableInfo) *Response {
+	return m.Transaction(&Query{
+		Query:  fmt.Sprintf("DROP TABLE IF EXISTS %s CASCADE;", table.TableName()),
+		Method: DROP,
+	})
+}
+
+func (m *MigrationsManager) DropType(Type *models.TypeInfo) *Response {
 	return m.Transaction(&Query{
 		Method: DROP,
 		Query: fmt.Sprintf(`
 			DROP TYPE IF EXISTS %s;
-		`, models.UserRoleName),
+		`, Type.Name()),
 	})
-}
-
-func (m *MigrationsManager) createTableUsers() *Response {
-	return m.Transaction(&Query{
-		Query:  models.UsersTable.TableQuery(),
-		Method: CREATE,
-	})
-}
-func (m *MigrationsManager) createTypeRoles() *Response {
-	var roles string = fmt.Sprintf(
-		"'%s','%s','%s','%s','%s'",
-		models.Admin,
-		models.Student,
-		models.Supervisor,
-		models.Teacher,
-		models.Unknown,
-	)
-
-	query := fmt.Sprintf(`
-			DO $$
-			BEGIN
-				IF NOT EXISTS (SELECT * FROM pg_type WHERE typname = '%s') THEN
-					CREATE TYPE %s AS ENUM (%s);
-				END IF;
-			END $$;
-		`, models.UserRoleName, models.UserRoleName, roles)
-
-	parsedQuery := &Query{
-		Method: CREATE,
-		Query:  query,
-	}
-
-	return m.Transaction(parsedQuery)
 }

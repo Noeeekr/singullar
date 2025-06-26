@@ -2,7 +2,7 @@ package managers
 
 type PostgrestManagerEnvironment struct {
 	POSTGRES_USER          string `env:"POSTGRES_USER,required"`
-	POSTGRES_USER_PASSWORD string `env:"POSTGRES_PASSWORD,required"`
+	POSTGRES_USER_PASSWORD string `env:"POSTGRES_USER_PASSWORD,required"`
 
 	POSTGRES_TEST_USER          string `env:"POSTGRES_TEST_USER,required"`
 	POSTGRES_TEST_USER_PASSWORD string `env:"POSTGRES_TEST_USER_PASSWORD,required"`

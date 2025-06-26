@@ -2,6 +2,7 @@ package managers_test
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,6 +16,7 @@ import (
 var args = []string{"./../postgres.env"}
 var env = &managers.PostgrestManagerEnvironment{}
 var db *sql.DB
+var manager *managers.MigrationsManager
 
 // Starts database connection
 func init() {
@@ -46,16 +48,33 @@ func init() {
 		env.POSTGRES_USER,
 		env.POSTGRES_USER_PASSWORD,
 	)
+
 	var err error
 
 	db, err = managers.Connect(connString)
 	if err != nil {
 		panic("Status: Error happened. " + err.Error())
 	}
+
+	manager = managers.NewMigrationManager(db)
 }
 func TestMigrations(t *testing.T) {
-	manager := managers.NewMigrationManager(db)
 	defer manager.Close()
+
+	// PUT YOUR TYPES FOR TESTS HERE
+	types := []*models.TypeInfo{
+		models.RoleType,
+	}
+
+	// PUT YOUR TABLE FOR TESTS HERE
+	tables := []*models.TableInfo{
+		models.InstitutionsTable,
+		models.UsersTable,
+		models.ClassesTable,
+		models.NotificationsTable,
+		models.UsersClassesTable,
+		models.UsersNotificationsTable,
+	}
 
 	t.Run("PING", func(t *testing.T) {
 		if err := manager.Ping(); err != nil {
@@ -64,36 +83,64 @@ func TestMigrations(t *testing.T) {
 		}
 	})
 
-	t.Run("DROP TABLE USERS", func(t *testing.T) {
-		query := manager.DropTable(models.UsersTable.TableName())
-		if query.Status != managers.StatusSuccess {
-			t.Log("DESCRIPTION: ", query.Description)
-			t.Log("STATUS: ", query.Status)
-			t.FailNow()
-		}
-	})
-
-	t.Run("CREATE TABLE USERS", func(t *testing.T) {
-		query := manager.CreateTable(models.UsersTable.TableName(), false)
-
-		if query.Status != managers.StatusSuccess {
-			t.Log("DESCRIPTION: ", query.Description)
-			t.Log("STATUS: ", query.Status)
-			t.FailNow()
-		}
-	})
-
-	t.Run("CREATE ENUM ROLES", func(t *testing.T) {
-		res := manager.CreateType(models.UserRoleName)
+	var res *managers.Response
+	for _, table := range tables {
+		t.Run(fmt.Sprintf("CREATE TABLE %s", table.TableName()), func(t *testing.T) {
+			res = manager.CreateTable(table)
+			if res.Status != managers.StatusSuccess {
+				t.Log("STATUS: ", res.Status)
+				t.Fatal(res.Description)
+				return
+			}
+		})
 		if res.Status != managers.StatusSuccess {
-			t.Fatal(res.Description)
+			t.Fatal("Tests failed.")
+			return
 		}
-	})
+	}
 
-	t.Run("DELETE ENUM ROLES", func(t *testing.T) {
-		res := manager.DropType(models.UserRoleName)
+	for _, table := range tables {
+		t.Run(fmt.Sprintf("DROP TABLE %s", table.TableName()), func(t *testing.T) {
+			res = manager.DropTable(table)
+			if res.Status != managers.StatusSuccess {
+				t.Log("STATUS: ", res.Status)
+				t.Fatal(res.Description)
+				return
+			}
+		})
 		if res.Status != managers.StatusSuccess {
-			t.Fatal(res.Description)
+			t.Fatal("Tests failed.")
+			return
 		}
-	})
+	}
+
+	for _, typ := range types {
+		t.Run(fmt.Sprintf("CREATE TYPE %s", typ.Name()), func(t *testing.T) {
+			res = manager.CreateType(typ)
+			if res.Status != managers.StatusSuccess {
+				t.Log("STATUS: ", res.Status)
+				t.Fatal(res.Description)
+				return
+			}
+		})
+		if res.Status != managers.StatusSuccess {
+			t.Fatal("Tests failed.")
+			return
+		}
+	}
+
+	for _, typ := range types {
+		t.Run(fmt.Sprintf("DROP TYPE %s", typ.Name()), func(t *testing.T) {
+			res = manager.DropType(typ)
+			if res.Status != managers.StatusSuccess {
+				t.Log("STATUS: ", res.Status)
+				t.Fatal(res.Description)
+				return
+			}
+		})
+		if res.Status != managers.StatusSuccess {
+			t.Fatal("Tests failed.")
+			return
+		}
+	}
 }

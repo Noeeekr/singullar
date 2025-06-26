@@ -1,6 +1,8 @@
 package managers
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 type TransactionManager struct {
 	db *sql.DB
@@ -29,10 +31,11 @@ func (m *TransactionManager) Transaction(query *Query) *Response {
 	}
 
 	switch query.Method {
-	case INSERT:
-	case DROP:
-	case CREATE:
-		return m.transaction(tx, query.Query)
+	case CREATE, DROP, INSERT:
+		res := m.transaction(tx, query.Query)
+		if res.Status != StatusSuccess {
+			return res
+		}
 	default:
 		return &Response{
 			Description: "Transaction method not registered.",
@@ -51,7 +54,6 @@ func (m *TransactionManager) Transaction(query *Query) *Response {
 		Status:      StatusSuccess,
 		Description: "Transaction commited successfully",
 	}
-
 }
 
 func (m *TransactionManager) Transactions(queries ...*Query) *Response {

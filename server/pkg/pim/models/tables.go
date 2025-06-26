@@ -19,8 +19,8 @@ func (t *TableInfo) TableQuery() string {
 }
 
 type TableDepencies struct {
-	Types  []TypeName
-	Tables []TableName
+	Types  []*TypeInfo
+	Tables []*TableInfo
 }
 
 type TableName string
@@ -28,12 +28,11 @@ type TableName string
 const (
 	usersTableName         TableName = "users"         // DONE
 	institutionsTableName  TableName = "institutions"  // PARTIAL
-	classesTableName       TableName = "classes"       // NOT DONE
-	notificationsTableName TableName = "notifications" // NOT DONE
+	classesTableName       TableName = "classes"       // PARTIAL
+	notificationsTableName TableName = "notifications" // PARTIAL
 
-	usersInstitutionsTableName  TableName = "usersInstitutions"  // NOT DONE
-	usersClassesTableName       TableName = "usersClasses"       // NOT DONE
-	usersNotificationsTableName TableName = "usersNotifications" // NOT DONE
+	usersClassesTableName       TableName = "users_classes"       // PARTIAL
+	usersNotificationsTableName TableName = "users_notifications" // PARTIAL
 )
 
 type DefaultFields struct {
@@ -52,7 +51,7 @@ const DefaultFieldsQuery = `
 `
 
 // TABLE USERS
-var UsersTable = TableInfo{
+var UsersTable = &TableInfo{
 	name: usersTableName,
 	query: fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
@@ -60,16 +59,16 @@ var UsersTable = TableInfo{
 			name             VARCHAR(256)   NOT NULL,
 			email            VARCHAR(256)   NOT NULL UNIQUE,
 			password 	     VARCHAR(256)   NOT NULL,
-			institution_id  INT      	    NOT NULL,
+			institution_id   INT      	    NOT NULL,
+			profile_picture  VARCHAR(256)   DEFAULT 'userprofilepicture.jpg',
 			role             %s             NOT NULL,
-			profile_picture  VARCHAR(256)   DEFAULT userprofilepicture.jpg,
 
 			FOREIGN KEY (institution_id) REFERENCES %s(id)
 		);
-	`, usersTableName, DefaultFieldsQuery, UserRoleName, institutionsTableName),
+	`, usersTableName, DefaultFieldsQuery, userRoleName, institutionsTableName),
 	Dependencies: &TableDepencies{
-		Types:  []TypeName{UserRoleName},
-		Tables: []TableName{institutionsTableName},
+		Types:  []*TypeInfo{RoleType},
+		Tables: []*TableInfo{InstitutionsTable},
 	},
 }
 
@@ -84,7 +83,7 @@ type Users struct {
 	InstitutionId int `json:"institution_id" binding:"required"`
 }
 
-var InstitutionsTable = TableInfo{
+var InstitutionsTable = &TableInfo{
 	name: institutionsTableName,
 	query: fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
@@ -93,8 +92,8 @@ var InstitutionsTable = TableInfo{
 		);
 	`, institutionsTableName, DefaultFieldsQuery),
 	Dependencies: &TableDepencies{
-		Types:  []TypeName{},
-		Tables: []TableName{},
+		Types:  []*TypeInfo{},
+		Tables: []*TableInfo{},
 	},
 }
 
@@ -103,7 +102,7 @@ type Institutions struct {
 	Name string `json:"name" binding:"required"`
 }
 
-var ClassesTable = TableInfo{
+var ClassesTable = &TableInfo{
 	name: classesTableName,
 	query: fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
@@ -114,12 +113,12 @@ var ClassesTable = TableInfo{
 
 			institution_id INT NOT NULL,
 
-			FOREIGN KEY institution_id REFERENCES %s(id)
+			FOREIGN KEY (institution_id) REFERENCES %s(id)
 		);
 	`, classesTableName, DefaultFieldsQuery, institutionsTableName),
 	Dependencies: &TableDepencies{
-		Types:  []TypeName{},
-		Tables: []TableName{institutionsTableName},
+		Types:  []*TypeInfo{},
+		Tables: []*TableInfo{InstitutionsTable},
 	},
 }
 
@@ -132,7 +131,7 @@ type Classes struct {
 	InstitutionId int `json:"institution_id" binding:"required"`
 }
 
-var NotificationsTable = TableInfo{
+var NotificationsTable = &TableInfo{
 	name: notificationsTableName,
 	query: fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
@@ -142,11 +141,11 @@ var NotificationsTable = TableInfo{
 			target_id 	 INT 		  NOT NULL,
 			target_type  %s 		  NOT NULL
 		);
-	`, notificationsTableName, DefaultFieldsQuery, UserRoleName),
+	`, notificationsTableName, DefaultFieldsQuery, userRoleName),
 	Dependencies: &TableDepencies{
-		Types: []TypeName{UserRoleName},
+		Types: []*TypeInfo{RoleType},
 		// Classes and institutions since target id may point to one
-		Tables: []TableName{classesTableName, institutionsTableName},
+		Tables: []*TableInfo{ClassesTable, InstitutionsTable},
 	},
 }
 
@@ -168,13 +167,13 @@ var UsersClassesTable = &TableInfo{
 			user_id INT NOT NULL,
 			class_id INT NOT NULL,
 
-			FOREIGN KEY users_id REFERENCES %s(id),
-			FOREIGN KEY class_id REFERENCES %s(id)
+			FOREIGN KEY (user_id) REFERENCES %s(id),
+			FOREIGN KEY (class_id) REFERENCES %s(id)
 		);
 	`, usersClassesTableName, usersTableName, classesTableName),
 	Dependencies: &TableDepencies{
-		Types:  []TypeName{},
-		Tables: []TableName{usersTableName, classesTableName},
+		Types:  []*TypeInfo{},
+		Tables: []*TableInfo{UsersTable, ClassesTable},
 	},
 }
 
@@ -190,13 +189,13 @@ var UsersNotificationsTable = &TableInfo{
 			user_id INT NOT NULL,
 			notification_id INT NOT NULL,
 
-			FOREIGN KEY users_id REFERENCES %s(id),
-			FOREIGN KEY notification_id REFERENCES %s(id)
+			FOREIGN KEY (user_id) REFERENCES %s(id),
+			FOREIGN KEY (notification_id) REFERENCES %s(id)
 		);
 	`, usersNotificationsTableName, usersTableName, notificationsTableName),
 	Dependencies: &TableDepencies{
-		Types:  []TypeName{},
-		Tables: []TableName{usersTableName, notificationsTableName},
+		Types:  []*TypeInfo{},
+		Tables: []*TableInfo{UsersTable, NotificationsTable},
 	},
 }
 
@@ -205,21 +204,26 @@ type UsersNotifications struct {
 	NotificationId int
 }
 
+//
+//
 // Tables
 //	- Users
-// 		Types:
+// 		Implemented:
 // 			Migration: DONE
 // 			API JSON: DONE
 // 			API CREATE: DONE
 //  - Institutions
+//		Implemented:
 //  		Migration:
 //  		API JSON:
 //			API CREATE:
 //	- Notifications
+//		Implemented:
 //  		Migration:
 //  		API JSON:
 //			API CREATE:
 //  - Classes
+//		Implemented:
 //  		Migration:
 //  		API JSON:
 //			API CREATE:
