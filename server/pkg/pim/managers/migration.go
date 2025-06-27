@@ -20,13 +20,28 @@ func NewMigrationManager(db *sql.DB) *MigrationsManager {
 }
 
 func (m *MigrationsManager) CreateType(typ *models.TypeInfo) *Response {
-	return m.Transaction(&Query{
-		Query:  typ.Query(),
-		Method: CREATE,
+	tx, err := m.StartTransation()
+	if err != nil {
+		return &Response{
+			Status:      StatusFailedTransactionStart,
+			Description: "Unable to start transaction. " + err.Error(),
+		}
+	}
+
+	res := tx.Query(&Query{
+		Query:   typ.Queries.Create(),
+		Returns: false,
 	})
+
+	if res.Status != StatusSuccess {
+		return res.Response
+	}
+
+	return tx.Commit().Response
 }
+
 func (m *MigrationsManager) CreateTable(table *models.TableInfo) *Response {
-	tx, err := m.db.Begin()
+	tx, err := m.StartTransation()
 	if err != nil {
 		return &Response{
 			Status:      StatusFailedTransactionStart,
@@ -35,49 +50,74 @@ func (m *MigrationsManager) CreateTable(table *models.TableInfo) *Response {
 	}
 
 	for _, typ := range table.Dependencies.Types {
-		res := m.transaction(tx, typ.Query())
-		if res.Status != StatusSuccess {
-			return res
+		if res := tx.Query(&Query{
+			Query:   typ.Queries.Create(),
+			Returns: false,
+		}); res.Status != StatusSuccess {
+			return res.Response
 		}
 	}
 
 	for _, subtable := range table.Dependencies.Tables {
-		res := m.transaction(tx, subtable.TableQuery())
-		if res.Status != StatusSuccess {
-			return res
+		if res := tx.Query(&Query{
+			Query:   subtable.Queries.Create,
+			Returns: false,
+		}); res.Status != StatusSuccess {
+			return res.Response
 		}
 	}
 
-	res := m.transaction(tx, table.TableQuery())
+	res := tx.Query(&Query{
+		Query:   table.Queries.Create,
+		Returns: false,
+	})
+
 	if res.Status != StatusSuccess {
-		return res
+		return res.Response
 	}
 
-	if err := tx.Commit(); err != nil {
-		return &Response{
-			Status:      StatusFailedTransaction,
-			Description: "Unable to commit transaction. " + err.Error(),
-		}
-	}
-
-	return &Response{
-		Status:      StatusSuccess,
-		Description: "Transaction commited successfully.",
-	}
+	return tx.Commit().Response
 }
 
 func (m *MigrationsManager) DropTable(table *models.TableInfo) *Response {
-	return m.Transaction(&Query{
-		Query:  fmt.Sprintf("DROP TABLE IF EXISTS %s CASCADE;", table.TableName()),
-		Method: DROP,
+	tx, err := m.StartTransation()
+	if err != nil {
+		return &Response{
+			Status:      StatusFailedTransactionStart,
+			Description: "Unable to start transaction. " + err.Error(),
+		}
+	}
+
+	res := tx.Query(&Query{
+		Query:   fmt.Sprintf("DROP TABLE IF EXISTS %s CASCADE;", table.Name()),
+		Returns: false,
 	})
+
+	if res.Status != StatusSuccess {
+		return res.Response
+	}
+
+	return tx.Commit().Response
 }
 
 func (m *MigrationsManager) DropType(Type *models.TypeInfo) *Response {
-	return m.Transaction(&Query{
-		Method: DROP,
-		Query: fmt.Sprintf(`
-			DROP TYPE IF EXISTS %s;
-		`, Type.Name()),
+	tx, err := m.StartTransation()
+	if err != nil {
+		return &Response{
+			Status:      StatusFailedTransactionStart,
+			Description: "Unable to start transaction. " + err.Error(),
+		}
+	}
+
+	res := tx.Query(&Query{
+		Query:   fmt.Sprintf(`DROP TYPE IF EXISTS %s;`, Type.Name()),
+		Returns: false,
+		Args:    []any{},
 	})
+
+	if res.Status != StatusSuccess {
+		return res.Response
+	}
+
+	return tx.Commit().Response
 }

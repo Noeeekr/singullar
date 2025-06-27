@@ -2,16 +2,21 @@ package models
 
 import "fmt"
 
+type TypeQueries struct {
+	create string
+}
+
+func (t *TypeQueries) Create() string {
+	return t.create
+}
+
 type TypeInfo struct {
-	name  TypeName
-	query string
+	name    TypeName
+	Queries *TypeQueries
 }
 
 func (t *TypeInfo) Name() TypeName {
 	return t.name
-}
-func (t *TypeInfo) Query() string {
-	return t.query
 }
 
 // TypeName marks the name of all types created in database
@@ -34,8 +39,12 @@ const (
 )
 
 var RoleType = &TypeInfo{
-	name: userRoleName,
-	query: fmt.Sprintf(`
+	name:    userRoleName,
+	Queries: roleTypeQueries,
+}
+
+var roleTypeQueries = &TypeQueries{
+	create: fmt.Sprintf(`
 			DO $$
 			BEGIN
 				IF NOT EXISTS (SELECT * FROM pg_type WHERE typname = '%s') THEN

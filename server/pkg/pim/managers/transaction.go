@@ -4,6 +4,10 @@ import (
 	"database/sql"
 )
 
+type Transaction struct {
+	tx *sql.Tx
+}
+
 type TransactionManager struct {
 	db *sql.DB
 }
@@ -20,100 +24,127 @@ func (m *TransactionManager) Close() error {
 func (m *TransactionManager) Ping() error {
 	return m.db.Ping()
 }
-
-func (m *TransactionManager) Transaction(query *Query) *Response {
+func (m *TransactionManager) StartTransation() (*Transaction, error) {
 	tx, err := m.db.Begin()
 	if err != nil {
-		return &Response{
-			Description: "Unable to start transaction. " + err.Error(),
-			Status:      StatusFailedTransactionStart,
-		}
+		return nil, err
 	}
 
-	switch query.Method {
-	case CREATE, DROP, INSERT:
-		res := m.transaction(tx, query.Query)
-		if res.Status != StatusSuccess {
-			return res
-		}
-	default:
-		return &Response{
-			Description: "Transaction method not registered.",
-			Status:      StatusUnregisteredMethod,
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return &Response{
-			Status:      StatusFailedTransactionCommit,
-			Description: "Transaction Failed: " + err.Error(),
-		}
-	}
-
-	return &Response{
-		Status:      StatusSuccess,
-		Description: "Transaction commited successfully",
-	}
+	return &Transaction{tx}, nil
 }
 
-func (m *TransactionManager) Transactions(queries ...*Query) *Response {
-	tx, err := m.db.Begin()
+func (t *Transaction) Query(query *Query) *TransactionResponse {
+	stmt, err := t.tx.Prepare(query.Query)
 	if err != nil {
-		return &Response{
-			Description: "Unable to start transaction. " + err.Error(),
-			Status:      StatusFailedTransactionStart,
+		return &TransactionResponse{
+			Response: &Response{
+				Description: "Invalid query. " + err.Error(),
+				Status:      StatusInvalidSyntax,
+			},
 		}
 	}
 
-	for _, query := range queries {
-		switch query.Method {
-		case INSERT:
-		case DROP:
-		case CREATE:
-			res := m.transaction(tx, query.Query)
-			if res.Status != StatusSuccess {
-				return res
+	var res *TransactionResponse
+	if query.Returns {
+		res = t.query(stmt, query.Args...)
+	} else {
+		res = t.exec(stmt, query.Args...)
+	}
+	return res
+}
+
+func (t *Transaction) query(stmt *sql.Stmt, args ...any) *TransactionResponse {
+	res, err := stmt.Query(args...)
+	if err != nil {
+		if err := t.tx.Rollback(); err != nil {
+			return &TransactionResponse{
+				Response: &Response{
+					Description: "Transaction failed. Unable to rollback. " + err.Error(),
+					Status:      StatusFailedTransaction,
+				},
 			}
-		default:
-			return &Response{
-				Description: "Transaction method not registered.",
-				Status:      StatusUnregisteredMethod,
-			}
+		}
+		return &TransactionResponse{
+			Response: &Response{
+				Description: "Transaction failed. Rollback executed. " + err.Error(),
+				Status:      StatusFailedTransaction,
+			},
 		}
 	}
-
-	if err := tx.Commit(); err != nil {
-		return &Response{
-			Status:      StatusFailedTransactionCommit,
-			Description: "Transaction Failed: " + err.Error(),
-		}
-	}
-
-	return &Response{
-		Description: "Transaction finished successfully",
-		Status:      StatusSuccess,
+	return &TransactionResponse{
+		Response: &Response{
+			Description: "Transaction query executed successfully",
+			Status:      StatusSuccess,
+		},
+		Rows: res,
 	}
 }
 
-// Transaction executes a single query in the context of a transaction. Rollbacks the transaction if the query fails. Doesn't commit at the end.
-//
-// Meant to be used internally to execute multi-query transactions.
-func (m *TransactionManager) transaction(tx *sql.Tx, query string) *Response {
-	if _, err := tx.Exec(query); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return &Response{
-				Status:      StatusFailedTransactionRollback,
-				Description: "Transaction failed. Unable to rollback: " + err.Error(),
+func (t *Transaction) exec(stmt *sql.Stmt, args ...any) *TransactionResponse {
+	_, err := stmt.Exec(args...)
+	if err != nil {
+		if err := t.tx.Rollback(); err != nil {
+			return &TransactionResponse{
+				Response: &Response{
+					Description: "Transaction failed. Unable to rollback. " + err.Error(),
+					Status:      StatusFailedTransaction,
+				},
 			}
 		}
-		return &Response{
-			Status:      StatusFailedTransaction,
-			Description: "Tansaction failed. Rollback executed: " + err.Error(),
+		return &TransactionResponse{
+			Response: &Response{
+				Description: "Transaction failed. Rollback executed. " + err.Error(),
+				Status:      StatusFailedTransaction,
+			},
 		}
 	}
-
-	return &Response{
-		Status:      StatusSuccess,
-		Description: "Transaction executed successfully.",
+	return &TransactionResponse{
+		Response: &Response{
+			Description: "Transaction query executed successfully",
+			Status:      StatusSuccess,
+		},
 	}
 }
+
+func (t *Transaction) Commit() *TransactionResponse {
+	if err := t.tx.Commit(); err != nil {
+		return &TransactionResponse{
+			Response: &Response{
+				Status:      StatusFailedTransactionCommit,
+				Description: "Transaction Failed: " + err.Error(),
+			},
+		}
+	}
+	return &TransactionResponse{
+		Response: &Response{
+			Status:      StatusSuccess,
+			Description: "Transaction commited successfully: ",
+		},
+	}
+}
+
+/*
+	type tx struct {
+		tx
+	}
+
+	// Handles choosing exec or query under the hood
+	// Rollbacks if necessary
+	*tx Query() {
+
+	}
+
+	res, tx := StartTransaction
+	if res.Status != StatusSuccess {
+		return res
+	}
+
+	res := tx.Query(query)
+	if res.Status != StatusSuccess {
+		return res
+	}
+
+	... do something with the query result
+
+	return tx.Commit()
+*/

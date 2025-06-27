@@ -1,21 +1,15 @@
 package models
 
 import (
-	"fmt"
 	"time"
 )
 
-type TableInfo struct {
-	Dependencies *TableDepencies
-	query        string
-	name         TableName
-}
+type TableName string
 
-func (t *TableInfo) TableName() TableName {
-	return t.name
-}
-func (t *TableInfo) TableQuery() string {
-	return t.query
+type TableQueries struct {
+	Create    string
+	InsertOne string
+	SelectOne string
 }
 
 type TableDepencies struct {
@@ -23,17 +17,15 @@ type TableDepencies struct {
 	Tables []*TableInfo
 }
 
-type TableName string
+type TableInfo struct {
+	Dependencies *TableDepencies
+	Queries      *TableQueries
+	name         TableName
+}
 
-const (
-	usersTableName         TableName = "users"         // DONE
-	institutionsTableName  TableName = "institutions"  // PARTIAL
-	classesTableName       TableName = "classes"       // PARTIAL
-	notificationsTableName TableName = "notifications" // PARTIAL
-
-	usersClassesTableName       TableName = "users_classes"       // PARTIAL
-	usersNotificationsTableName TableName = "users_notifications" // PARTIAL
-)
+func (t *TableInfo) Name() TableName {
+	return t.name
+}
 
 type DefaultFields struct {
 	Id        int        `json:"id" binding:"required"`
@@ -42,167 +34,12 @@ type DefaultFields struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
-// TABLE DEFAUT FIELDS
 const DefaultFieldsQuery = `
 	id         SERIAL      PRIMARY KEY,
 	created_at TIMESTAMPTZ NOT NULL,
 	updated_at TIMESTAMPTZ NOT NULL,
 	deleted_at TIMESTAMPTZ,
 `
-
-// TABLE USERS
-var UsersTable = &TableInfo{
-	name: usersTableName,
-	query: fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			%s
-			name             VARCHAR(256)   NOT NULL,
-			email            VARCHAR(256)   NOT NULL UNIQUE,
-			password 	     VARCHAR(256)   NOT NULL,
-			institution_id   INT      	    NOT NULL,
-			profile_picture  VARCHAR(256)   DEFAULT 'userprofilepicture.jpg',
-			role             %s             NOT NULL,
-
-			FOREIGN KEY (institution_id) REFERENCES %s(id)
-		);
-	`, usersTableName, DefaultFieldsQuery, userRoleName, institutionsTableName),
-	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{RoleType},
-		Tables: []*TableInfo{InstitutionsTable},
-	},
-}
-
-type Users struct {
-	DefaultFields
-	Name           string   `json:"name" binding:"required,min=2,max=255"`
-	Email          string   `json:"email" binding:"required,email"`
-	Password       string   `json:"password" binding:"required,min=6"`
-	ProfilePicture string   `json:"profile_picture"`
-	Role           UserRole `json:"role" binding:"required"`
-
-	InstitutionId int `json:"institution_id" binding:"required"`
-}
-
-var InstitutionsTable = &TableInfo{
-	name: institutionsTableName,
-	query: fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			%s
-			name VARCHAR(256) NOT NULL
-		);
-	`, institutionsTableName, DefaultFieldsQuery),
-	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{},
-		Tables: []*TableInfo{},
-	},
-}
-
-type Institutions struct {
-	DefaultFields
-	Name string `json:"name" binding:"required"`
-}
-
-var ClassesTable = &TableInfo{
-	name: classesTableName,
-	query: fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			%s
-			name VARCHAR(256) NOT NULL,
-			segment VARCHAR(256) NOT NULL,
-			series VARCHAR(256) NOT NULL,
-
-			institution_id INT NOT NULL,
-
-			FOREIGN KEY (institution_id) REFERENCES %s(id)
-		);
-	`, classesTableName, DefaultFieldsQuery, institutionsTableName),
-	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{},
-		Tables: []*TableInfo{InstitutionsTable},
-	},
-}
-
-type Classes struct {
-	DefaultFields
-	Name    string `json:"name" binding:"required"`
-	Segment string `json:"segment" binding:"required"`
-	Series  string `json:"series" binding:"required"`
-
-	InstitutionId int `json:"institution_id" binding:"required"`
-}
-
-var NotificationsTable = &TableInfo{
-	name: notificationsTableName,
-	query: fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			%s
-			title		 VARCHAR(256) NOT NULL,
-			description  VARCHAR(256) NOT NULL,
-			target_id 	 INT 		  NOT NULL,
-			target_type  %s 		  NOT NULL
-		);
-	`, notificationsTableName, DefaultFieldsQuery, userRoleName),
-	Dependencies: &TableDepencies{
-		Types: []*TypeInfo{RoleType},
-		// Classes and institutions since target id may point to one
-		Tables: []*TableInfo{ClassesTable, InstitutionsTable},
-	},
-}
-
-type Notifications struct {
-	DefaultFields
-
-	Title       string `json:"title" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	// Notification can be sent to a Class using UserRole=Unkown and TargetId=ClassID
-	// Notification can be sent to a Roles using UserRole=Role and TargetId=InstitutionID
-	TargetId   int      `json:"target_id" binding:"required"`
-	TargetType UserRole `json:"target_type" binding:"required"`
-}
-
-var UsersClassesTable = &TableInfo{
-	name: usersClassesTableName,
-	query: fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			user_id INT NOT NULL,
-			class_id INT NOT NULL,
-
-			FOREIGN KEY (user_id) REFERENCES %s(id),
-			FOREIGN KEY (class_id) REFERENCES %s(id)
-		);
-	`, usersClassesTableName, usersTableName, classesTableName),
-	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{},
-		Tables: []*TableInfo{UsersTable, ClassesTable},
-	},
-}
-
-type UsersClasses struct {
-	UserId        int
-	InstitutionId int
-}
-
-var UsersNotificationsTable = &TableInfo{
-	name: usersNotificationsTableName,
-	query: fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			user_id INT NOT NULL,
-			notification_id INT NOT NULL,
-
-			FOREIGN KEY (user_id) REFERENCES %s(id),
-			FOREIGN KEY (notification_id) REFERENCES %s(id)
-		);
-	`, usersNotificationsTableName, usersTableName, notificationsTableName),
-	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{},
-		Tables: []*TableInfo{UsersTable, NotificationsTable},
-	},
-}
-
-type UsersNotifications struct {
-	UserId         int
-	NotificationId int
-}
 
 //
 //
@@ -247,94 +84,3 @@ type UsersNotifications struct {
 //		(CHECK ACCESS COOKIE) Then find users in classesUsers WHERE userId == user, role == TEACHER
 //  Notifications
 //  	Same from above
-/*
-
-type CreateClasses struct {
-	TeacherId *uint `gorm:"index" json:"teacher_id"`
-	Teacher   Users `gorm:"foreignKey:TeacherId;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
-
-	InstitutionId uint         `gorm:"not null;index" json:"institution_id" binding:"required"` // Foreign key to institution
-	Institution   Institutions `gorm:"foreignKey:InstitutionId;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"`
-
-	Name    string `gorm:"size:255" json:"name"`
-	Segment string `gorm:"not null" json:"segment"`
-	Series  string `gorm:"not null" json:"series"`
-}
-
-// Class Model (Many Students, One Teacher)
-type Classes struct {
-	CommonDbFields
-	CreateClasses
-
-	// Store student IDs directly instead of a slice of Users to avoid recursion
-	Students      []Users         `gorm:"many2many:users_classes;constraint:OnDelete:CASCADE" json:"students"` // Store users directly linked to this class
-	Notifications []Notifications `gorm:"foreignKey:ClassId;constraint:OnDelete:CASCADE" json:"notifications"`
-}
-
-type CreateNotifications struct {
-	TeacherId uint  `gorm:"not null;index" json:"teacher_id" binding:"required"`
-	Teacher   Users `gorm:"foreignKey:TeacherId"`
-
-	ClassId uint    `gorm:"not null;index" json:"class_id" binding:"required"` // Foreign key to the class
-	Class   Classes `gorm:"foreignKey:ClassId"`
-}
-
-// Notification Model (One Teacher, Many Students)
-type Notifications struct {
-	CommonDbFields
-	CreateNotifications
-
-	Students []Users `gorm:"many2many:users_notifications"` // Array of student IDs (foreign keys)
-}
-
-// OTHER MODELS
-
-type CreateStudent struct {
-	Name  string `json:"name" binding:"required"`
-	ID    uint   `json:"id" binding:"required"`
-	Email string `json:"email" binding:"required"`
-}
-*/
-
-/*
-DONE:
-type Users struct {
-	CommonDbFields
-	CreateUsers
-	// SHould be table  | Institutions []Institutions `gorm:"many2many:users_institutions;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"-"`
-	// SHould be table  | Notifications []Notifications `gorm:"many2many:users_notifications" json:"-"`
-	// Should be table | Classes       []Classes       `gorm:"many2many:users_classes;" json:"-"` // Many-to-many relationship with classes
-}
-type UserRole string
-// Define constants for UserRole
-const (
-	Student    UserRole = "student"
-	Teacher    UserRole = "teacher"
-	Supervisor UserRole = "supervisor"
-	Admin      UserRole = "admin"
-)
-
-type CommonDbFields struct {
-	ID        uint       `gorm:"primary_key;autoincrement:true;unique" json:"id" binding:"required"`
-	CreatedAt time.Time  `json:"created_at" binding:"required"`
-	UpdatedAt time.Time  `json:"updated_at" binding:"required"`
-	DeletedAt *time.Time `json:"deleted_at"`
-}
-
-type CreateUsers struct { // FOR JSON
-	Name     string   `gorm:"not null;size:255" json:"name" binding:"required,min=2,max=255"`
-	Email    string   `gorm:"uniqueIndex;size:255" json:"email" binding:"required,email"`
-	Password string   `gorm:"not null" json:"password" binding:"required,min=2"`
-	Role     UserRole `gorm:"type:user_role;not null;" json:"role" binding:"required"` // Specify the PostgreSQL enum type
-
-	InstitutionId uint `gorm:"not null;index" json:"institution_id" binding:"required"`
-}
-type Institutions struct {
-	CommonDbFields
-	Name          string `gorm:"size:255; not null" json:"name" binding:"required"`
-	ProfileImgUrl string `gorm:"default:'./assets/defaultpfp.jpg'" json:"profile_img_url" binding:"required"`
-
-	Classes []Classes `gorm:"foreignKey:InstitutionId;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"`
-	Users   []Users   `gorm:"many2many:users_institutions;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"` // This will hold both teachers and students
-}
-*/

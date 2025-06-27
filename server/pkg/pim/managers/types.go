@@ -1,5 +1,7 @@
 package managers
 
+import "database/sql"
+
 type PostgrestManagerEnvironment struct {
 	POSTGRES_USER          string `env:"POSTGRES_USER,required"`
 	POSTGRES_USER_PASSWORD string `env:"POSTGRES_USER_PASSWORD,required"`
@@ -15,29 +17,28 @@ type Response struct {
 	Status      ResponseStatus
 }
 
+type TransactionResponse struct {
+	*Response
+	Rows *sql.Rows
+}
+
 type ResponseStatus int
 
 const (
-	StatusSuccess ResponseStatus = iota + 999
-	StatusFailedTransaction
-	StatusFailedTransactionStart
+	StatusFailedTransactionStart ResponseStatus = iota + 999
+	StatusSuccess
+	StatusAlreadyExists
 	StatusFailedTransactionRollback
 	StatusFailedTransactionCommit
+	StatusFailedTransaction
+	StatusInvalidSyntax
 	StatusUnregisteredMigration
 	StatusUnregisteredMethod
 )
 
 type Query struct {
-	Method QueryMethod
-	Query  string
+	// Wether or not that query returns rows
+	Returns bool
+	Query   string
+	Args    []any
 }
-
-type QueryMethod int
-
-const (
-	INSERT QueryMethod = iota
-	DROP
-	SELECT
-	CREATE
-	UPDATE
-)
