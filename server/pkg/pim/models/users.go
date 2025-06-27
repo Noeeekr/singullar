@@ -15,7 +15,10 @@ var usersTableQueries = &TableQueries{
 			profile_picture  VARCHAR(256)   DEFAULT 'userprofilepicture.jpg',
 			role             %s             NOT NULL,
 
-			FOREIGN KEY (institution_id) REFERENCES %s(id)
+			CONSTRAINT fk_institutions 
+				FOREIGN KEY (institution_id) 
+				REFERENCES %s(id)
+				ON DELETE CASCADE
 		);
 	`, usersTableName, DefaultFieldsQuery, userRoleName, institutionsTableName),
 	InsertOne: fmt.Sprintf(`

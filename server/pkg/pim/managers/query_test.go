@@ -90,6 +90,9 @@ func (m *TestQueriesUtilities) SelectInstitution(id int) (i *models.Institutions
 	testname := fmt.Sprintf("SELECT FROM %s", models.InstitutionsTable.Name())
 	m.test.Run(testname, func(t *testing.T) {
 		i, res = m.queries.SelectInstitution(id)
+		if res.Status != managers.StatusSuccess {
+			t.Fail()
+		}
 	})
 	return
 }
@@ -116,6 +119,9 @@ func (m *TestQueriesUtilities) SelectUser(email string) (i *models.Users, res *m
 	testname := fmt.Sprintf("SELECT FROM %s", models.InstitutionsTable.Name())
 	m.test.Run(testname, func(t *testing.T) {
 		i, res = m.queries.SelectUser(email)
+		if res.Status != managers.StatusSuccess {
+			t.Fail()
+		}
 	})
 	return
 }

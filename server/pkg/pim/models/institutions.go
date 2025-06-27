@@ -21,7 +21,7 @@ var institutionsTableQueries = &TableQueries{
 		);
 	`, institutionsTableName, DefaultFieldsQuery),
 	SelectOne: fmt.Sprintf(`
-		SELECT created_at, updated_at, deleted_at, name, id FROM %s WHERE id = $1;
+		SELECT created_at, updated_at, deleted_at, name, id FROM %s WHERE id = ;
 	`, institutionsTableName),
 	InsertOne: fmt.Sprintf(`
 		INSERT INTO %s (created_at, updated_at, name) 
