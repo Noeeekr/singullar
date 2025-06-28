@@ -1,6 +1,10 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+)
 
 const usersNotificationsTableName TableName = "users_notifications" // PARTIAL
 
@@ -14,7 +18,7 @@ var UsersNotificationsTable = &TableInfo{
 }
 
 var usersNotificationsTableQueries = &TableQueries{
-	Create: fmt.Sprintf(`
+	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			user_id INT NOT NULL,
 			notification_id INT NOT NULL,
@@ -22,7 +26,10 @@ var usersNotificationsTableQueries = &TableQueries{
 			FOREIGN KEY (user_id) REFERENCES %s(id),
 			FOREIGN KEY (notification_id) REFERENCES %s(id)
 		);
-	`, usersNotificationsTableName, usersTableName, notificationsTableName),
+	`, usersNotificationsTableName, usersTableName, notificationsTableName)),
+	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+		DROP TABLE IF EXISTS %s CASCADE;
+	`, usersNotificationsTableName)),
 }
 
 type UsersNotifications struct {

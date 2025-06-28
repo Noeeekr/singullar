@@ -1,22 +1,19 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+)
 
 type TypeQueries struct {
-	create string
-}
-
-func (t *TypeQueries) Create() string {
-	return t.create
+	Create *transaction.QueryInfo
+	Drop   *transaction.QueryInfo
 }
 
 type TypeInfo struct {
-	name    TypeName
+	Name    TypeName
 	Queries *TypeQueries
-}
-
-func (t *TypeInfo) Name() TypeName {
-	return t.name
 }
 
 // TypeName marks the name of all types created in database
@@ -24,7 +21,7 @@ type TypeName string
 
 // Names of types present in database
 const (
-	userRoleName TypeName = "roles"
+	userRolesTypeName TypeName = "roles"
 )
 
 type UserRole string
@@ -38,20 +35,23 @@ const (
 	Admin      UserRole = "admin"
 )
 
-var RoleType = &TypeInfo{
-	name:    userRoleName,
+var UserRolesType = &TypeInfo{
+	Name:    userRolesTypeName,
 	Queries: roleTypeQueries,
 }
 
 var roleTypeQueries = &TypeQueries{
-	create: fmt.Sprintf(`
+	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
 			DO $$
 			BEGIN
 				IF NOT EXISTS (SELECT * FROM pg_type WHERE typname = '%s') THEN
 					CREATE TYPE %s AS ENUM ( '%s','%s','%s','%s','%s' );
 				END IF;
 			END $$;
-		`, userRoleName, userRoleName,
+		`, userRolesTypeName, userRolesTypeName,
 		Admin, Student, Supervisor, Teacher, Unknown,
-	),
+	)),
+	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+		DROP TYPE IF EXISTS %s CASCADE;
+	`, userRolesTypeName)),
 }

@@ -1,11 +1,15 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+)
 
 const usersTableName TableName = "users"
 
 var usersTableQueries = &TableQueries{
-	Create: fmt.Sprintf(`
+	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
 			name             VARCHAR(256)   NOT NULL,
@@ -20,22 +24,27 @@ var usersTableQueries = &TableQueries{
 				REFERENCES %s(id)
 				ON DELETE CASCADE
 		);
-	`, usersTableName, DefaultFieldsQuery, userRoleName, institutionsTableName),
-	InsertOne: fmt.Sprintf(`
+	`, usersTableName, DefaultFieldsQuery, userRolesTypeName, institutionsTableName)),
+	InsertOne: transaction.NewQuery().WithQuery(fmt.Sprintf(`
 		INSERT INTO %s (created_at, updated_at, name, email, password, institution_id, role) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7) 
 		RETURNING email;
-	`, usersTableName),
-	SelectOne: fmt.Sprintf(`
-		SELECT created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture FROM %s WHERE email = $1;
-	`, usersTableName),
+	`, usersTableName)),
+	SelectOne: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+		SELECT created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture 
+		FROM %s 
+		WHERE email = $1;
+	`, usersTableName)),
+	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+		DROP TABLE IF EXISTS %s CASCADE;
+	`, usersTableName)),
 }
 
 var UsersTable = &TableInfo{
 	name:    usersTableName,
 	Queries: usersTableQueries,
 	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{RoleType},
+		Types:  []*TypeInfo{UserRolesType},
 		Tables: []*TableInfo{InstitutionsTable},
 	},
 }

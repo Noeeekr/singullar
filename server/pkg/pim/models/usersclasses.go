@@ -1,6 +1,10 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+)
 
 const usersClassesTableName TableName = "users_classes" // PARTIAL
 
@@ -14,7 +18,7 @@ var UsersClassesTable = &TableInfo{
 }
 
 var usersClassesTableQueries = &TableQueries{
-	Create: fmt.Sprintf(`
+	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			user_id INT NOT NULL,
 			class_id INT NOT NULL,
@@ -22,7 +26,10 @@ var usersClassesTableQueries = &TableQueries{
 			FOREIGN KEY (user_id) REFERENCES %s(id),
 			FOREIGN KEY (class_id) REFERENCES %s(id)
 		);
-	`, usersClassesTableName, usersTableName, classesTableName),
+	`, usersClassesTableName, usersTableName, classesTableName)),
+	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+		DROP TABLE IF EXISTS %s CASCADE;
+	`, usersClassesTableName)),
 }
 
 type UsersClasses struct {

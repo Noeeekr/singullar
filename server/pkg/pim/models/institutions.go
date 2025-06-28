@@ -1,6 +1,10 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+)
 
 const institutionsTableName TableName = "institutions"
 
@@ -14,20 +18,23 @@ var InstitutionsTable = &TableInfo{
 }
 
 var institutionsTableQueries = &TableQueries{
-	Create: fmt.Sprintf(`
+	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
 			name VARCHAR(256) NOT NULL
 		);
-	`, institutionsTableName, DefaultFieldsQuery),
-	SelectOne: fmt.Sprintf(`
-		SELECT created_at, updated_at, deleted_at, name, id FROM %s WHERE id = ;
-	`, institutionsTableName),
-	InsertOne: fmt.Sprintf(`
+	`, institutionsTableName, DefaultFieldsQuery)),
+	SelectOne: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+		SELECT created_at, updated_at, deleted_at, name, id FROM %s WHERE id = $1;
+	`, institutionsTableName)),
+	InsertOne: transaction.NewQuery().WithQuery(fmt.Sprintf(`
 		INSERT INTO %s (created_at, updated_at, name) 
 		VALUES ($1, $2, $3)
 		RETURNING id;
-	`, institutionsTableName),
+	`, institutionsTableName)),
+	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+		DROP TABLE IF EXISTS %s CASCADE;
+	`, institutionsTableName)),
 }
 
 type Institutions struct {

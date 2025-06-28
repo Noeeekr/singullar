@@ -2,14 +2,17 @@ package models
 
 import (
 	"time"
+
+	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
 )
 
 type TableName string
 
 type TableQueries struct {
-	Create    string
-	InsertOne string
-	SelectOne string
+	Create    *transaction.QueryInfo
+	InsertOne *transaction.QueryInfo
+	SelectOne *transaction.QueryInfo
+	Drop      *transaction.QueryInfo
 }
 
 type TableDepencies struct {

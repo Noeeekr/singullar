@@ -1,6 +1,10 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+)
 
 const notificationsTableName TableName = "notifications" // PARTIAL
 
@@ -8,14 +12,14 @@ var NotificationsTable = &TableInfo{
 	name:    notificationsTableName,
 	Queries: notificationsTableQueries,
 	Dependencies: &TableDepencies{
-		Types: []*TypeInfo{RoleType},
+		Types: []*TypeInfo{UserRolesType},
 		// Classes and institutions since target id may point to one
 		Tables: []*TableInfo{ClassesTable, InstitutionsTable},
 	},
 }
 
 var notificationsTableQueries = &TableQueries{
-	Create: fmt.Sprintf(`
+	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
 			title		 VARCHAR(256) NOT NULL,
@@ -23,7 +27,10 @@ var notificationsTableQueries = &TableQueries{
 			target_id 	 INT 		  NOT NULL,
 			target_type  %s 		  NOT NULL
 		);
-	`, notificationsTableName, DefaultFieldsQuery, userRoleName),
+	`, notificationsTableName, DefaultFieldsQuery, userRolesTypeName)),
+	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+		DROP TABLE IF EXISTS %s CASCADE;
+	`, notificationsTableName)),
 }
 
 type Notifications struct {
