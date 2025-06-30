@@ -3,12 +3,12 @@ package models
 import (
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
 )
 
 type TypeQueries struct {
-	Create *transaction.QueryInfo
-	Drop   *transaction.QueryInfo
+	Create *transactions.TransactionRequest
+	Drop   *transactions.TransactionRequest
 }
 
 type TypeInfo struct {
@@ -21,7 +21,7 @@ type TypeName string
 
 // Names of types present in database
 const (
-	userRolesTypeName TypeName = "roles"
+	UserRolesTypeName TypeName = "roles"
 )
 
 type UserRole string
@@ -36,22 +36,22 @@ const (
 )
 
 var UserRolesType = &TypeInfo{
-	Name:    userRolesTypeName,
+	Name:    UserRolesTypeName,
 	Queries: roleTypeQueries,
 }
 
 var roleTypeQueries = &TypeQueries{
-	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+	Create: transactions.NewRequest(fmt.Sprintf(`
 			DO $$
 			BEGIN
 				IF NOT EXISTS (SELECT * FROM pg_type WHERE typname = '%s') THEN
 					CREATE TYPE %s AS ENUM ( '%s','%s','%s','%s','%s' );
 				END IF;
 			END $$;
-		`, userRolesTypeName, userRolesTypeName,
+		`, UserRolesTypeName, UserRolesTypeName,
 		Admin, Student, Supervisor, Teacher, Unknown,
 	)),
-	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TYPE IF EXISTS %s CASCADE;
-	`, userRolesTypeName)),
+	`, UserRolesTypeName)),
 }

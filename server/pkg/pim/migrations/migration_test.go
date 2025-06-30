@@ -1,23 +1,24 @@
-package managers_test
+package migrations_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/managers"
+	"github.com/Noeeekr/singullar/server/pkg/pim"
+	"github.com/Noeeekr/singullar/server/pkg/pim/migrations"
 	"github.com/Noeeekr/singullar/server/pkg/pim/models"
-	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
 )
 
-var migrations_args = []string{"./../postgres.env"}
+var migrations_args = []string{"./postgres.env"}
 
 func TestMigrations(t *testing.T) {
-	connString := managers.GetConnectionStringFromFiles(migrations_args...)
-	db, err := managers.Connect(connString)
+	connString := pim.GetConnectionStringFromFiles(migrations_args...)
+	db, err := pim.Connect(connString)
 	if err != nil {
 		panic("Status: Error happened. " + err.Error())
 	}
-	migrations := managers.NewMigrationManager(db)
+	migrations := migrations.New(db)
 	defer db.Close()
 
 	// PUT YOUR TYPES FOR TESTS HERE
@@ -26,13 +27,13 @@ func TestMigrations(t *testing.T) {
 	}
 
 	// PUT YOUR TABLE FOR TESTS HERE
-	tables := []*models.TableInfo{
-		models.InstitutionsTable,
-		models.UsersTable,
-		models.ClassesTable,
-		models.NotificationsTable,
-		models.UsersClassesTable,
-		models.UsersNotificationsTable,
+	tables := []models.TableMethods{
+		models.TablesInfo.Institutions,
+		models.TablesInfo.Users,
+		models.TablesInfo.Classes,
+		models.TablesInfo.Notifications,
+		models.TablesInfo.UsersClasses,
+		models.TablesInfo.UsersNotifications,
 	}
 
 	t.Run("PING", func(t *testing.T) {
@@ -42,17 +43,18 @@ func TestMigrations(t *testing.T) {
 		}
 	})
 
-	var res *transaction.Response
+	var res *transactions.Response
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("CREATE TABLE %s", table.Name()), func(t *testing.T) {
 			res = migrations.CreateTables(nil, table)
-			if res.Status != transaction.StatusSuccess {
+
+			if res != nil {
 				t.Log("STATUS: ", res.Status.ToString())
 				t.Fatal(res.Description)
 				return
 			}
 		})
-		if res.Status != transaction.StatusSuccess {
+		if res != nil {
 			t.Fatal("Tests failed.")
 			return
 		}
@@ -61,13 +63,13 @@ func TestMigrations(t *testing.T) {
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("DROP TABLE %s", table.Name()), func(t *testing.T) {
 			res = migrations.DropTables(table)
-			if res.Status != transaction.StatusSuccess {
+			if res != nil {
 				t.Log("STATUS: ", res.Status.ToString())
 				t.Fatal(res.Description)
 				return
 			}
 		})
-		if res.Status != transaction.StatusSuccess {
+		if res != nil {
 			t.Fatal("Tests failed.")
 			return
 		}
@@ -76,13 +78,13 @@ func TestMigrations(t *testing.T) {
 	for _, typ := range types {
 		t.Run(fmt.Sprintf("CREATE TYPE %s", typ.Name), func(t *testing.T) {
 			res = migrations.CreateType(typ)
-			if res.Status != transaction.StatusSuccess {
+			if res != nil {
 				t.Log("STATUS: ", res.Status.ToString())
 				t.Fatal(res.Description)
 				return
 			}
 		})
-		if res.Status != transaction.StatusSuccess {
+		if res != nil {
 			t.Fatal("Tests failed.")
 			return
 		}
@@ -91,13 +93,13 @@ func TestMigrations(t *testing.T) {
 	for _, typ := range types {
 		t.Run(fmt.Sprintf("DROP TYPE %s", typ.Name), func(t *testing.T) {
 			res = migrations.DropType(typ)
-			if res.Status != transaction.StatusSuccess {
+			if res != nil {
 				t.Log("STATUS: ", res.Status.ToString())
 				t.Fatal(res.Description)
 				return
 			}
 		})
-		if res.Status != transaction.StatusSuccess {
+		if res != nil {
 			t.Fatal("Tests failed.")
 			return
 		}

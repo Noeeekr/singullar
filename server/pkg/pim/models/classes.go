@@ -3,22 +3,33 @@ package models
 import (
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
 )
 
-const classesTableName TableName = "classes" // PARTIAL
-
-var ClassesTable = &TableInfo{
-	name:    classesTableName,
-	Queries: classesTableQueries,
-	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{},
-		Tables: []*TableInfo{InstitutionsTable},
-	},
+type ClassesTable struct {
+	name         TableName
+	dependencies *TableDependencies
+	requests     *ClassesRequests
 }
 
-var classesTableQueries = &TableQueries{
-	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+type ClassesRequests struct {
+	Create *transactions.TransactionRequest
+	Drop   *transactions.TransactionRequest
+}
+
+var classesTable *ClassesTable = &ClassesTable{
+	name:         ClassesTableName,
+	dependencies: classesTableDependencies,
+	requests:     classesTableRequests,
+}
+
+var classesTableDependencies *TableDependencies = &TableDependencies{
+	Types:  []*TypeInfo{},
+	Tables: []TableMethods{institutionsTable},
+}
+
+var classesTableRequests = &ClassesRequests{
+	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
 			name VARCHAR(256) NOT NULL,
@@ -29,10 +40,10 @@ var classesTableQueries = &TableQueries{
 
 			FOREIGN KEY (institution_id) REFERENCES %s(id)
 		);
-	`, classesTableName, DefaultFieldsQuery, institutionsTableName)),
-	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+	`, ClassesTableName, DefaultFieldsQuery, InstitutionsTableName)),
+	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;
-	`, classesTableName)),
+	`, ClassesTableName)),
 }
 
 type Classes struct {
@@ -42,4 +53,20 @@ type Classes struct {
 	Series  string `json:"series" binding:"required"`
 
 	InstitutionId int `json:"institution_id" binding:"required"`
+}
+
+func (t *ClassesTable) CreateRequestDependencies() *TableDependencies {
+	return t.dependencies
+}
+
+func (t *ClassesTable) CreateRequest() *transactions.TransactionRequest {
+	return t.requests.Create
+}
+
+func (t *ClassesTable) DropRequest() *transactions.TransactionRequest {
+	return t.requests.Drop
+}
+
+func (t *ClassesTable) Name() TableName {
+	return t.name
 }

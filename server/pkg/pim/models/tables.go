@@ -3,31 +3,42 @@ package models
 import (
 	"time"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
 )
 
 type TableName string
 
-type TableQueries struct {
-	Create    *transaction.QueryInfo
-	InsertOne *transaction.QueryInfo
-	SelectOne *transaction.QueryInfo
-	Drop      *transaction.QueryInfo
+const (
+	usersTableName         TableName = "users"
+	InstitutionsTableName  TableName = "institutions"
+	ClassesTableName       TableName = "classes"       // PARTIAL
+	NotificationsTableName TableName = "notifications" // PARTIAL
+
+	UsersClassesTableName       TableName = "users_classes"       // PARTIAL
+	UsersNotificationsTableName TableName = "users_notifications" // PARTIAL
+)
+
+type Tables struct {
+	Users         *UsersTable
+	Classes       *ClassesTable
+	Institutions  *InstitutionsTable
+	Notifications *NotificationsTable
+
+	UsersClasses       *UsersClassesTable
+	UsersNotifications *UsersNotificationsTable
 }
 
-type TableDepencies struct {
+type TableMethods interface {
+	CreateRequest() *transactions.TransactionRequest
+	DropRequest() *transactions.TransactionRequest
+
+	CreateRequestDependencies() *TableDependencies
+	Name() TableName
+}
+
+type TableDependencies struct {
 	Types  []*TypeInfo
-	Tables []*TableInfo
-}
-
-type TableInfo struct {
-	Dependencies *TableDepencies
-	Queries      *TableQueries
-	name         TableName
-}
-
-func (t *TableInfo) Name() TableName {
-	return t.name
+	Tables []TableMethods
 }
 
 type DefaultFields struct {
@@ -43,6 +54,15 @@ const DefaultFieldsQuery = `
 	updated_at TIMESTAMPTZ NOT NULL,
 	deleted_at TIMESTAMPTZ,
 `
+
+var TablesInfo = Tables{
+	Users:              usersTable,
+	Institutions:       institutionsTable,
+	Notifications:      notificationsTable,
+	Classes:            classesTable,
+	UsersClasses:       usersClassesTable,
+	UsersNotifications: usersNotificationsTable,
+}
 
 //
 //

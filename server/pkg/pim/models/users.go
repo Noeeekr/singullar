@@ -3,51 +3,8 @@ package models
 import (
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
 )
-
-const usersTableName TableName = "users"
-
-var usersTableQueries = &TableQueries{
-	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			%s
-			name             VARCHAR(256)   NOT NULL,
-			email            VARCHAR(256)   NOT NULL UNIQUE,
-			password 	     VARCHAR(256)   NOT NULL,
-			institution_id   INT      	    NOT NULL,
-			profile_picture  VARCHAR(256)   DEFAULT 'userprofilepicture.jpg',
-			role             %s             NOT NULL,
-
-			CONSTRAINT fk_institutions 
-				FOREIGN KEY (institution_id) 
-				REFERENCES %s(id)
-				ON DELETE CASCADE
-		);
-	`, usersTableName, DefaultFieldsQuery, userRolesTypeName, institutionsTableName)),
-	InsertOne: transaction.NewQuery().WithQuery(fmt.Sprintf(`
-		INSERT INTO %s (created_at, updated_at, name, email, password, institution_id, role) 
-		VALUES ($1, $2, $3, $4, $5, $6, $7) 
-		RETURNING email;
-	`, usersTableName)),
-	SelectOne: transaction.NewQuery().WithQuery(fmt.Sprintf(`
-		SELECT created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture 
-		FROM %s 
-		WHERE email = $1;
-	`, usersTableName)),
-	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
-		DROP TABLE IF EXISTS %s CASCADE;
-	`, usersTableName)),
-}
-
-var UsersTable = &TableInfo{
-	name:    usersTableName,
-	Queries: usersTableQueries,
-	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{UserRolesType},
-		Tables: []*TableInfo{InstitutionsTable},
-	},
-}
 
 type CreateUsers struct {
 	Name          string   `json:"name" binding:"required,min=2,max=255"`
@@ -62,4 +19,82 @@ type Users struct {
 	CreateUsers
 
 	ProfilePicture string `json:"profile_picture"`
+}
+
+type UsersRequests struct {
+	Create           *transactions.TransactionRequest
+	InsertOne        *transactions.TransactionRequest
+	DeleteOne        *transactions.TransactionRequest
+	SelectOneByEmail *transactions.TransactionRequest
+	SelectOneById    *transactions.TransactionRequest
+	Drop             *transactions.TransactionRequest
+}
+
+type UsersTable struct {
+	TableMethods
+	name         TableName
+	Requests     *UsersRequests
+	dependencies *TableDependencies
+}
+
+var usersTable = &UsersTable{
+	name:         usersTableName,
+	dependencies: usersTableDependencies,
+	Requests:     usersTableRequests,
+}
+
+var usersTableRequests = &UsersRequests{
+	Create: transactions.NewRequest(fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s (
+			%s
+			name             VARCHAR(256)   NOT NULL,
+			email            VARCHAR(256)   NOT NULL UNIQUE,
+			password 	     VARCHAR(256)   NOT NULL,
+			institution_id   INT      	    NOT NULL,
+			profile_picture  VARCHAR(256)   DEFAULT 'userprofilepicture.jpg',
+			role             %s             NOT NULL,
+
+			CONSTRAINT fk_institutions 
+				FOREIGN KEY (institution_id) 
+				REFERENCES %s(id)
+				ON DELETE CASCADE
+		);
+	`, usersTableName, DefaultFieldsQuery, UserRolesTypeName, InstitutionsTableName)),
+	InsertOne: transactions.NewRequest(fmt.Sprintf(`
+		INSERT INTO %s (created_at, updated_at, name, email, password, institution_id, role) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7) 
+		RETURNING email;
+	`, usersTableName)),
+	SelectOneByEmail: transactions.NewRequest(fmt.Sprintf(`
+		SELECT created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture 
+		FROM %s 
+		WHERE email = $1;
+	`, usersTableName)),
+	Drop: transactions.NewRequest(fmt.Sprintf(`
+		DROP TABLE IF EXISTS %s CASCADE;
+	`, usersTableName)),
+	DeleteOne: transactions.NewRequest(fmt.Sprintf(`
+		DELETE FROM %s WHERE email = $1
+	`, usersTableName)),
+}
+
+var usersTableDependencies *TableDependencies = &TableDependencies{
+	Types:  []*TypeInfo{UserRolesType},
+	Tables: []TableMethods{institutionsTable},
+}
+
+func (t *UsersTable) CreateRequestDependencies() *TableDependencies {
+	return t.dependencies
+}
+
+func (t *UsersTable) CreateRequest() *transactions.TransactionRequest {
+	return t.Requests.Create
+}
+
+func (t *UsersTable) Name() TableName {
+	return t.name
+}
+
+func (t *UsersTable) DropRequest() *transactions.TransactionRequest {
+	return t.Requests.Drop
 }

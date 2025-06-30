@@ -1,4 +1,4 @@
-package managers
+package pim
 
 import (
 	"database/sql"
@@ -31,7 +31,7 @@ func GetConnectionStringFromFiles(args ...string) string {
 	if err := configs.Parse(env_path); err != nil {
 		panic("Status: Failed to parse environment file: " + err.Error())
 	}
-	var env PostgrestManagerEnvironment
+	var env PostgrestEnvironment
 
 	if err := configs.Scan(&env); err != nil {
 		panic("Status: Failed to scan environment file into object: " + err.Error())

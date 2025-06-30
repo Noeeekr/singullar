@@ -3,22 +3,39 @@ package models
 import (
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/transaction"
+	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
 )
 
-const usersNotificationsTableName TableName = "users_notifications" // PARTIAL
-
-var UsersNotificationsTable = &TableInfo{
-	name:    usersNotificationsTableName,
-	Queries: usersNotificationsTableQueries,
-	Dependencies: &TableDepencies{
-		Types:  []*TypeInfo{},
-		Tables: []*TableInfo{UsersTable, NotificationsTable},
-	},
+type UsersNotifications struct {
+	UserId         int
+	NotificationId int
 }
 
-var usersNotificationsTableQueries = &TableQueries{
-	Create: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+type UsersNotificationsTable struct {
+	TableMethods
+	name         TableName
+	requests     *UsersNotificationsRequests
+	dependencies *TableDependencies
+}
+
+type UsersNotificationsRequests struct {
+	Create *transactions.TransactionRequest
+	Drop   *transactions.TransactionRequest
+}
+
+var usersNotificationsTable *UsersNotificationsTable = &UsersNotificationsTable{
+	name:         UsersNotificationsTableName,
+	dependencies: usersNotificationsTableDependencies,
+	requests:     usersNotificationsTableRequests,
+}
+
+var usersNotificationsTableDependencies *TableDependencies = &TableDependencies{
+	Types:  []*TypeInfo{UserRolesType},
+	Tables: []TableMethods{usersTable, notificationsTable},
+}
+
+var usersNotificationsTableRequests = &UsersNotificationsRequests{
+	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			user_id INT NOT NULL,
 			notification_id INT NOT NULL,
@@ -26,13 +43,24 @@ var usersNotificationsTableQueries = &TableQueries{
 			FOREIGN KEY (user_id) REFERENCES %s(id),
 			FOREIGN KEY (notification_id) REFERENCES %s(id)
 		);
-	`, usersNotificationsTableName, usersTableName, notificationsTableName)),
-	Drop: transaction.NewQuery().WithQuery(fmt.Sprintf(`
+	`, UsersNotificationsTableName, usersTableName, NotificationsTableName)),
+	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;
-	`, usersNotificationsTableName)),
+	`, UsersNotificationsTableName)),
 }
 
-type UsersNotifications struct {
-	UserId         int
-	NotificationId int
+func (t *UsersNotificationsTable) CreateRequestDependencies() *TableDependencies {
+	return t.dependencies
+}
+
+func (t *UsersNotificationsTable) CreateRequest() *transactions.TransactionRequest {
+	return t.requests.Create
+}
+
+func (t *UsersNotificationsTable) DropRequest() *transactions.TransactionRequest {
+	return t.requests.Drop
+}
+
+func (t *UsersNotificationsTable) Name() TableName {
+	return t.name
 }

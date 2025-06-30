@@ -1,6 +1,6 @@
-package managers
+package pim
 
-type PostgrestManagerEnvironment struct {
+type PostgrestEnvironment struct {
 	POSTGRES_USER          string `env:"POSTGRES_USER,required"`
 	POSTGRES_USER_PASSWORD string `env:"POSTGRES_USER_PASSWORD,required"`
 

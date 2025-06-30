@@ -1,4 +1,4 @@
-package transaction
+package transactions
 
 import "database/sql"
 
@@ -10,7 +10,7 @@ type Response struct {
 func NewResponse() *Response {
 	return &Response{
 		Description: "Empty response.",
-		Status:      StatusEmptyResponse,
+		Status:      StatusInvalidResponse,
 	}
 }
 func (r *Response) SetDescription(description string) *Response {
@@ -25,15 +25,4 @@ func (r *Response) SetStatus(status ResponseStatus) *Response {
 type TransactionResponse struct {
 	*Response
 	Rows *sql.Rows
-}
-
-func NewTransactionResponse() *TransactionResponse {
-	return &TransactionResponse{
-		Response: &Response{},
-	}
-}
-
-func (r *TransactionResponse) SetRows(rows *sql.Rows) *TransactionResponse {
-	r.Rows = rows
-	return r
 }

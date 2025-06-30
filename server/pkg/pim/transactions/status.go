@@ -1,4 +1,4 @@
-package transaction
+package transactions
 
 import "reflect"
 
@@ -14,8 +14,8 @@ const (
 	StatusUnregisteredMigration
 	StatusUnregisteredMethod
 	StatusAlreadyExists
+	StatusInvalidResponse
 	StatusInvalidSyntax
-	StatusEmptyResponse
 )
 
 func (r ResponseStatus) ToString() string {
