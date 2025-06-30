@@ -1,4 +1,4 @@
-package pim
+package database
 
 type PostgrestEnvironment struct {
 	POSTGRES_USER          string `env:"POSTGRES_USER,required"`

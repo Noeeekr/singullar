@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/models"
-	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
+	"github.com/Noeeekr/singullar/server/pkg/database/models"
+	"github.com/Noeeekr/singullar/server/pkg/database/transactions"
 )
 
 type Operations struct {
@@ -41,7 +41,74 @@ func (ops *Operations) InsertUser(name, email, password string, institution_id i
 
 	return email, tx.Commit()
 }
+func (ops *Operations) SelectUserByEmail(email string) (*models.Users, *transactions.Response) {
+	var users []*models.Users
 
+	res := ops.tx.Query(
+		models.TablesInfo.Users.Requests.SelectOneByEmail.
+			WithArgs(email).
+			WithScanFunc(scanUsers(&users)),
+	)
+
+	if res != nil {
+		return nil, res
+	}
+	if len(users) > 1 {
+		return nil, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	}
+	if len(users) == 0 {
+		return nil, res.SetDescription("Not found").SetStatus(transactions.StatusNotFound)
+	}
+
+	return users[0], nil
+}
+func (ops *Operations) SelectUserById(id int) (*models.Users, *transactions.Response) {
+	var users []*models.Users
+
+	res := ops.tx.Query(
+		models.TablesInfo.Users.Requests.SelectOneById.
+			WithArgs(id).
+			WithScanFunc(scanUsers(&users)),
+	)
+
+	if res != nil {
+		return nil, res
+	}
+	if len(users) > 1 {
+		return nil, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	}
+	if len(users) == 0 {
+		return nil, res.SetDescription("Not found").SetStatus(transactions.StatusNotFound)
+	}
+
+	return users[0], nil
+}
+func (ops *Operations) DeleteUserById(id int) *transactions.Response {
+	tx, res := ops.tx.Start()
+	if res != nil {
+		return res
+	}
+
+	res = tx.Query(models.TablesInfo.Users.Requests.DeleteOneById.WithArgs(id))
+	if res != nil {
+		return res
+	}
+
+	return tx.Commit()
+}
+func (ops *Operations) DeleteUserByEmail(email string) *transactions.Response {
+	tx, res := ops.tx.Start()
+	if res != nil {
+		return res
+	}
+
+	res = tx.Query(models.TablesInfo.Users.Requests.DeleteOneByEmail.WithArgs(email))
+	if res != nil {
+		return res
+	}
+
+	return tx.Commit()
+}
 func (ops *Operations) InsertInstitution(name string) (id int, res *transactions.Response) {
 	tx, res := ops.tx.Start()
 	if res != nil {
@@ -57,8 +124,11 @@ func (ops *Operations) InsertInstitution(name string) (id int, res *transactions
 	if res != nil {
 		return id, res
 	}
-	if len(ids) != 1 {
-		return 0, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	if len(ids) > 1 {
+		return id, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	}
+	if len(ids) == 0 {
+		return id, res.SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
 	}
 
 	return ids[0], tx.Commit()
@@ -75,8 +145,11 @@ func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Instit
 		return inst, res
 	}
 
-	if len(insts) != 1 || insts[0] == nil {
+	if len(insts) > 1 {
 		return inst, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	}
+	if len(insts) == 0 {
+		return inst, res.SetDescription("Not found").SetStatus(transactions.StatusNotFound)
 	}
 
 	return insts[0], nil
@@ -93,8 +166,11 @@ func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions,
 		return nil, res
 	}
 
-	if len(insts) != 1 || insts[0] == nil {
+	if len(insts) != 1 {
 		return nil, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	}
+	if len(insts) == 0 {
+		return inst, res.SetDescription("Not found").SetStatus(transactions.StatusNotFound)
 	}
 	return insts[0], nil
 }

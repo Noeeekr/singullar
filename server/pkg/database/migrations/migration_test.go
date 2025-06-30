@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim"
-	"github.com/Noeeekr/singullar/server/pkg/pim/migrations"
-	"github.com/Noeeekr/singullar/server/pkg/pim/models"
-	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
+	"github.com/Noeeekr/singullar/server/pkg/database"
+	"github.com/Noeeekr/singullar/server/pkg/database/migrations"
+	"github.com/Noeeekr/singullar/server/pkg/database/models"
+	"github.com/Noeeekr/singullar/server/pkg/database/transactions"
 )
 
 var migrations_args = []string{"./postgres.env"}
 
 func TestMigrations(t *testing.T) {
-	connString := pim.GetConnectionStringFromFiles(migrations_args...)
-	db, err := pim.Connect(connString)
+	connString := database.GetConnectionStringFromFiles(migrations_args...)
+	db, err := database.Connect(connString)
 	if err != nil {
 		panic("Status: Error happened. " + err.Error())
 	}

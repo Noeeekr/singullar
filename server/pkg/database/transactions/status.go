@@ -13,7 +13,8 @@ const (
 	StatusFailedTransaction
 	StatusUnregisteredMigration
 	StatusUnregisteredMethod
-	StatusAlreadyExists
+	StatusFound
+	StatusNotFound
 	StatusInvalidResponse
 	StatusInvalidSyntax
 )

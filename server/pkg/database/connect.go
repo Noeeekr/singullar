@@ -1,4 +1,4 @@
-package pim
+package database
 
 import (
 	"database/sql"

@@ -3,7 +3,7 @@ package models
 import (
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
+	"github.com/Noeeekr/singullar/server/pkg/database/transactions"
 )
 
 type CreateUsers struct {
@@ -24,7 +24,8 @@ type Users struct {
 type UsersRequests struct {
 	Create           *transactions.TransactionRequest
 	InsertOne        *transactions.TransactionRequest
-	DeleteOne        *transactions.TransactionRequest
+	DeleteOneByEmail *transactions.TransactionRequest
+	DeleteOneById    *transactions.TransactionRequest
 	SelectOneByEmail *transactions.TransactionRequest
 	SelectOneById    *transactions.TransactionRequest
 	Drop             *transactions.TransactionRequest
@@ -70,11 +71,19 @@ var usersTableRequests = &UsersRequests{
 		FROM %s 
 		WHERE email = $1;
 	`, usersTableName)),
+	SelectOneById: transactions.NewRequest(fmt.Sprintf(`
+		SELECT created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture 
+		FROM %s 
+		WHERE id = $1;
+	`, usersTableName)),
 	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;
 	`, usersTableName)),
-	DeleteOne: transactions.NewRequest(fmt.Sprintf(`
-		DELETE FROM %s WHERE email = $1
+	DeleteOneByEmail: transactions.NewRequest(fmt.Sprintf(`
+		DELETE FROM %s WHERE email = $1;
+	`, usersTableName)),
+	DeleteOneById: transactions.NewRequest(fmt.Sprintf(`
+		DELETE FROM %s WHERE id = $1;
 	`, usersTableName)),
 }
 

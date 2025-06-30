@@ -3,8 +3,8 @@ package migrations
 import (
 	"database/sql"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/models"
-	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
+	"github.com/Noeeekr/singullar/server/pkg/database/models"
+	"github.com/Noeeekr/singullar/server/pkg/database/transactions"
 )
 
 type Context struct {

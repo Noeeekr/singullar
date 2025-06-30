@@ -3,7 +3,7 @@ package models
 import (
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/pkg/pim/transactions"
+	"github.com/Noeeekr/singullar/server/pkg/database/transactions"
 )
 
 type UsersNotifications struct {
