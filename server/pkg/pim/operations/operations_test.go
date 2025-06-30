@@ -129,11 +129,11 @@ func TestQueries(test *testing.T) {
 	}
 
 	if !test.Run("INSERT USER", func(t *testing.T) {
-		user_email, res = utils.operations.InsertUser("noeeekr", "noeeekr@gmail.com", "123123123", institution_id, models.Admin)
+		email, res := utils.operations.InsertUser("noeeekr", "noeeekr@gmail.com", "123123123", institution_id, models.Admin)
 		if res != nil {
 			t.Fatal(res.Description)
 		}
-		if user_email != user_email {
+		if user_email != email {
 			t.Fatal("Nil institution")
 		}
 	}) {

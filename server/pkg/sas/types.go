@@ -1,4 +1,4 @@
-package internal
+package main
 
 type EnvironmentVariables struct {
 	// The port to listen to. The default is internet 80 port.

@@ -14,11 +14,6 @@ const (
 	Admin      UserRole = "admin"
 )
 
-type Signin struct { // FOR JSON
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=2"`
-}
-
 type CommonDbFields struct {
 	ID        uint       `gorm:"primary_key;autoincrement:true;unique" json:"id" binding:"required"`
 	CreatedAt time.Time  `json:"created_at" binding:"required"`
@@ -35,17 +30,17 @@ type CreateUsers struct { // FOR JSON
 	InstitutionId uint `gorm:"not null;index" json:"institution_id" binding:"required"`
 }
 
+// _______
+
 type Users struct {
 	CommonDbFields
 	CreateUsers
-	Institutions []Institutions `gorm:"many2many:users_institutions;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"-"`
-
-	ProfileImgUrl string `gorm:"default:'./assets/defaultpfp.jpg'" json:"profile_img_url" binding:"required"`
-
-	Notifications []Notifications `gorm:"many2many:users_notifications" json:"-"`
-	Classes       []Classes       `gorm:"many2many:users_classes;" json:"-"` // Many-to-many relationship with classes
+	// SHould be table  | Institutions []Institutions `gorm:"many2many:users_institutions;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"-"`
+	// SHould be table  | Notifications []Notifications `gorm:"many2many:users_notifications" json:"-"`
+	// Should be table | Classes       []Classes       `gorm:"many2many:users_classes;" json:"-"` // Many-to-many relationship with classes
 }
 
+// _______
 type Institutions struct {
 	CommonDbFields
 	Name          string `gorm:"size:255; not null" json:"name" binding:"required"`

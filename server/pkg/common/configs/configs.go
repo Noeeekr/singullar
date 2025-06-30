@@ -2,9 +2,7 @@ package configs
 
 import (
 	"errors"
-	"path/filepath"
 
-	"github.com/Noeeekr/singullar/server/pkg/common/paths"
 	"github.com/caarlos0/env"
 	dotenv "github.com/joho/godotenv"
 )
@@ -40,11 +38,4 @@ func Scan(v any) error {
 		return err
 	}
 	return nil
-}
-
-func filePathsToAbs(files []string) []string {
-	for i, f := range files {
-		files[i] = filepath.Join(paths.Root, f)
-	}
-	return files
 }
