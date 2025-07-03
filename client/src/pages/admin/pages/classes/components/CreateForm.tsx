@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import ButtonSolid from '@components/ButtonSolid';
 
 // Features
-import { useState, createContext, useContext, useEffect, Fragment } from 'react';
+import { useState, createContext, useContext, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 // Types
@@ -80,8 +80,7 @@ const CreateClassForm = ({ form }: { form: ({ title: string, subtitle: string, c
     const series = watch("series");
     const classOj = watch("class");
 
-    // define what stage of form is open
-    let [sectionsStatus, setSectionStatus] = useState<1 | 2 | 3>(1)
+    const [sectionsStatus, setSectionStatus] = useState<1 | 2 | 3>(1)
 
     const onSubmit = () => {
 

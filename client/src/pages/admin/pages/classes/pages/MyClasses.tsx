@@ -19,7 +19,7 @@ const PageClasses = (): JSX.Element => {
         <div>
             <SectionHeader
                 title="Turmas"
-                subtitle={insts.institutions.find(i => i.id.toString() == insts.current.id)?.name || "Nome desconhecido"}
+                subtitle={insts.institutions.find(i => i.id == insts.current?.id)?.name || "Nome desconhecido"}
             >
                 <div style={{ margin: '0px 0px 0px auto' }}>
                     <LinkButton

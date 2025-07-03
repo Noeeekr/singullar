@@ -72,7 +72,7 @@ const DefaultButton = (props: ISideMenuButtonProps): JSX.Element => {
     const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
     const pathname = useLocation().pathname
 
-    const Icon = Boolean(showIcon)
+    const Icon = showIcon
         ? <Box display='flex' sx={{ opacity: 0.7 }}>
             {
                 cloneElement(icon,
@@ -135,7 +135,7 @@ const PaperButton = (props: ISideMenuButtonProps): JSX.Element => {
 
     const theme = useTheme();
 
-    const Icon = Boolean(showIcon)
+    const Icon = showIcon
         ? <Box display='flex' sx={{ opacity: 0.7 }}>
             {
                 cloneElement(icon,
