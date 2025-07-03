@@ -9,7 +9,8 @@
     * Move PIM to an internal folder for code security.      
     * Make Backup utilities in PIM CLI  
     * Implement Dependency Managment in PIM  
-  
+    * Hash password before passing to database
+    
 * Decouple all possible services from main API.
     * Refactor main API logic using the new services.  
 

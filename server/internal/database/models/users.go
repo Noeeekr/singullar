@@ -29,6 +29,8 @@ type UsersRequests struct {
 	SelectOneByEmail *transactions.TransactionRequest
 	SelectOneById    *transactions.TransactionRequest
 	Drop             *transactions.TransactionRequest
+
+	SelectManyByInstitutionId *transactions.TransactionRequest
 }
 
 type UsersTable struct {
@@ -64,7 +66,7 @@ var usersTableRequests = &UsersRequests{
 	InsertOne: transactions.NewRequest(fmt.Sprintf(`
 		INSERT INTO %s (created_at, updated_at, name, email, password, institution_id, role) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7) 
-		RETURNING email;
+		RETURNING created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture;
 	`, usersTableName)),
 	SelectOneByEmail: transactions.NewRequest(fmt.Sprintf(`
 		SELECT created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture 
@@ -75,6 +77,11 @@ var usersTableRequests = &UsersRequests{
 		SELECT created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture 
 		FROM %s 
 		WHERE id = $1;
+	`, usersTableName)),
+	SelectManyByInstitutionId: transactions.NewRequest(fmt.Sprintf(`
+		SELECT created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture
+		FROM %s
+		WHERE institution_id = $1;
 	`, usersTableName)),
 	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;

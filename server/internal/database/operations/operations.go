@@ -19,27 +19,29 @@ func New(db *sql.DB) *Operations {
 	}
 }
 
-func (ops *Operations) InsertUser(name, email, password string, institution_id int, role models.UserRole) (email_ string, res *transactions.Response) {
+func (ops *Operations) InsertUser(request *models.CreateUsers) (user *models.Users, res *transactions.Response) {
 	tx, res := ops.tx.Start()
 	if res != nil {
-		return email, res
+		return user, res
 	}
 
-	var emails []string
-
+	var users []*models.Users
 	res = tx.Query(
 		models.TablesInfo.Users.Requests.InsertOne.
-			WithArgs(time.Now(), time.Now(), name, email, password, institution_id, role).
-			WithScanFunc(scanUsersEmail(&emails)),
+			WithArgs(time.Now(), time.Now(), request.Name, request.Email, request.Password, request.InstitutionId, request.Role).
+			WithScanFunc(scanUsers(&users)),
 	)
 	if res != nil {
-		return email, res
+		return user, res
 	}
-	if len(emails) != 1 {
-		return email, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	if len(users) > 1 {
+		return user, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	}
+	if len(users) == 0 {
+		return user, res.SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
 	}
 
-	return email, tx.Commit()
+	return users[0], tx.Commit()
 }
 func (ops *Operations) SelectUserByEmail(email string) (*models.Users, *transactions.Response) {
 	var users []*models.Users
@@ -83,6 +85,12 @@ func (ops *Operations) SelectUserById(id int) (*models.Users, *transactions.Resp
 
 	return users[0], nil
 }
+func (ops *Operations) SelectUsersByInstitutionId(id int) ([]*models.Users, *transactions.Response) {
+	return nil, &transactions.Response{
+		Status:      transactions.StatusUnregisteredMethod,
+		Description: "Not implemented",
+	}
+}
 func (ops *Operations) DeleteUserById(id int) *transactions.Response {
 	tx, res := ops.tx.Start()
 	if res != nil {
@@ -109,10 +117,10 @@ func (ops *Operations) DeleteUserByEmail(email string) *transactions.Response {
 
 	return tx.Commit()
 }
-func (ops *Operations) InsertInstitution(name string) (id int, res *transactions.Response) {
+func (ops *Operations) InsertInstitution(name string, email string, password string) (user *models.Users, res *transactions.Response) {
 	tx, res := ops.tx.Start()
 	if res != nil {
-		return id, res
+		return user, res
 	}
 
 	var ids []int
@@ -122,16 +130,33 @@ func (ops *Operations) InsertInstitution(name string) (id int, res *transactions
 		WithScanFunc(scanInstitutionsIds(&ids)),
 	)
 	if res != nil {
-		return id, res
-	}
-	if len(ids) > 1 {
-		return id, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
-	}
-	if len(ids) == 0 {
-		return id, res.SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
+		return user, res
 	}
 
-	return ids[0], tx.Commit()
+	if len(ids) > 1 {
+		return user, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	}
+	if len(ids) == 0 {
+		return user, res.SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
+	}
+
+	var users []*models.Users
+	res = tx.Query(models.TablesInfo.Users.Requests.InsertOne.
+		WithArgs(time.Now(), time.Now(), "Administrator", email, password, ids[0], models.Admin).
+		WithScanFunc(scanUsers(&users)),
+	)
+
+	if res != nil {
+		return user, res
+	}
+	if len(users) != 1 {
+		return user, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+	}
+	if len(users) == 0 {
+		return user, res.SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
+	}
+
+	return users[0], tx.Commit()
 }
 func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Institutions, res *transactions.Response) {
 	var insts []*models.Institutions
@@ -155,17 +180,17 @@ func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Instit
 	return insts[0], nil
 }
 func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions, res *transactions.Response) {
-	var insts []*models.Institutions
+	var insts []*models.Institutions = []*models.Institutions{}
 
 	res = ops.tx.Query(
 		models.TablesInfo.Institutions.Requests.SelectOneById.
 			WithArgs(id).
 			WithScanFunc(scanInstitutions(&insts)),
 	)
+
 	if res != nil {
 		return nil, res
 	}
-
 	if len(insts) != 1 {
 		return nil, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
 	}

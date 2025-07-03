@@ -1,5 +1,9 @@
 package transactions
 
+import (
+	"fmt"
+)
+
 type Response struct {
 	Description string
 	Status      ResponseStatus
@@ -11,6 +15,11 @@ func NewResponse() *Response {
 		Status:      StatusInvalidResponse,
 	}
 }
+
+func (r *Response) ParseToError() error {
+	return fmt.Errorf("[%s]: %s", r.Status, r.Description)
+}
+
 func (r *Response) SetDescription(description string) *Response {
 	r.Description = description
 	return r

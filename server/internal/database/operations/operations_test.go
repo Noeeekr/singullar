@@ -1,11 +1,11 @@
 package operations_test
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"math/big"
 	"testing"
 
+	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/singullar/server/common/configs"
 	"github.com/Noeeekr/singullar/server/internal/database"
 	"github.com/Noeeekr/singullar/server/internal/database/migrations"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
@@ -13,25 +13,21 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
-var args = []string{"./postgres.env"}
+var args = []string{"../postgres.env"}
 var tables = []models.TableMethods{models.TablesInfo.Users, models.TablesInfo.Institutions}
 
-type InstitutionTestCase struct {
-	Name string
-	Id   int
-
-	TargetInstance *models.Institutions
+type InstitutionData struct {
+	Name     string
+	Email    string
+	Password string
 }
 
-type UserTestCase struct {
-	Id            int
+type UserData struct {
 	Name          string
 	Email         string
 	Password      string
-	InstitutionId int
 	Role          models.UserRole
-
-	TargetInstance *models.Users
+	InstitutionId int
 }
 
 /*
@@ -68,66 +64,58 @@ func (m *QueryTestUtil) DropTables(tables []models.TableMethods) (res *transacti
 	}
 	return res
 }
-func (m *QueryTestUtil) CreateInstitutionTestCases(amount int) []*InstitutionTestCase {
-	cases := []*InstitutionTestCase{}
+func (m *QueryTestUtil) CreateInstitutionsData(amount int) []*InstitutionData {
+	data := []*InstitutionData{}
 	for range amount {
-		cases = append(
-			cases,
-			&InstitutionTestCase{
-				Name:           m.GenerateRandomStrings(10),
-				Id:             -1,
-				TargetInstance: nil,
+		data = append(
+			data,
+			&InstitutionData{
+				Name:     common.GenerateRandomStrings(10),
+				Email:    common.GenerateRandomStrings(10),
+				Password: common.GenerateRandomStrings(10),
 			},
 		)
 	}
-	return cases
+	return data
 }
-func (m *QueryTestUtil) CreateUserTestCases(institutions []*InstitutionTestCase) []*UserTestCase {
-	cases := []*UserTestCase{}
+func (m *QueryTestUtil) CreateUsersData(institutions []*models.Institutions) []*UserData {
+	data := []*UserData{}
 	for _, institution := range institutions {
-		cases = append(
-			cases,
-			&UserTestCase{
-				Id:             -1,
-				Name:           m.GenerateRandomStrings(10),
-				Email:          m.GenerateRandomStrings(6) + "@" + m.GenerateRandomStrings(4) + ".com",
-				Password:       m.GenerateRandomStrings(15),
-				Role:           models.Admin,
-				InstitutionId:  institution.Id,
-				TargetInstance: nil,
+		data = append(
+			data,
+			&UserData{
+				Name:          common.GenerateRandomStrings(10),
+				Email:         common.GenerateRandomStrings(10),
+				Password:      common.GenerateRandomStrings(10),
+				Role:          models.Student,
+				InstitutionId: institution.Id,
 			},
 		)
 	}
-
-	return cases
-}
-func (m *QueryTestUtil) GenerateRandomStrings(size int) string {
-	var s string = ""
-	for i := len(s); i < size; {
-		letter, err := rand.Int(rand.Reader, big.NewInt(91))
-		if err != nil {
-			panic(err)
-		}
-		if letter.Int64() > 64 {
-			s += string(rune(letter.Int64()))
-			i++
-		}
-	}
-	return s
+	return data
 }
 
 // Start database connection, create necessary tables.
 func (m *QueryTestUtil) Prepare(tables []models.TableMethods) *sql.DB {
-	connString := database.GetConnectionStringFromFiles(args...)
-	db, err := database.Connect(connString)
-	if err != nil {
-		m.test.Fatal(err.Error())
-		return nil
-	}
+	m.test.Run("SETUP", func(t *testing.T) {
+		if err := configs.Parse(args...); err != nil {
+			t.Fatal(err.Status, err.Description)
+		}
 
-	m.db = db
-	m.migrations = migrations.New(m.db)
-	m.operations = operations.New(m.db)
+		var env database.PostgresEnvironment
+		if err := configs.Scan(&env); err != nil {
+			t.Fatal(err.ParseToError())
+		}
+
+		db, err := database.Connect(env.POSTGRES_CONNECTION_STRING)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		m.db = db
+		m.migrations = migrations.New(m.db)
+		m.operations = operations.New(m.db)
+	})
 
 	m.Run("PING", func(t *testing.T) {
 		err := m.db.Ping()
@@ -138,7 +126,7 @@ func (m *QueryTestUtil) Prepare(tables []models.TableMethods) *sql.DB {
 
 	m.Run("CREATE TABLES", func(t *testing.T) {
 		if res := m.CreateTables(tables); res != nil {
-			t.Fatal(res.Status.ToString(), res.Description)
+			t.Fatal(res.Status, res.Description)
 		}
 	})
 
@@ -164,107 +152,113 @@ func TestQueries(test *testing.T) {
 	defer db.Close()
 	defer utils.DropTables(tables)
 
-	institutions := utils.CreateInstitutionTestCases(10)
+	institution_source_data := utils.CreateInstitutionsData(10)
+
+	created_users := []*models.Users{}
+	created_institutions := []*models.Institutions{}
 
 	var res *transactions.Response
 
 	utils.
 		Run("INSERT INSTITUTIONS", func(t *testing.T) {
-			for index, institution := range institutions {
-				institutions[index].Id, res = utils.operations.InsertInstitution(institution.Name)
+			for _, data := range institution_source_data {
+				user, res := utils.operations.InsertInstitution(data.Name, data.Email, data.Password)
 				if res != nil {
 					t.FailNow()
 				}
+				created_users = append(created_users, user)
 			}
 		}).
 		Run("SELECT INSTITUTIONS BY ID", func(t *testing.T) {
-			for index, inst := range institutions {
-				institutions[index].TargetInstance, res = utils.operations.SelectInstitutionById(inst.Id)
+			for _, user := range created_users {
+				institution, res := utils.operations.SelectInstitutionById(user.InstitutionId)
 				if res != nil {
 					t.Fatal(res.Description)
 				}
-				if institutions[index].TargetInstance == nil {
+				if institution == nil {
 					t.Fatal("Nil institution")
 				}
+				created_institutions = append(created_institutions, institution)
 			}
 		}).
 		Run("SELECT INSTITUTIONS BY NAME", func(t *testing.T) {
-			for index, institution := range institutions {
-				institutions[index].TargetInstance = nil
-				institutions[index].TargetInstance, res = utils.operations.SelectInstitutionByName(institution.Name)
+			for _, data := range institution_source_data {
+				institution, res := utils.operations.SelectInstitutionByName(data.Name)
 				if res != nil {
 					t.Fatal(res.Description)
 				}
-				if institutions[index].TargetInstance == nil {
+				if institution == nil {
 					t.Fatal("Nil institution")
 				}
 			}
 		})
 
-	users := utils.CreateUserTestCases(institutions)
-
 	utils.Run("INSERT USERS", func(t *testing.T) {
-		for _, user := range users {
-			email, res := utils.operations.InsertUser(user.Name, user.Email, user.Password, user.InstitutionId, user.Role)
+		for _, institution := range created_institutions {
+			user, res := utils.operations.InsertUser(&models.CreateUsers{
+				Name:          common.GenerateRandomStrings(10),
+				Email:         common.GenerateRandomStrings(10),
+				Password:      common.GenerateRandomStrings(10),
+				InstitutionId: institution.Id,
+				Role:          models.Student,
+			})
 			if res != nil {
 				t.Fatal(res.Description)
 			}
-			if user.Email != email {
+			if user.InstitutionId != institution.Id {
 				t.Fatal("Emails don't match")
 			}
+			created_users = append(created_users, user)
 		}
 	}).Run("SELECT USERS BY EMAIL", func(t *testing.T) {
-		for _, userTestCase := range users {
-			(*userTestCase).TargetInstance = nil
-			(*userTestCase).TargetInstance, res = utils.operations.SelectUserByEmail(userTestCase.Email)
+		for _, user := range created_users {
+			user, res := utils.operations.SelectUserByEmail(user.Email)
 			if res != nil {
 				t.Fatal(res.Description)
 			}
-			if userTestCase.Email != (*userTestCase).TargetInstance.Email {
+			if user == nil {
 				t.Fatal("Nil user")
 			}
-			(*userTestCase).Id = (*userTestCase).TargetInstance.Id
 		}
 	}).Run("SELECT USERS BY ID", func(t *testing.T) {
-		for _, userTestCase := range users {
-			(*userTestCase).TargetInstance = nil
-			(*userTestCase).TargetInstance, res = utils.operations.SelectUserById(userTestCase.Id)
+		for _, user := range created_users {
+			user, res = utils.operations.SelectUserById(user.Id)
 			if res != nil {
 				t.Fatal(res.Description)
 			}
-			if userTestCase.Email != (*userTestCase).TargetInstance.Email {
+			if user == nil {
 				t.Fatal("Nil user")
 			}
 		}
 	})
 
 	utils.Run("DELETE USERS BY EMAIL AND ID", func(t *testing.T) {
-		if len(users) < 2 {
+		if len(created_users) < 2 {
 			t.Fatal("Insufficient test cases for users")
 		}
-		for i, userTestCase := range users {
-			if i > len(users)/2 {
-				res = utils.operations.DeleteUserByEmail((*userTestCase).TargetInstance.Email)
+		for i, user := range created_users {
+			if i > len(created_users)/2 {
+				res = utils.operations.DeleteUserByEmail(user.Email)
 			} else {
-				res = utils.operations.DeleteUserById((*userTestCase).TargetInstance.Id)
+				res = utils.operations.DeleteUserById(user.Id)
 			}
 			if res != nil {
-				test.Fatal(res.Status.ToString(), res.Description)
+				test.Fatal(res.Status, res.Description)
 			}
 		}
 	})
 	utils.Run("DELETE INSTITUTIONS BY EMAIL AND ID", func(t *testing.T) {
-		if len(institutions) < 2 {
+		if len(created_institutions) < 2 {
 			t.Fatal("Insufficient test cases for institutions")
 		}
-		for i, institutionsTestCase := range institutions {
-			if i > len(users)/2 {
-				res = utils.operations.DeleteInstitutionById((*institutionsTestCase).TargetInstance.Id)
+		for i, institution := range created_institutions {
+			if i > len(created_institutions)/2 {
+				res = utils.operations.DeleteInstitutionById(institution.Id)
 			} else {
-				res = utils.operations.DeleteInstitutionByName((*institutionsTestCase).TargetInstance.Name)
+				res = utils.operations.DeleteInstitutionByName(institution.Name)
 			}
 			if res != nil {
-				test.Fatal(res.Status.ToString(), res.Description)
+				test.Fatal(res.Status, res.Description)
 			}
 		}
 	})

@@ -8,12 +8,19 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "singss",
+	Use:   "sas [command]",
 	Short: "Singullar Static Server (SINGSS) provides static files.",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Help message")
+		cmd.Help()
 	},
+}
+
+func init() {
+	rootCmd.AddCommand(serveCmd)
+
+	serveCmd.Flags().StringP("port", "p", "80", "Defines the port the server will listen to. Defaults to 80")
+	serveCmd.Flags().BoolP("debug", "d", false, "Defines if server will start in debug mode. Defaults to false")
 }
 
 func Execute() {

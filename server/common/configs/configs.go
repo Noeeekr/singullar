@@ -1,8 +1,9 @@
 package configs
 
 import (
-	"errors"
+	"os"
 
+	"github.com/Noeeekr/singullar/server/common"
 	"github.com/caarlos0/env"
 	dotenv "github.com/joho/godotenv"
 )
@@ -21,21 +22,47 @@ type EnvironmentVariables struct {
 	// UserAuthStoreSecret string `env:"USER_AUTH_STORE_SECRET,required"`
 }
 
-func Parse(files ...string) error {
+func Parse(files ...string) *common.Error {
 	if len(files) == 0 {
-		return errors.New(" No env file location provided. Starting a server without proper configuration is dangeous. Please provide a config file in --env flag, or create a default config file in ./config/* as dev.env. ")
+		return &common.Error{
+			Status:      common.StatusEmpty,
+			Description: "Insufficient amount of files.",
+		}
+	}
+
+	for _, file := range files {
+		stat, err := os.Stat(file)
+		if err != nil {
+			return &common.Error{
+				Status:      common.StatusNotFound,
+				Description: "Environment file not found.",
+			}
+		}
+		if stat.IsDir() {
+			return &common.Error{
+				Status:      common.StatusInvalidRequest,
+				Description: "Path doesn't lead to an actual file.",
+			}
+		}
 	}
 
 	if err := dotenv.Load(files...); err != nil {
-		return errors.New(" Failed to load enviroment file. " + err.Error())
+		return &common.Error{
+			Status:      common.StatusInternalError,
+			Description: "Failed to load environment file",
+		}
 	}
+
 	return nil
 }
 
 // Populates v with all variables. V must be a struct with all fields to be parsed
-func Scan(v any) error {
+func Scan(v any) *common.Error {
 	if err := env.Parse(v); err != nil {
-		return err
+		return &common.Error{
+			Status:      common.StatusInternalError,
+			Description: "Failed to scan environment variables to interface. " + err.Error(),
+		}
 	}
 	return nil
 }

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/clirp/proxy"
-	"github.com/Noeeekr/singullar/server/internal/common/logs"
 	"github.com/spf13/cobra"
 )
 

@@ -1,9 +1,11 @@
 package migrations_test
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
+	"github.com/Noeeekr/singullar/server/common/configs"
 	"github.com/Noeeekr/singullar/server/internal/database"
 	"github.com/Noeeekr/singullar/server/internal/database/migrations"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
@@ -13,11 +15,24 @@ import (
 var migrations_args = []string{"./postgres.env"}
 
 func TestMigrations(t *testing.T) {
-	connString := database.GetConnectionStringFromFiles(migrations_args...)
-	db, err := database.Connect(connString)
-	if err != nil {
-		panic("Status: Error happened. " + err.Error())
-	}
+	var db *sql.DB
+	t.Run("SETUP", func(t *testing.T) {
+		if err := configs.Parse(migrations_args...); err != nil {
+			t.Fatal(err.Status, err.Description)
+		}
+
+		var env database.PostgresEnvironment
+		if err := configs.Scan(&env); err != nil {
+			t.Fatal(err.ParseToError())
+		}
+
+		var err error
+		db, err = database.Connect(env.POSTGRES_CONNECTION_STRING)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+	})
+
 	migrations := migrations.New(db)
 	defer db.Close()
 
@@ -49,7 +64,7 @@ func TestMigrations(t *testing.T) {
 			res = migrations.CreateTables(nil, table)
 
 			if res != nil {
-				t.Log("STATUS: ", res.Status.ToString())
+				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)
 				return
 			}
@@ -64,7 +79,7 @@ func TestMigrations(t *testing.T) {
 		t.Run(fmt.Sprintf("DROP TABLE %s", table.Name()), func(t *testing.T) {
 			res = migrations.DropTables(table)
 			if res != nil {
-				t.Log("STATUS: ", res.Status.ToString())
+				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)
 				return
 			}
@@ -79,7 +94,7 @@ func TestMigrations(t *testing.T) {
 		t.Run(fmt.Sprintf("CREATE TYPE %s", typ.Name), func(t *testing.T) {
 			res = migrations.CreateType(typ)
 			if res != nil {
-				t.Log("STATUS: ", res.Status.ToString())
+				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)
 				return
 			}
@@ -94,7 +109,7 @@ func TestMigrations(t *testing.T) {
 		t.Run(fmt.Sprintf("DROP TYPE %s", typ.Name), func(t *testing.T) {
 			res = migrations.DropType(typ)
 			if res != nil {
-				t.Log("STATUS: ", res.Status.ToString())
+				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)
 				return
 			}

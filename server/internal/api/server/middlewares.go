@@ -4,15 +4,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/Noeeekr/singullar/server/api/config"
-	"github.com/Noeeekr/singullar/server/api/internal/core/models"
-
+	"github.com/Noeeekr/singullar/server/internal/api/server/types"
+	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 type RouterMiddlewares struct {
-	env *config.Configuration
+	env *types.ApiEnvironment
 }
 
 // Need to be tested : Redirect users that are not logged from protected routes.
@@ -28,7 +27,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 			})
 			return
 		}
-		claims := &AuthClaims{}
+		claims := &types.AuthClaims{}
 
 		token, err := jwt.ParseWithClaims(cookie, claims, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -46,15 +45,16 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 		}
 
 		if token.Valid {
-			var canPass bool = false
+			var allowed bool = false
 
+			// Check if the role of the user is allowed
 			for i := 0; i < len(roles); i++ {
 				if claims.User.Role == roles[i] {
-					canPass = true
+					allowed = true
 				}
 			}
 
-			if !canPass {
+			if !allowed {
 				ctx.JSON(http.StatusBadRequest, gin.H{
 					"error": "Usuário não autorizado.",
 					"data":  nil,

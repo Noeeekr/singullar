@@ -1,24 +1,19 @@
 package transactions
 
-import "reflect"
-
-type ResponseStatus int
+type ResponseStatus string
 
 const (
-	StatusFailedTransactionStart ResponseStatus = iota + 999
-	StatusSuccess
-	StatusFailedTransactionRollback
-	StatusFailedTransactionCommit
-	StatusFailedTransactionScan
-	StatusFailedTransaction
-	StatusUnregisteredMigration
-	StatusUnregisteredMethod
-	StatusFound
-	StatusNotFound
-	StatusInvalidResponse
-	StatusInvalidSyntax
+	StatusFailedTransactionRollback ResponseStatus = "StatusFailedTransactionRollback"
+	StatusFailedTransactionStart    ResponseStatus = "StatusFailedTransactionStart"
+	StatusSuccess                   ResponseStatus = "StatusSuccess"
+	StatusFailedTransactionCommit   ResponseStatus = "StatusFailedTransactionCommit"
+	StatusFailedTransactionScan     ResponseStatus = "StatusFailedTransactionScan"
+	StatusFailedTransaction         ResponseStatus = "StatusFailedTransaction"
+	StatusUnregisteredMigration     ResponseStatus = "StatusUnregisteredMigration"
+	StatusUnregisteredMethod        ResponseStatus = "StatusUnregisteredMethod"
+	StatusFound                     ResponseStatus = "StatusFound"
+	StatusNotEqual                  ResponseStatus = "StatusNotEqual"
+	StatusNotFound                  ResponseStatus = "StatusNotFound"
+	StatusInvalidResponse           ResponseStatus = "StatusInvalidResponse"
+	StatusInvalidSyntax             ResponseStatus = "StatusInvalidSyntax"
 )
-
-func (r ResponseStatus) ToString() string {
-	return reflect.TypeOf(r).Name()
-}
