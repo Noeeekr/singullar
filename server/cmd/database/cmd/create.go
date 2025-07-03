@@ -3,48 +3,40 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/common/configs"
 	"github.com/Noeeekr/singullar/server/internal/database"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
+	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var createCommand *cobra.Command = &cobra.Command{
-	Use:   "create [--email EMAIL] [--environment file]",
+	Use:   "create [--email EMAIL] [--name NAME] [--password PASSWORD] [--environment file]",
 	Short: "Create allows inserting institutions into the database via command-line-interface (CLI).",
 	Long: fmt.Sprint(
 		"-n --name: The name of the institution to be created.",
 		"-e --environment: The path to the file containig the connection string. It must be in a variable called POSTGRES_CONNECTION_STRING.",
 	),
 	Run: func(cmd *cobra.Command, args []string) {
-		email, err := cmd.Flags().GetString("email")
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
+		// FLAGS
+		name, _ := cmd.Flags().GetString("name")
+		email, _ := cmd.Flags().GetString("email")
+		path, _ := cmd.Flags().GetString("environment")
+		password, _ := cmd.Flags().GetString("password")
 
-		path, err := cmd.Flags().GetString("environment")
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
-		if email == "" {
-			fmt.Println("Name flag is required. Usage: --email='email'")
-		}
-
-		if err := configs.Parse(path); err != nil {
-			fmt.Println(err.Status, err.Description)
+		if res := configs.Parse(path); res != nil {
+			fmt.Println(res.ParseToError().Error())
 			return
 		}
 
 		var env database.PostgresEnvironment
-		if err := configs.Scan(&env); err != nil {
-			fmt.Println(err.ParseToError())
+		if res := configs.Scan(&env); res != nil {
+			fmt.Println(res.ParseToError().Error())
 			return
 		}
 
+		// CONNECT TO DATABASE
 		db, err := database.Connect(env.POSTGRES_CONNECTION_STRING)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -58,25 +50,39 @@ var createCommand *cobra.Command = &cobra.Command{
 			return
 		}
 
-		ops := operations.New(db)
-		user, res := ops.InsertInstitution("administrator", email, common.GenerateRandomStrings(10))
-		if res != nil {
-			fmt.Println(res.ParseToError())
+		// HASH PASSWORD
+		pwd, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+		if err != nil {
+			fmt.Println(err.Error())
 			return
 		}
 
+		ops := operations.New(db)
+		// CHECK IF USER EXISTS
+		_, res := ops.SelectUserByEmail(email)
+		if res == nil {
+			fmt.Println("User with specified email already exists, please choose other.")
+			return
+		} else if res.Status != transactions.StatusNotFound {
+			fmt.Println(res.Description)
+			return
+		}
+
+		// CREATE INSTITUTION
+		user, res := ops.InsertInstitution(name, email, string(pwd))
+		if res != nil {
+			fmt.Println(res.ParseToError().Error())
+			return
+		}
+
+		// PRINT USER INFORMATION
 		fmt.Println("Create new institution.")
 		fmt.Println("Access it using the following user:")
+		fmt.Println("Institution: ", name)
 		fmt.Println("Name: ", user.Name)
 		fmt.Println("Email: ", user.Email)
-		fmt.Println("Password: ", user.Password)
+		fmt.Println("Password: ", password)
 	},
-}
-
-func init() {
-	createCommand.Flags().StringP("email", "n", "", "The name of the institution to be created")
-	createCommand.Flags().StringP("environment", "e", "", "The path to the file containing the connection string.")
-	rootCmd.AddCommand(createCommand)
 }
 
 /*
@@ -92,11 +98,13 @@ func main() {
 
 	err := configs.Parse(*environmentFilePath)
 	if err != nil {
-		logs.Error.Fatal("Found error while configuring env")
+		fmt.Println("Found error while configuring env")
+		return
 	}
 
 	if email != nil && *email == "" {
-		logs.Error.Fatal("Invalid e-mail")
+		fmt.Println("Invalid e-mail")
+		return
 	}
 
 	logs.Info.Println("Generating password")
@@ -105,7 +113,8 @@ func main() {
 	for i := range strongPassword {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
 		if err != nil {
-			logs.Error.Fatal(err)
+			fmt.Println(err)
+			return
 		}
 		strongPassword[i] = chars[num.Int64()]
 	}
@@ -114,7 +123,8 @@ func main() {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword(strongPassword, 10)
 	if err != nil {
-		logs.Error.Fatalf("Failed to hash password %s", err.Error())
+		fmt.Printlnf("Failed to hash password %s", err.Error())
+		return
 	}
 
 	logs.Info.Println("Connecting to database")
@@ -122,7 +132,8 @@ func main() {
 	// DATABASE SETUP
 	db, err := gorm.Open(postgres.Open(cfg.DatabaseWR_ConnectString))
 	if err != nil {
-		logs.Error.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	tx := db.Begin()
@@ -141,7 +152,8 @@ func main() {
 
 	if err := tx.Model(&models.Institutions{}).Create(&inst).Error; err != nil {
 		tx.Rollback()
-		logs.Error.Fatalf("Fail in transaction: %s", err.Error())
+		fmt.Printlnf("Fail in transaction: %s", err.Error())
+		return
 	}
 
 	logs.Info.Println("Creating administrator user")
@@ -160,16 +172,19 @@ func main() {
 
 	if err := tx.Model(&user).Create(user).Error; err != nil {
 		tx.Rollback()
-		logs.Error.Fatalf("Fail in transaction: %s", err.Error())
+		fmt.Printlnf("Fail in transaction: %s", err.Error())
+		return
 	}
 
 	if err := tx.Model(&user).Association("Institutions").Append(&inst); err != nil {
 		tx.Rollback()
-		logs.Error.Fatalf("Fail while trying to oficialize transaction: %s", err.Error())
+		fmt.Printlnf("Fail while trying to oficialize transaction: %s", err.Error())
+		return
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		logs.Error.Fatalf("Fail while trying to oficialize transaction: %s", err.Error())
+		fmt.Printlnf("Fail while trying to oficialize transaction: %s", err.Error())
+		return
 	}
 
 	logs.Info.Println("Success, created an institution and admin user..")

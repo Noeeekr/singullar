@@ -23,7 +23,7 @@ func PrepareRouter(db *sql.DB, env *types.ApiEnvironment) (*gin.Engine, error) {
 
 	// User auth session and store for authentication
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{env.FrontendUrl}, // Frontend URL
+		AllowOrigins:     []string{env.ClientUrl}, // Frontend URL
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -31,20 +31,20 @@ func PrepareRouter(db *sql.DB, env *types.ApiEnvironment) (*gin.Engine, error) {
 	}))
 
 	// Auth routes
-	r.POST("/api/auth", handlers.SignInHandler) // LOGIN - VALIDATE VIA DATABASE, CREATE COOKIE
-	r.GET("/api/auth", handlers.SignoutHandler) // LOGOUT - DELETE COOKIE
+	r.POST("/api/auth", handlers.SignIn) // LOGIN - VALIDATE VIA DATABASE, CREATE COOKIE
+	r.GET("/api/auth", handlers.SignOut) // LOGOUT - DELETE COOKIE
 
 	// Is this even necessary?
 	// r.GET("/api/user/auth", handlers.Authenticate) // For users and institutions
 
-	// CREATE
-	r.POST("/api/user/create", handlers.CreateUserHandler) // Institution admin creates users
-
-	// r.POST("/api/class/create", middlewares.Authenticate, handlers.CreateClass)
-
-	// GET
+	// SELECT
 	r.GET("/api/institution", middlewares.Authenticate(models.Student, models.Admin, models.Teacher, models.Supervisor), handlers.GetInstitution)
 	r.GET("/api/user", middlewares.Authenticate(models.Admin, models.Supervisor), handlers.GetUsersByInstitutionId)
+
+	// CREATE
+	r.POST("/api/user/create", middlewares.Authenticate(models.Admin, models.Supervisor), handlers.CreateUser) // Institution admin creates users
+
+	// r.POST("/api/class/create", middlewares.Authenticate, handlers.CreateClass)
 
 	return r, nil
 }

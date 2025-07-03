@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/Noeeekr/singullar/server/common/logs"
-	"github.com/Noeeekr/singullar/server/internal/sas/server"
+	"github.com/Noeeekr/singullar/server/internal/server/server"
 	"github.com/spf13/cobra"
 )
 
@@ -15,12 +17,14 @@ var serveCmd = &cobra.Command{
 		debug, _ := cmd.Flags().GetBool("debug")
 		port, _ := cmd.Flags().GetString("port")
 
-		server := server.New()
 		if !debug {
-			server.DisableDebug()
+			os.Setenv("GIN_MODE", "release")
 		}
+		os.Setenv("PORT", port)
+		os.Setenv("FOLDER", args[0])
 
-		if err := server.ServeFolder(args[0], port); err != nil {
+		server := server.New()
+		if err := server.ServeFolder(); err != nil {
 			logs.Error.Println(err.Error())
 		}
 	},

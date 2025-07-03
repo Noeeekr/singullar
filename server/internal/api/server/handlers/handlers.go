@@ -62,7 +62,7 @@ func (h *Handlers) Authenticate(ctx *gin.Context) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New(" Failed to parse token. Unexpected token method. ")
 		}
-		return []byte(h.env.JwtSecret), nil
+		return []byte(h.env.JwtSecretString), nil
 	})
 
 	if err != nil {
@@ -107,7 +107,7 @@ func (h *Handlers) checkUserPassword(email string, password string) (*models.Use
 // SingInHandler gets a SignInRequest, check the user email and password agaisnt database.
 // If access is granted it creates an auth cookie and returns a json
 // If access is not granted it returns a json
-func (h *Handlers) SignInHandler(ctx *gin.Context) {
+func (h *Handlers) SignIn(ctx *gin.Context) {
 	var request types.SignInRequest
 	if h.BadJsonRequest(ctx, ctx.ShouldBindJSON(&request)) {
 		return
@@ -136,7 +136,7 @@ func (h *Handlers) SignInHandler(ctx *gin.Context) {
 		},
 	})
 
-	stringifiedToken, err := token.SignedString([]byte(h.env.JwtSecret))
+	stringifiedToken, err := token.SignedString([]byte(h.env.JwtSecretString))
 	if err != nil {
 		h.internalError(ctx, " Falha ao validar o usuario. ", err)
 	}
@@ -146,7 +146,7 @@ func (h *Handlers) SignInHandler(ctx *gin.Context) {
 		stringifiedToken,
 		3600,
 		"/",
-		h.env.FrontendUrl,
+		h.env.ClientUrl,
 		false, // SHOULD BE TRUE IN HTTPS
 		true,
 	)
@@ -157,13 +157,13 @@ func (h *Handlers) SignInHandler(ctx *gin.Context) {
 	})
 }
 
-func (h *Handlers) SignoutHandler(ctx *gin.Context) {
+func (h *Handlers) SignOut(ctx *gin.Context) {
 	ctx.SetCookie(
 		"auth",
 		"",
 		-1,
 		"/",
-		h.env.FrontendUrl,
+		h.env.ClientUrl,
 		false,
 		true,
 	)
@@ -171,7 +171,7 @@ func (h *Handlers) SignoutHandler(ctx *gin.Context) {
 	ctx.Redirect(http.StatusFound, "/auth")
 }
 
-func (h *Handlers) CreateUserHandler(ctx *gin.Context) {
+func (h *Handlers) CreateUser(ctx *gin.Context) {
 	var user *models.Users = &models.Users{}
 
 	// Only admins can create other users so you can use admin.InstitutionId to attribute created users ids

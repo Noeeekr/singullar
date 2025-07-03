@@ -15,13 +15,14 @@ func scanUsersEmail(emails *[]string) transactions.RequestReturnHandler {
 				SetStatus(transactions.StatusInvalidSyntax)
 		}
 
-		var email string
 		for Rows.Next() {
+			var email string
 			if Rows.Scan(&email) != nil {
 				return transactions.NewResponse().
 					SetDescription(Rows.Err().Error()).
 					SetStatus(transactions.StatusFailedTransaction)
 			}
+			*emails = append(*emails, email)
 		}
 
 		if Rows.Err() != nil {
@@ -29,8 +30,6 @@ func scanUsersEmail(emails *[]string) transactions.RequestReturnHandler {
 				SetDescription(Rows.Err().Error()).
 				SetStatus(transactions.StatusFailedTransaction)
 		}
-
-		*emails = append(*emails, email)
 
 		return nil
 	}
@@ -43,14 +42,15 @@ func scanUsers(users *[]*models.Users) transactions.RequestReturnHandler {
 				SetStatus(transactions.StatusInvalidSyntax)
 		}
 
-		u := models.Users{}
 		for Rows.Next() {
+			u := models.Users{}
 			err := Rows.Scan(&u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Name, &u.Email, &u.Password, &u.InstitutionId, &u.Role, &u.Id, &u.ProfilePicture)
 			if err != nil {
 				return transactions.NewResponse().
 					SetDescription(Rows.Err().Error()).
 					SetStatus(transactions.StatusFailedTransaction)
 			}
+			*users = append(*users, &u)
 		}
 
 		if Rows.Err() != nil {
@@ -58,8 +58,6 @@ func scanUsers(users *[]*models.Users) transactions.RequestReturnHandler {
 				SetDescription(Rows.Err().Error()).
 				SetStatus(transactions.StatusFailedTransaction)
 		}
-
-		*users = append(*users, &u)
 
 		return nil
 	}
@@ -73,13 +71,14 @@ func scanInstitutionsIds(ids *[]int) transactions.RequestReturnHandler {
 				SetStatus(transactions.StatusInvalidSyntax)
 		}
 
-		var id int
 		for Rows.Next() {
+			var id int
 			if Rows.Scan(&id) != nil {
 				return transactions.NewResponse().
 					SetDescription(Rows.Err().Error()).
 					SetStatus(transactions.StatusFailedTransaction)
 			}
+			*ids = append(*ids, id)
 		}
 
 		if Rows.Err() != nil {
@@ -87,8 +86,6 @@ func scanInstitutionsIds(ids *[]int) transactions.RequestReturnHandler {
 				SetDescription(Rows.Err().Error()).
 				SetStatus(transactions.StatusFailedTransaction)
 		}
-
-		*ids = append(*ids, id)
 
 		return nil
 	}
@@ -102,14 +99,15 @@ func scanInstitutions(institutions *[]*models.Institutions) transactions.Request
 				SetStatus(transactions.StatusInvalidSyntax)
 		}
 
-		i := models.Institutions{}
 		for Rows.Next() {
+			i := models.Institutions{}
 			err := Rows.Scan(&i.CreatedAt, &i.UpdatedAt, &i.DeletedAt, &i.Name, &i.Id)
 			if err != nil {
 				return transactions.NewResponse().
 					SetDescription(Rows.Err().Error()).
 					SetStatus(transactions.StatusFailedTransaction)
 			}
+			*institutions = append(*institutions, &i)
 		}
 
 		if Rows.Err() != nil {
@@ -117,8 +115,6 @@ func scanInstitutions(institutions *[]*models.Institutions) transactions.Request
 				SetDescription(Rows.Err().Error()).
 				SetStatus(transactions.StatusFailedTransaction)
 		}
-
-		*institutions = append(*institutions, &i)
 
 		return nil
 	}

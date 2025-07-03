@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/Noeeekr/singullar/server/common/configs"
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server"
@@ -17,44 +19,41 @@ var startCmd *cobra.Command = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		debug, _ := cmd.Flags().GetBool("debug")
-		if debug {
+		if !debug {
 			gin.SetMode(gin.ReleaseMode)
 		}
 
-		apiEnvironmentPath, _ := cmd.Flags().GetString("environment")
-		postgresEnvironmentPath, _ := cmd.Flags().GetString("postgres")
-
-		var envs []string = []string{apiEnvironmentPath, postgresEnvironmentPath}
-		if err := configs.Parse(envs...); err != nil {
-			logs.Info.Fatalf(err.ParseToError().Error())
+		port, _ := cmd.Flags().GetString("port")
+		if os.Getenv("PORT") == "" {
+			os.Setenv("PORT", port)
 		}
 
-		var pgEnv database.PostgresEnvironment
-		if err := configs.Scan(&pgEnv); err != nil {
-			logs.Info.Fatalf(err.ParseToError().Error())
+		var db_env database.PostgresEnvironment
+		if err := configs.Scan(&db_env); err != nil {
+			logs.Info.Fatal(err.ParseToError())
 		}
 
-		var apiEnv types.ApiEnvironment
-		if err := configs.Scan(&apiEnv); err != nil {
-			logs.Info.Fatalf(err.ParseToError().Error())
-		}
-
-		db, err := database.Connect(pgEnv.POSTGRES_CONNECTION_STRING)
+		db, err := database.Connect(db_env.POSTGRES_CONNECTION_STRING)
 		if err != nil {
-			logs.Info.Fatalf(err.Error())
+			logs.Info.Fatal(err.Error())
 		}
 
-		router, err := server.PrepareRouter(db, &apiEnv)
+		var env types.ApiEnvironment
+		if err := configs.Scan(&env); err != nil {
+			logs.Info.Fatal(err.ParseToError())
+		}
+
+		router, err := server.PrepareRouter(db, &env)
 		if err != nil {
-			logs.Info.Fatalf(err.Error())
+			logs.Info.Fatal(err.Error())
 		}
 
 		server := server.New().
-			WithAddr(":" + apiEnv.Port).
+			WithAddr(":" + os.Getenv("PORT")).
 			WithErrLogger(logs.Error).
 			WithRouter(router)
 
-		logs.Info.Printf("Server is running on http://localhost:%s", apiEnv.Port)
+		logs.Info.Printf("Server is running on http://localhost:%s", os.Getenv("PORT"))
 		if err != server.ListenAndServe() {
 			logs.Error.Fatal(err)
 		}
@@ -62,10 +61,6 @@ var startCmd *cobra.Command = &cobra.Command{
 }
 
 func init() {
-	startCmd.Flags().StringP("postgres", "p", "", "Defines the path to the environment file containing the Postgres connection string.")
-	startCmd.Flags().StringP("environment", "e", "", "Defines the path to the environment file containing the API configurations.")
 	startCmd.Flags().BoolP("debug", "d", false, "Defines if the server should start in debug mode.")
-
-	startCmd.MarkFlagRequired("environment")
-	startCmd.MarkFlagRequired("postgres")
+	startCmd.Flags().StringP("port", "p", "80", "Defines the port the server will listen to.")
 }

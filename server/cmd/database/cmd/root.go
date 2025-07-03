@@ -20,3 +20,24 @@ func Execute() {
 		fmt.Println(err.Error())
 	}
 }
+
+func init() {
+	createCommand.Flags().String("email", "", "The email of the user that will be given administrator role")
+	createCommand.MarkFlagRequired("email")
+
+	createCommand.Flags().StringP("environment", "e", "", "The path to the file containing the connection string.")
+	createCommand.MarkFlagRequired("environment")
+
+	createCommand.Flags().StringP("name", "n", "", "The name of the institution to be created.")
+	createCommand.MarkFlagRequired("name")
+
+	createCommand.Flags().StringP("password", "p", "", "The password of the administrator.")
+	createCommand.MarkFlagRequired("password")
+
+	rootCmd.AddCommand(createCommand)
+
+	migrateCmd.Flags().StringP("environment", "e", "", "The path to the file containing the connection string.")
+	migrateCmd.MarkFlagRequired("environment")
+
+	rootCmd.AddCommand(migrateCmd)
+}

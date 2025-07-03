@@ -35,17 +35,16 @@ func (ops *Operations) InsertUser(request *models.CreateUsers) (user *models.Use
 		return user, res
 	}
 	if len(users) > 1 {
-		return user, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+		return user, transactions.NewResponse().SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
 	}
 	if len(users) == 0 {
-		return user, res.SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
+		return user, transactions.NewResponse().SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
 	}
 
 	return users[0], tx.Commit()
 }
 func (ops *Operations) SelectUserByEmail(email string) (*models.Users, *transactions.Response) {
 	var users []*models.Users
-
 	res := ops.tx.Query(
 		models.TablesInfo.Users.Requests.SelectOneByEmail.
 			WithArgs(email).
@@ -56,10 +55,10 @@ func (ops *Operations) SelectUserByEmail(email string) (*models.Users, *transact
 		return nil, res
 	}
 	if len(users) > 1 {
-		return nil, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+		return nil, transactions.NewResponse().SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
 	}
 	if len(users) == 0 {
-		return nil, res.SetDescription("Not found").SetStatus(transactions.StatusNotFound)
+		return nil, transactions.NewResponse().SetDescription("Not found").SetStatus(transactions.StatusNotFound)
 	}
 
 	return users[0], nil
@@ -77,10 +76,10 @@ func (ops *Operations) SelectUserById(id int) (*models.Users, *transactions.Resp
 		return nil, res
 	}
 	if len(users) > 1 {
-		return nil, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+		return nil, transactions.NewResponse().SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
 	}
 	if len(users) == 0 {
-		return nil, res.SetDescription("Not found").SetStatus(transactions.StatusNotFound)
+		return nil, transactions.NewResponse().SetDescription("Not found").SetStatus(transactions.StatusNotFound)
 	}
 
 	return users[0], nil
@@ -134,10 +133,10 @@ func (ops *Operations) InsertInstitution(name string, email string, password str
 	}
 
 	if len(ids) > 1 {
-		return user, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+		return user, transactions.NewResponse().SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
 	}
 	if len(ids) == 0 {
-		return user, res.SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
+		return user, transactions.NewResponse().SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
 	}
 
 	var users []*models.Users
@@ -150,10 +149,10 @@ func (ops *Operations) InsertInstitution(name string, email string, password str
 		return user, res
 	}
 	if len(users) != 1 {
-		return user, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+		return user, transactions.NewResponse().SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
 	}
 	if len(users) == 0 {
-		return user, res.SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
+		return user, transactions.NewResponse().SetDescription("Empty response").SetStatus(transactions.StatusNotFound)
 	}
 
 	return users[0], tx.Commit()
@@ -171,10 +170,10 @@ func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Instit
 	}
 
 	if len(insts) > 1 {
-		return inst, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+		return inst, transactions.NewResponse().SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
 	}
 	if len(insts) == 0 {
-		return inst, res.SetDescription("Not found").SetStatus(transactions.StatusNotFound)
+		return inst, transactions.NewResponse().SetDescription("Not found").SetStatus(transactions.StatusNotFound)
 	}
 
 	return insts[0], nil
@@ -192,10 +191,10 @@ func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions,
 		return nil, res
 	}
 	if len(insts) != 1 {
-		return nil, res.SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
+		return nil, transactions.NewResponse().SetDescription("Unexpected return").SetStatus(transactions.StatusInvalidResponse)
 	}
 	if len(insts) == 0 {
-		return inst, res.SetDescription("Not found").SetStatus(transactions.StatusNotFound)
+		return inst, transactions.NewResponse().SetDescription("Not found").SetStatus(transactions.StatusNotFound)
 	}
 	return insts[0], nil
 }

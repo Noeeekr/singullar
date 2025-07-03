@@ -1,7 +1,9 @@
 package server
 
 import (
+	"errors"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"github.com/Noeeekr/singullar/server/common/logs"
@@ -17,14 +19,22 @@ func New() *Server {
 	return &Server{}
 }
 
-func (s *Server) DisableDebug() {
-	gin.SetMode(gin.ReleaseMode)
-}
+func (s *Server) ServeFolder() error {
+	port := os.Getenv("PORT")
 
-func (s *Server) ServeFolder(folder, port string) error {
+	folder := os.Getenv("FOLDER")
+	if folder == "" {
+		return errors.New(" Please specify the path to a folder to serve on environment variable: FOLDER ")
+	}
+
 	folder, err := filepath.Abs(folder)
 	if err != nil {
 		return err
+	}
+
+	debug := os.Getenv("DEBUG")
+	if debug != "" {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	logs.Info.Println("Starting server..")

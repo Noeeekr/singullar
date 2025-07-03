@@ -5,5 +5,5 @@ type PostgresEnvironment struct {
 }
 
 type PostgresTestEnvironment struct {
-	POSTGRES_TEST_CONNECTION_STRING string `env:"POSTGRES_CONNECTION_STRING,required"`
+	POSTGRES_TEST_CONNECTION_STRING string `env:"POSTGRES_TEST_CONNECTION_STRING,required"`
 }

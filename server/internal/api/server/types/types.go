@@ -6,9 +6,9 @@ import (
 )
 
 type ApiEnvironment struct {
-	JwtSecret   string `env:"JWT_SECRET,required"`
-	Port        string `env:"PORT,required"`
-	FrontendUrl string `env:"FRONTEND_URL,required"`
+	JwtSecretString string `env:"JWT_SECRET_STRING,required"`
+	Port            string `env:"PORT,required"`
+	ClientUrl       string `env:"CLIENT_URL,required"`
 }
 
 type SignInRequest struct { // FOR JSON

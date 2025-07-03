@@ -1,0 +1,51 @@
+services:
+  playground: 
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    networks:
+      - internal
+    volumes:
+      - .:/singullar
+
+  server:
+    build:
+      dockerfile: ./internal/server/Dockerfile
+      context: .
+    env_file:
+      - "./secrets/client.env"
+    ports:
+      - "3334:80"
+    depends_on:
+      - api
+
+  api:
+    build: 
+      dockerfile: ./internal/api/Dockerfile
+      context: .
+    env_file:
+      - "./secrets/client.env"
+      - "./secrets/postgres.env"
+      - "./secrets/api.env"
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+    networks:
+      - internal
+
+  db:
+    image: postgres:17.5
+    volumes: 
+      - db_data:/var/lib/postgresql/data
+    env_file:
+      - "./secrets/postgres.env"
+    networks:
+      - internal
+
+volumes:
+  db_data:
+
+networks:
+  internal:
+    driver: bridge

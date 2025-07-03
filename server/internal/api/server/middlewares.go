@@ -33,7 +33,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("failed to parse token")
 			}
-			return []byte(m.env.JwtSecret), nil
+			return []byte(m.env.JwtSecretString), nil
 		})
 
 		if err != nil {
