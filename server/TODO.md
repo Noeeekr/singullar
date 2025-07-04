@@ -2,23 +2,16 @@
 
 * Implement tools to check test coverage.
 
-* Refactor database features from API to PIM service  
-    * `DONE` Implement local postgres container for test purposes. 
-    * `IN PROGRESS` Make Migrations in PIM  
-    * Make Seeds in PIM  
-    * Move PIM to an internal folder for code security.      
-    * Make Backup utilities in PIM CLI  
-    * Implement Dependency Managment in PIM  
-    * Hash password before passing to database
+* Database
+    * `DONE` Cobra command line interface.
+    * `DONE` `UPGRADABLE` Implement local containers for testing. 
+    * `DONE` `UPGRADABLE` Implement migrations  
+    * `DONE` `UPGRADABLE` Implement dependency managment  
+    * `DONE` Move to internal folder for security.
+    * Implement seeding.  
+    * Implement command line backup utilities. (from a different repository)  
     
-* Decouple all possible services from main API.
-    * Refactor main API logic using the new services.  
-
-* Implement startup features in Clirp to start SMAPI, PIM, SAS and others.  
-    * Enable Smapi Startup.  
-    * Enable PIM Startup.  
-    * Enable SAS Startup.    
-      
-* Implement cobra for CLI  
-    `DONE` Clirp.  
-    `DONE` Sas.  
+* API
+    * `DONE` Cobra command line interface.
+    * `DONE` Decouple logistic services from API.
+    * `DONE` Refactor API to implement the decoupled services.  
