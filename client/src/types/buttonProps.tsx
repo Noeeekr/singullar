@@ -3,7 +3,7 @@ import type {
 } from '../pages/admin/data';
 import type {
     StudentNavbarPopupId
-} from '../pages/home/data';
+} from '../pages/student/data';
 
 export interface ISideMenuButtonBase {
     title: string,

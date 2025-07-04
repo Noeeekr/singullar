@@ -23,6 +23,7 @@ const MyAccountPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenuBu
     const navigate = useNavigate()
 
     const { signout, error } = useSignout()
+    
     const handleSignout = async () => {
         await signout()
 

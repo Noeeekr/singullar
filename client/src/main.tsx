@@ -1,47 +1,28 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-import { Provider } from 'react-redux'
-import store from './slices/store'
+import { PersistGate } from "redux-persist/integration/react";
+import { Provider } from "react-redux";
+import { store, persistor } from "./slices/store";
 
-import {
-  ThemeProvider,
-  CssBaseline,
-  GlobalStyles,
-} from '@mui/material'
-import {
-  lightTheme
-} from './themes'
+import { ThemeProvider, CssBaseline, GlobalStyles } from "@mui/material";
+import { lightTheme } from "./themes";
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom"
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import PgAuthentication from './pages/auth/Auth';
+import PgAuthentication from "./pages/auth/Auth";
 import {
-  PgInstitutionSelection as PgInstitutionSelection, LoaderInstitutionSelection,
+  PgInstitutionSelection as PgInstitutionSelection,
+  LoaderInstitutionSelection,
   PgMyClasses,
   PgClassesCreate,
-
   PgStudentsSearch,
   PgStudentsCreate,
-} from './pages/admin';
+} from "./pages/admin";
 
-import ProtectedRoutes from './components/ProtectedRoutes'
-import Layout from './components/Layout'
-import Root from './components/DefaultRoot';
-
-const GlobalStyle = () => (
-  <GlobalStyles
-    styles={{
-      'ul': {
-        padding: 0,
-        margin: 0,
-      },
-    }}
-  />
-);
+import Layout from "./components/Layout";
+import Root from "./components/DefaultRoot";
+import ProtectedRoutes from "@components/ProtectedRoutes";
 
 // This and route provider component might become App.tsx file
 // so I can put redux store and things like that there.
@@ -73,115 +54,109 @@ const GlobalStyle = () => (
   )
 )
   */
- 
+
 const r2 = createBrowserRouter([
   {
     path: "/",
     element: <ProtectedRoutes />,
-    errorElement: <div>Error element1</div>,
     children: [
       {
-        path: "auth",
-        element: <PgAuthentication/>
+        path: "/auth",
+        element: <PgAuthentication />,
+        errorElement: <div>Error element auth</div>,
       },
       {
-        path: "home",
-        element: <Layout />,
-        children: [
-          {
-            index: true, 
-            element: <div>Home root page</div>,
-          },
-          {
-            path: "*",
-            element: <div>Any path home page</div>,
-          }
-        ]
-      },
-      {
-        path: "teacher",
-        element: <Layout />,
-        children: [
-          {
-            index: true, 
-            element: <div>Teacher root page</div>,
-          },
-          {
-            path: "*",
-            element: <div>Teacher path home page</div>,
-          }
-        ]
-      },
-      {
-        path: "supervisor",
-        element: <Layout />,
-        children: [
-          {
-            index: true, 
-            element: <div>Supervisor root page</div>,
-          },
-          {
-            path: "*",
-            element: <div>Supervisor path home page</div>,
-          }
-        ]
-      },
-      {
-        path: "admin",
+        path: "/",
         element: <Layout />,
         children: [
           {
             index: true,
-            element: <Root/>,
+            element: <div>Home root page</div>,
           },
           {
-            path: "students/search",
-            element: <PgInstitutionSelection nextUrl="/admin/students" />,
-            loader: LoaderInstitutionSelection,
+            path: "teacher",
+            children: [
+              {
+                index: true,
+                element: <div>Teacher root page</div>,
+              },
+              {
+                path: "*",
+                element: <div>Teacher path home page</div>,
+              },
+            ],
           },
           {
-            path: "students",
-            element: <PgStudentsSearch />
+            path: "supervisor",
+            children: [
+              {
+                index: true,
+                element: <div>Supervisor root page</div>,
+              },
+              {
+                path: "*",
+                element: <div>Supervisor path home page</div>,
+              },
+            ],
           },
           {
-            path: "students/create",
-            element: <PgStudentsCreate />
-          },
-          {
-            path: "classes/search",
-            element: <PgInstitutionSelection nextUrl="/admin/classes" />,
-            loader: LoaderInstitutionSelection,
-          },
-          {
-            path: "classes/create",
-            element: <PgClassesCreate />,
-          },
-          {
-            path: "classes",
-            element: <PgMyClasses />
+            path: "admin",
+            children: [
+              {
+                index: true,
+                element: <Root/>,
+              },
+              {
+                path: "students",
+                element: <PgStudentsSearch />,
+              },
+              {
+                path: "students/create",
+                element: <PgStudentsCreate />,
+              },
+              {
+                path: "classes/search",
+                element: <PgInstitutionSelection nextUrl="/admin/classes"/>,
+                loader: LoaderInstitutionSelection,
+              },
+              {
+                path: "classes/create",
+                element: <PgClassesCreate />,
+              },
+              {
+                path: "classes",
+                element: <PgMyClasses />,
+              },
+              {
+                path: "*",
+                element: <div>Any path admin page</div>,
+              },
+            ],
           },
           {
             path: "*",
-            element: <div>Any path admin page</div>,
+            element: <div>Any route default page</div>,
           },
-        ]
+        ],
       },
-      {
-        path: "*",
-        element: <div>Any route default page</div>,
-      }
-    ]
-  }
-])
+    ],
+  },
+  {
+    path: "*",
+    element: <div>Any path home page</div>,
+  },
+]);
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider theme={lightTheme}>
-      <CssBaseline />
-      <GlobalStyle />
-      <Provider store={store}>
-        <RouterProvider router={r2} />
-      </Provider>
-    </ThemeProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider theme={lightTheme}>
+          <CssBaseline />
+          <GlobalStyles styles={{ ul: { padding: 0, margin: 0 } }} />
+          <RouterProvider router={r2} />
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
   </StrictMode>
-)
+);

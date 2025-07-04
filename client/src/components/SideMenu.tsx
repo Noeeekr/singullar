@@ -21,7 +21,7 @@ import SectionTitle from './SectionTitle'
 import { admin_sidemenu_data } from '../pages/admin/data'
 import { supervisor_sidemenu_data } from '../pages/supervisor/data'
 import { teacher_sidemenu_data } from '../pages/teacher/data'
-import { students_sidemenu_data } from '../pages/home/data'
+import { students_sidemenu_data } from '../pages/student/data'
 
 interface ISideMenuLayout extends BoxProps {
     isMobile?: boolean,
@@ -50,7 +50,7 @@ const SideMenuLayout = styled('nav')<ISideMenuLayout>(
 * onHover must be a toggle type of effect to work.
 */
 const SideMenu = (
-    { isMobile, isOpen }: { isMobile?: boolean, isOpen?: boolean, onHoverOpen?: Function }
+    { isMobile, isOpen }: { isMobile?: boolean, isOpen?: boolean, onHoverOpen?: () => void }
 ): JSX.Element => {
     const user = useAppSelector((store) => store.user.user)
 

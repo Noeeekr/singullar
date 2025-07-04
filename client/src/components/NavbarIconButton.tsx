@@ -10,7 +10,7 @@ import { CloseRounded } from '@mui/icons-material'
  */
 const IconButton = (
     { notifications, onClick }:
-    { notifications?: boolean, onClick: Function }
+    { notifications?: boolean, onClick: () => void }
 ): JSX.Element => {
     const theme = useTheme()
 

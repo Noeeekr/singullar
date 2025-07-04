@@ -19,7 +19,7 @@ interface INavbarItemGroupProps {
     id: string,
     isOpen?: string,
     isCorner?: boolean,
-    onClickCb: Function,
+    onClickCb: (key: string) => void,
 
     icon: JSX.Element,
     children: JSX.Element,

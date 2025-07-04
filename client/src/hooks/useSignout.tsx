@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 import { updateUser } from '../slices/userSlice'
 import { AppDispatch } from '../slices/store'
 
-const useSignout = () => {
+const useSignOut = () => {
     const dispatch = useDispatch<AppDispatch>()
 
     const [isSigningOut, setIsSigningOut] = useState(false)
@@ -14,19 +14,18 @@ const useSignout = () => {
         setIsSigningOut(true)
 
         try {
-            const response = await fetch("http://localhost:8000/api/user/signout", {
+            const response = await fetch("http://localhost:8000/api/auth/", {
                 credentials: "include"
             })
             
             if (response.ok) {
-                console.log("dispatched logout")
                 dispatch(updateUser(null))
             } else {
-                let res = await response.json()
+                const res = await response.json()
                 setError(res.Error)
             }
 
-        } catch (err: unknown) {
+        } catch {
             setError("Falha ao requisitar deslogamento do usuário")
         } finally {
             setIsSigningOut(false)
@@ -36,4 +35,4 @@ const useSignout = () => {
 
     return { signout, isSigningOut, error } 
 }
-export default useSignout
+export default useSignOut

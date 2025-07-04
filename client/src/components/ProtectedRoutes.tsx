@@ -1,81 +1,59 @@
-import { useLocation, Outlet, Navigate } from 'react-router-dom'
-import useAuth from '../hooks/useAuth'
+import { useLocation, Outlet, useNavigate } from "react-router-dom";
+import routes from "../routes";
 
-import routes from '../routes'
+import { useAppSelector } from "@slices/store";
+import useSignOut from "@hooks/useSignout";
 
+import { useEffect, useState } from "react";
 /**
-* Protected routes checks if user is logged and manages the authorization
-* redirects. 
-* 
-* Renders children routes.
-* 
-* @remarks  It must be implemented with a redux toolkit store provider 
-*/
+ * Protected routes checks if user is logged and manages the authorization
+ * redirects.
+ *
+ * Renders children routes.
+ *
+ * @remarks  It must be implemented with a redux toolkit store provider
+ */
 const ProtectedRoutes = () => {
+    const user = useAppSelector((store) => store.user.user);
+    const { signout } = useSignOut();
+    const [isAllowed, setIsAllowed] = useState<boolean>(false);
+
     const url = useLocation().pathname;
+    const roleRoutes = routes.find((route) => route.role == user?.role);
 
-    // Changing to maps is a option to improve speed if there are too many routes
-    const isAuthRoute = routes.auth.some((route) => (url.includes(route)))
-    const isPrivateRoute = routes.private.some((route) => (url.includes(route))) 
-    
-    // Authenticate user in every protected route
-    const { isSigned, isLoading, user } = useAuth()
-    
-    // Gets the default page (home) url for every role
-    const DefaultUserRouteByRole = (() => {
-        switch(user?.role) {
-            case "student":
-                return routes.student[0]
-            case "admin":
-                return routes.admin[0]
-            case "supervisor":
-                return routes.supervisor[0]
-            case "teacher":
-                return routes.teacher[0]
-            default:
-                return routes.auth[0]
+    const navigate = useNavigate();
+
+    useEffect(() => {   
+        // if user == null || role not found || role == null
+        if (!roleRoutes) {
+            signout();
+            navigate("/auth");
+            return;
         }
-    })();
 
-    const isUserRoleRoute = (() => {
-        switch(user?.role) {
-            case "student":
-                return routes.student.some(route => (url.includes(route)))
-            case "teacher":
-                return routes.teacher.some(route => (url.includes(route)))
-            case "supervisor":
-                return routes.supervisor.some(route => (url.includes(route)))
-            case "admin":
-                return routes.admin.some(route => (url.includes(route)))
-            default:
-                return false
+        // Check if the route is inside one of the permited routes
+        const route = roleRoutes.routes.some((route) => url.toString().startsWith(route));
+
+        if (!route) {
+            // if there's another route to redirect
+            if (roleRoutes.routes.length) {
+                navigate(roleRoutes.routes[0]);
+                return
+            }
+            // if there's no routes on that role you shouldn't even be using it
+            signout();
+            navigate("/auth/");
+            return
         }
-    })();
-
-    // Serves the routes
-    if (isLoading) {        
-        return <div>Redirecting...</div>
+        if (!isAllowed) {
+            setIsAllowed(true)
+        }
+    }, [url, roleRoutes, navigate, signout, isAllowed]);
+    if (isAllowed) {
+        return <Outlet />;
+    } else {
+        return <div>Loading...</div>;
     }
-    
-    // redirect cases
-    if (!isSigned) {
-        if (url === "/" || isPrivateRoute) {
-          return <Navigate to="/auth" />;
-        }
-      }
-    
-      if (isSigned) {
-        if (url === "/") {
-          return <Navigate to={DefaultUserRouteByRole} />;
-        }
-        if (isAuthRoute || !isUserRoleRoute) {
-          return <Navigate to={DefaultUserRouteByRole} />;
-        }
-      }
-          
-    return (
-        <Outlet/>
-    )
-}
+};
 
 export default ProtectedRoutes;

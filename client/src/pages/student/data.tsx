@@ -63,6 +63,7 @@ const students_sidemenu_data_myaccount: (ISideMenuLinkButton | ISideMenuButton)[
         type: "button",
     },
 ];
+
 const students_sidemenu_data_main: ISideMenuItems = {
     title: "Principal",
     items: [

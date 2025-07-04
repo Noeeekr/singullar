@@ -4,11 +4,13 @@ export interface IUser {
     "updated_at": Date,
     "deleted_at": Date | null,
     "email": string,
-    "role": "admin" | "student" | "teacher" | "supervisor",
+    "role": IUserRoles,
     "name": string,
-    "profile_img_url": string,
+    "profile_picture": string,
     "institution_id"?: number,
 }
+
+export type IUserRoles = "admin" | "student" | "teacher" | "supervisor";
 
 export interface IDefaultRequest {
     data: null | IUser,

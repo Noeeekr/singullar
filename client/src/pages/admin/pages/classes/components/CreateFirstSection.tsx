@@ -24,7 +24,7 @@ interface IClassConfig {
  */
 interface IClassNewborn extends IClassConfig {
   name: string,
-  students: any[]
+  students: string[]
 }
 
 export interface IFirstSectionData extends IClassConfig {
@@ -41,7 +41,7 @@ export const ButtonAddClass = (): JSX.Element => {
     } else {
       setDisabled(true)
     }
-  },[JSON.stringify(formState)]);
+  },[formState]);
 
   return(
     <div style={{ margin: '0 0 0 auto'}}>

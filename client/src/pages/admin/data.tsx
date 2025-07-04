@@ -137,7 +137,7 @@ export const admin_sidemenu_data: ISideMenuItems[] = [
             {
                 title: "Meus alunos",
                 type: "link",
-                href: "/admin/students/search",
+                href: "/admin/students",
                 icon: <IoPeopleSharp/>,
             },
         ]

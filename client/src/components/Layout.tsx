@@ -24,6 +24,7 @@ const Layout = (): JSX.Element => {
     return (
         <Box
             display="grid"
+            position="fixed"
             gridTemplateColumns="1fr"
             gridTemplateRows="55px 1fr"
             height="100vh"
@@ -40,7 +41,7 @@ const Layout = (): JSX.Element => {
                 <SideMenu isMobile={true} isOpen={isOpen}/>
             </AppNavbar>
 
-            <Stack direction="row" sx={{ position: 'relative', width: '100vw', overflow: 'scroll' }}>
+            <Stack direction="row" sx={{ position: 'relative', width: '100vw', overflowX: 'hidden' }}>
                 { 
                     !isMobile && <SideMenu isOpen={isOpen}/>
                 }

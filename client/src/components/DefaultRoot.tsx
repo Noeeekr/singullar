@@ -15,7 +15,7 @@ import LinkButton from './ButtonLink';
 import { admin_sidemenu_data } from '../pages/admin/data'               
 import { supervisor_sidemenu_data } from '../pages/supervisor/data'
 import { teacher_sidemenu_data } from '../pages/teacher/data'
-import { students_sidemenu_data } from '../pages/home/data'
+import { students_sidemenu_data } from '../pages/student/data'
 
 // Types
 import type { 

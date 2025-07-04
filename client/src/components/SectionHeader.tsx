@@ -25,7 +25,7 @@ const SectionHeader = ({
   const navigate = useNavigate();
   
   return (
-    <Stack direction="row" alignItems="start" width="100%" gap={1}>
+    <Stack direction="row" alignItems="center" width="100%" gap={1}>
       <CircularButton
         onClickCb={() => {
           navigate(-1);

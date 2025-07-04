@@ -24,10 +24,10 @@ import {
 import { admin_navbar_popup_data, AdminNavbarPopupId } from '../pages/admin/data'
 import { supervisor_navbar_popup_data, SupervisorNavbarPopupId } from '../pages/supervisor/data'
 import { teacher_navbar_popup_data, TeacherNavbarPopupId } from '../pages/teacher/data'
-import { students_navbar_popup_data, StudentNavbarPopupId } from '../pages/home/data'
+import { students_navbar_popup_data, StudentNavbarPopupId } from '../pages/student/data'
 
 interface IAppNavBarProps {
-    menuButtonCallback: Function,
+    menuButtonCallback: () => void,
     children?: JSX.Element[],
     showMenu?: boolean
 }
@@ -79,7 +79,7 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
         : typeof role extends "admin" ? AdminNavbarPopupId
         : typeof role extends "teacher" ? TeacherNavbarPopupId
         : typeof role extends "supervisor" ? SupervisorNavbarPopupId
-        : "";
+        : string;
 
     const [isOpen, setIsOpen] = useState<PopupKeys>("")
 
@@ -105,7 +105,8 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                 width="100vw"
                 sx={{
                     height: showMenu && isMobile ? '100vh' : 'auto',
-                    overflow: isMobile ? 'scroll' : 'visible',
+                    overflowX: "hidden",
+                    overflowY: isMobile && showMenu ? 'scroll' : 'hidden',
                     backgroundColor: 'white',
                 }}
             >
@@ -116,6 +117,8 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                         padding={1}
                         gap={1}
                         height={55}
+                        width="100%"
+                        position="fixed"
                         sx={{
                             backgroundColor: (theme) => theme.palette.primary.purpleLight
                         }}

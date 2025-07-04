@@ -48,7 +48,7 @@ const Internal = (): JSX.Element => {
             password: "",
         }
     })
-
+    
     // Input update
     const emailValue = watch("email")
     const passwordValue = watch("password")
@@ -57,16 +57,15 @@ const Internal = (): JSX.Element => {
     
     // Fetch
     const navigate = useNavigate()
-
+    
     const { signin, isLoading, signinError } = useSignin()
 
     const onSubmit: SubmitHandler<Fields> = async (fields) => {
         reset()
 
         const worked = await signin(fields.email, fields.password);
-
         if (worked) {
-            navigate("/home")
+            navigate("/")
         }
     }
 
@@ -234,7 +233,6 @@ const Entire = (): JSX.Element => {
 }
 
 const LoginForm = ({ structure }: { structure: "internal" | "entire" }): JSX.Element => {
-
     return structure === "internal"
         ? <Internal />
         : <Entire />

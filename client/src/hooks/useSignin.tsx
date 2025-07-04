@@ -6,7 +6,7 @@ import { updateUser } from '../slices/userSlice'
 import { AppDispatch } from '../slices/store'
 import { useDispatch } from 'react-redux'
 
-const useSignin = (): {
+const useSignIn = (): {
     signin: typeof signin, 
     isLoading: boolean, 
     signinError: string |null
@@ -21,7 +21,7 @@ const useSignin = (): {
         setSigninError(null)
         
         try {
-            const response = await fetch("http://localhost:8000/api/user/signin",{
+            const response = await fetch("http://localhost:8000/api/auth/",{
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -33,14 +33,14 @@ const useSignin = (): {
 
             const res: IDefaultRequest = await response.json()
 
-            if (!response.ok) {
-                setSigninError(res.error)
-                return false
-            } else  {
+            if (response.ok) {
                 dispatch(updateUser(res.data))
                 return true
+            } else  {
+                setSigninError(res.error)
+                return false
             }
-        } catch (err) {
+        } catch {
             setSigninError("Falha ao logar o usuário.")
             return false
         } finally {
@@ -51,4 +51,4 @@ const useSignin = (): {
     return { signin, isLoading, signinError } 
 }
 
-export default useSignin
+export default useSignIn

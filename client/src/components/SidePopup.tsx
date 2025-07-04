@@ -53,7 +53,7 @@ const SidePopupWrapper = styled(({ children, onClick, ...props }: BoxProps & { i
 interface INavbarItemGroupProps {
     // for toggle menu open click event handling
     isOpen: boolean,
-    onClickCb?: Function,
+    onClickCb?: (id: string) => void,
     id?: string,
 
     children: JSX.Element,
@@ -65,7 +65,7 @@ interface INavbarItemGroupProps {
 const SidePopup = (props: INavbarItemGroupProps) => {
     const { children, isOpen, onClickCb, title, id } = props;
 
-    const togglePopup = () => { if (onClickCb) onClickCb(id); }
+    const togglePopup = () => { if (onClickCb && id) onClickCb(id); }
 
     return (
         <>

@@ -15,7 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import type { InstitutionsState } from '../../../types/data';
 
 export async function Loader() {
-    const institutions = await fetch("http://localhost:8000/api/user/institutions",{
+    const institutions = await fetch("http://localhost:8000/api/user/",{
         "headers": {
             "Content-Type": "application/json"
         },
@@ -23,11 +23,11 @@ export async function Loader() {
     })
     .then(res => (res.json()))
     .then(res => {
-        if (res.error) {
-            return []
-        }         
-        console.log(res.data)
-        return res.data;
+            if (res.error) {
+                return []
+            }         
+            console.log(res.data)
+            return res.data;
     });
 
     return institutions;
@@ -44,7 +44,7 @@ const PageInstitutionSelection = ({ nextUrl }: { nextUrl: string }): JSX.Element
     const dispatch = useAppDispatch();
     useEffect(() => {
         dispatch(ActionSetInstitutions({ current: null, institutions: institutions }))
-    },[])
+    },[dispatch, institutions])
 
     const [selectValue, setSelectValue] = useState("");
 
@@ -86,7 +86,7 @@ const PageInstitutionSelection = ({ nextUrl }: { nextUrl: string }): JSX.Element
                                         value={inst.id}
                                         key={inst.id + inst.name}
                                         onClick={() => {
-                                            let i = institutions.find(ins => ins.id == inst.id);
+                                            const i = institutions.find(ins => ins.id == inst.id);
                                             
                                             dispatch(ActionSetInstitutions({ current: i ? i : null, institutions: institutions }));
                                             navigate(nextUrl);
@@ -95,7 +95,7 @@ const PageInstitutionSelection = ({ nextUrl }: { nextUrl: string }): JSX.Element
                                 })
                             }
                             {
-                                Boolean(institutions.length)
+                                institutions.length
                                     ? []
                                     : <MenuItem
                                         value=""

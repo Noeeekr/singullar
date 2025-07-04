@@ -1,3 +1,5 @@
+import { IUserRoles } from './types/server';
+
 const studentRoutes = [
     "/home"
 ]
@@ -16,20 +18,35 @@ const supervisorRoutes = [
 *   
 *   Important: the first url of every object should be the default redirect local
 */
-const routes = {
-    auth: [
-        "/auth",
-    ],
-    private: [
-        ...studentRoutes,
-        ...teacherRoutes,
-        ...supervisorRoutes,
-        ...adminRoutes,
-    ],
-    student: studentRoutes,
-    teacher: teacherRoutes,
-    supervisor: supervisorRoutes,
-    admin: adminRoutes,
+
+type Routes = {
+    role: IUserRoles | null
+    routes: string[]
 }
+
+const routes: Routes[] = [
+    {
+        role: null,
+        routes: [
+            "/auth"
+        ]
+    },
+    {
+        role: "student",
+        routes: studentRoutes,
+    },
+    {
+        role: "teacher",
+        routes: teacherRoutes,
+    },
+    {
+        role: "supervisor",
+        routes: supervisorRoutes,
+    },
+    {
+        role: "admin",
+        routes: adminRoutes,
+    },
+]
 
 export default routes
