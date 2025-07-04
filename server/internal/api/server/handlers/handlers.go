@@ -167,8 +167,10 @@ func (h *Handlers) SignOut(ctx *gin.Context) {
 		false,
 		true,
 	)
-
-	ctx.Redirect(http.StatusFound, "/auth")
+	ctx.JSON(http.StatusOK, gin.H{
+		"data":  nil,
+		"error": nil,
+	})
 }
 
 func (h *Handlers) CreateUser(ctx *gin.Context) {

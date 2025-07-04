@@ -19,3 +19,26 @@ func Connect(connString string) (db *sql.DB, err error) {
 	}
 	return db, err
 }
+
+/*
+	I'll end up building GORM myself, * is leading to this moment
+
+	type TableManager struct {
+		insert
+		update
+		select
+		delete
+
+		drop
+		create
+	}
+
+	func (t *TableManager) Insert(name TableName) Fields(fields string...) VALUES(values[]) Where(expression string) {
+		returns a TableStatement or TableQuery or string && response
+
+		INSERT INTO name + (fields... separated by ,) + (VALUES[0]), (VALUES[1]), (VALUES[2]) + expression
+	}
+
+	tables.Insert(TableName)
+
+*/

@@ -25,6 +25,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 				"error": "Failed to get auth cookie",
 				"data":  nil,
 			})
+			ctx.Redirect(http.StatusUnauthorized, "/")
 			return
 		}
 		claims := &types.AuthClaims{}
@@ -41,6 +42,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 				"error": "Failed to parse cookie",
 				"data":  nil,
 			})
+			ctx.Redirect(http.StatusUnauthorized, "/")
 			return
 		}
 
@@ -59,6 +61,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 					"error": "Usuário não autorizado.",
 					"data":  nil,
 				})
+				ctx.Redirect(http.StatusUnauthorized, "/")
 				return
 			}
 
@@ -69,6 +72,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 				"error": "Invalid auth token",
 				"data":  nil,
 			})
+			ctx.Redirect(http.StatusUnauthorized, "/")
 		}
 	}
 }

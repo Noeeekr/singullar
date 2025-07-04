@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Noeeekr/singullar/server/internal/api/cmd"
+	"github.com/Noeeekr/singullar/server/cmd/api/cmd"
 )
 
 func main() {

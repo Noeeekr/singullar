@@ -59,8 +59,3 @@ var startCmd *cobra.Command = &cobra.Command{
 		}
 	},
 }
-
-func init() {
-	startCmd.Flags().BoolP("debug", "d", false, "Defines if the server should start in debug mode.")
-	startCmd.Flags().StringP("port", "p", "80", "Defines the port the server will listen to.")
-}
