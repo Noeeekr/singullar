@@ -3,6 +3,8 @@ package server
 import (
 	"log"
 	"net/http"
+
+	"github.com/Noeeekr/singullar/server/common"
 )
 
 type Server struct {
@@ -27,6 +29,12 @@ func (s *Server) WithErrLogger(logger *log.Logger) *Server {
 	return s
 }
 
-func (s *Server) ListenAndServe() error {
-	return s.s.ListenAndServe()
+func (s *Server) ListenAndServe() *common.Response {
+	err := s.s.ListenAndServe()
+	if err != nil {
+		return common.NewResponse().
+			WithStatus(common.StatusInternalError).
+			WithDescription(err.Error())
+	}
+	return nil
 }

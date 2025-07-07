@@ -12,11 +12,11 @@ import (
 	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
-	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
 type Handlers struct {
@@ -86,7 +86,7 @@ func (h *Handlers) Authenticate(ctx *gin.Context) {
 }
 */
 
-func (h *Handlers) checkUserPassword(email string, password string) (*models.Users, *transactions.Response) {
+func (h *Handlers) checkUserPassword(email string, password string) (*models.Users, *common.Response) {
 	user, res := h.operations.SelectUserByEmail(email)
 	if res != nil {
 		return nil, res
@@ -95,9 +95,13 @@ func (h *Handlers) checkUserPassword(email string, password string) (*models.Use
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return nil, transactions.NewResponse().SetDescription(err.Error()).SetStatus(transactions.StatusNotEqual)
+			return nil, common.NewResponse().
+				WithDescription(err.Error()).
+				WithStatus(common.StatusNotEqual)
 		}
-		return nil, transactions.NewResponse().SetDescription("Failed to validate users").SetStatus(transactions.StatusFailedTransaction)
+		return nil, common.NewResponse().
+			WithDescription("Failed to validate users").
+			WithStatus(common.StatusFailedTransaction)
 	}
 
 	user.Password = ""
@@ -116,10 +120,10 @@ func (h *Handlers) SignIn(ctx *gin.Context) {
 	user, res := h.checkUserPassword(request.Email, request.Password)
 	if res != nil {
 		switch res.Status {
-		case transactions.StatusNotFound:
+		case common.StatusNotFound:
 			h.clientError(ctx, "Usuario não existe")
 			return
-		case transactions.StatusNotEqual:
+		case common.StatusNotEqual:
 			h.internalError(ctx, "Senha incorreta.", res.ParseToError())
 			return
 		default:
@@ -184,8 +188,8 @@ func (h *Handlers) CreateUser(ctx *gin.Context) {
 	}
 
 	_, res := h.operations.SelectUserByEmail(request.Email)
-	if res.Status != transactions.StatusNotFound {
-		if res.Status != transactions.StatusSuccess {
+	if res.Status != common.StatusNotFound {
+		if res != nil {
 			h.internalError(ctx, "Falha ao checar se o email já está em uso.", res.ParseToError())
 			return
 		}
@@ -207,14 +211,14 @@ func (h *Handlers) CreateUser(ctx *gin.Context) {
 		InstitutionId: user.InstitutionId,
 	}
 
-	user, detailedError := h.operations.InsertUser(userRequest)
-	if detailedError != nil {
-		h.internalError(ctx, "Falha ao criar o usuario.", err)
+	users, tx := h.operations.InsertManyUsers(nil, userRequest)
+	if tx.Response != nil {
+		h.internalError(ctx, "Falha ao criar o usuario.", tx.Response.ParseToError())
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
-		"data":  user,
+		"data":  users[0],
 		"error": nil,
 	})
 }
@@ -233,7 +237,7 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 	}
 
 	institution, res := h.operations.SelectInstitutionById(user.InstitutionId)
-	if res.Status == transactions.StatusNotFound {
+	if res.Status == common.StatusNotFound {
 		h.clientError(ctx, "Nenhuma instituição encontrada")
 		return
 	} else if res != nil {
@@ -253,15 +257,15 @@ func (h *Handlers) GetUsersByInstitutionId(ctx *gin.Context) {
 		return
 	}
 
-	users, res := h.operations.SelectUsersByInstitutionId(request.InstitutionId)
-	if res.Status == transactions.StatusNotFound {
+	users, tx := h.operations.SelectUsersByInstitutionId(request.InstitutionId)
+	if tx.Response.Status == common.StatusNotFound {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"data":  nil,
 			"error": "Nenhum usuário encontrado.",
 		})
 		return
-	} else if res != nil {
-		h.internalError(ctx, "Falha ao procurar usuários", res.ParseToError())
+	} else if tx.Response != nil {
+		h.internalError(ctx, "Falha ao procurar usuários", tx.Response.ParseToError())
 		return
 	}
 

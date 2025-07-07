@@ -6,6 +6,9 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
+// Used inside table insert many methods
+const placeholder = "$$$$$"
+
 type TableName string
 
 const (

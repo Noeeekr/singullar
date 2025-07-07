@@ -2,10 +2,27 @@ package transactions
 
 import (
 	"database/sql"
+
+	"github.com/Noeeekr/singullar/server/common"
 )
 
+// Response must be nil on success
 type Transaction struct {
-	tx *sql.Tx
+	Response *common.Response
+	tx       *sql.Tx
+}
+
+// Used to pass a transaction. If the transaction is different than nil uses it and doesnt commit neither start a new one
+func NewTransaction() *Transaction {
+	return &Transaction{
+		Response: nil,
+		tx:       nil,
+	}
+}
+
+func (t *Transaction) WithTransaction(tx *sql.Tx) *Transaction {
+	t.tx = tx
+	return t
 }
 
 type TransactionManager struct {
@@ -26,109 +43,117 @@ func (m *TransactionManager) Ping() error {
 }
 
 // No transaction.
-func (m *TransactionManager) Query(query *TransactionRequest) *Response {
+func (m *TransactionManager) Query(query *TransactionRequest) *common.Response {
 	stmt, err := m.db.Prepare(query.Query)
 	if err != nil {
-		res := NewResponse()
-		res.SetDescription(err.Error())
-		res.SetStatus(StatusInvalidSyntax)
-		return res
+		return common.NewResponse().
+			WithDescription(err.Error()).
+			WithStatus(common.StatusInvalidSyntax)
 	}
 
 	rows, err := stmt.Query(query.Args...)
 	if err != nil {
-		res := NewResponse()
-		res.SetStatus(StatusFailedTransaction)
-		res.SetDescription("Failed operation. " + err.Error())
-		return res
+		return common.NewResponse().
+			WithStatus(common.StatusFailedTransaction).
+			WithDescription("Failed operation. " + err.Error())
 	}
 
-	return query.ReturnHandler(rows)
+	if query.ReturnHandler != nil {
+		return query.ReturnHandler(rows)
+	}
+	return nil
 }
-func (m *TransactionManager) Start() (*Transaction, *Response) {
+func (m *TransactionManager) Start() *Transaction {
 	tx, err := m.db.Begin()
 	if err != nil {
-		return nil, NewResponse().SetDescription(err.Error()).SetStatus(StatusFailedTransactionStart)
+		t := NewTransaction()
+		t.Response = common.NewResponse().
+			WithDescription(err.Error()).
+			WithStatus(common.StatusFailedTransactionStart)
+		return t
 	}
-	return &Transaction{tx}, nil
+
+	t := NewTransaction().WithTransaction(tx)
+	return t
 }
 
-// On success response == nil. Doesnt commit
-func (t *Transaction) Query(query *TransactionRequest) *Response {
+// On success Transaction == nil. Doesnt commit
+func (t *Transaction) Query(query *TransactionRequest) *Transaction {
 	if query == nil {
-		res := NewResponse()
-		res.SetDescription("Invalid query. Empty query.")
-		res.SetStatus(StatusInvalidSyntax)
-		return res
+		t.Response = common.NewResponse().
+			WithDescription("Invalid query. Empty query.").
+			WithStatus(common.StatusInvalidSyntax)
+		return t
 	}
 
 	stmt, err := t.tx.Prepare(query.Query)
 	if err != nil {
-		res := NewResponse()
-		res.SetDescription(err.Error())
-		res.SetStatus(StatusInvalidSyntax)
-		return res
+		t.Response = common.NewResponse().
+			WithDescription(err.Error()).
+			WithStatus(common.StatusInvalidSyntax)
+		return t
 	}
 
 	if query.ReturnHandler != nil {
+
 		return t.query(stmt, query.ReturnHandler, query.Args...)
 	}
 
 	return t.exec(stmt, query.Args...)
 }
 
-// On success response == nil
-func (t *Transaction) Commit() *Response {
+func (t *Transaction) Commit() *Transaction {
 	if err := t.tx.Commit(); err != nil {
-		res := NewResponse()
-		res.SetStatus(StatusFailedTransactionCommit)
-		res.SetDescription("Transaction Failed: " + err.Error())
-		return res
+		t.Response = common.NewResponse().
+			WithStatus(common.StatusFailedTransactionCommit).
+			WithDescription("Transaction Failed: " + err.Error())
+		return t
 	}
 
-	return nil
+	return t
 }
 
-// On success response == nil
-func (t *Transaction) query(stmt *sql.Stmt, handlerFunc RequestReturnHandler, args ...any) *Response {
+// On success Transaction == nil
+func (t *Transaction) query(stmt *sql.Stmt, handlerFunc RequestReturnHandler, args ...any) *Transaction {
 	rows, err := stmt.Query(args...)
 	if err != nil {
 		if err := t.tx.Rollback(); err != nil {
-			res := NewResponse()
-			res.SetStatus(StatusFailedTransaction)
-			res.SetDescription("Transaction failed. Unable to rollback. " + err.Error())
-			return res
+			t.Response = common.NewResponse().
+				WithStatus(common.StatusFailedTransaction).
+				WithDescription("Transaction failed. Unable to rollback. " + err.Error())
+			return t
 		}
-		res := NewResponse()
-		res.SetStatus(StatusFailedTransaction)
-		res.SetDescription("Transaction failed. Rollback executed. " + err.Error())
-		return res
+		t.Response = common.NewResponse().
+			WithStatus(common.StatusFailedTransaction).
+			WithDescription("Transaction failed. Rollback executed. " + err.Error())
+		return t
 	}
 
-	if res := handlerFunc(rows); res != nil {
-		return res
+	if res := handlerFunc(rows); t != nil {
+		t.Response = res
+		return t
 	}
 
 	return nil
 }
 
-// On success response == nil
-func (t *Transaction) exec(stmt *sql.Stmt, args ...any) *Response {
+// On success Transaction == nil
+func (t *Transaction) exec(stmt *sql.Stmt, args ...any) *Transaction {
 	_, err := stmt.Exec(args...)
 	if err != nil {
 		if err := t.tx.Rollback(); err != nil {
-			res := NewResponse()
-			res.SetStatus(StatusFailedTransaction)
-			res.SetDescription("Transaction failed. Unable to rollback. " + err.Error())
-			return res
+			t.Response = common.NewResponse().
+				WithStatus(common.StatusFailedTransaction).
+				WithDescription("Transaction failed. Unable to rollback. " + err.Error())
+			return t
 		}
-		res := NewResponse()
-		res.SetStatus(StatusFailedTransaction)
-		res.SetDescription("Transaction failed. Rollback executed. " + err.Error())
-		return res
+		t.Response = common.NewResponse().
+			WithStatus(common.StatusFailedTransaction).
+			WithDescription("Transaction failed. Rollback executed. " + err.Error())
+		return t
 	}
 
-	return nil
+	return t
 }
 
 /*
@@ -142,17 +167,17 @@ func (t *Transaction) exec(stmt *sql.Stmt, args ...any) *Response {
 
 	}
 
-	res, tx := StartTransaction
-	if res.Status != StatusSuccess {
-		return res
+	t, tx := StartTransaction
+	if t.Status != StatusSuccess {
+		return t
 	}
 
-	res := tx.Query(query)
-	if res.Status != StatusSuccess {
-		return res
+	t := tx.Query(query)
+	if t.Status != StatusSuccess {
+		return t
 	}
 
-	... do something with the query result
+	... do something with the query tult
 
 	return tx.Commit()
 */

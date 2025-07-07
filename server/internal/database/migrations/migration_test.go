@@ -5,31 +5,28 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Noeeekr/singullar/server/common/configs"
-	"github.com/Noeeekr/singullar/server/internal/database"
+	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/singullar/server/common/environment"
+	"github.com/Noeeekr/singullar/server/internal/database/connections"
 	"github.com/Noeeekr/singullar/server/internal/database/migrations"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
-	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
-var migrations_args = []string{"./postgres.env"}
+var flagEnvironmentFile = "../../../secrets/postgres.env"
 
 func TestMigrations(t *testing.T) {
 	var db *sql.DB
 	t.Run("SETUP", func(t *testing.T) {
-		if err := configs.Parse(migrations_args...); err != nil {
+		if err := environment.Parse(flagEnvironmentFile); err != nil {
 			t.Fatal(err.Status, err.Description)
 		}
 
-		var env database.PostgresEnvironment
-		if err := configs.Scan(&env); err != nil {
-			t.Fatal(err.ParseToError())
-		}
+		environment := connections.ConnectionEnvironment(connections.Postgres)
 
-		var err error
-		db, err = database.Connect(env.POSTGRES_CONNECTION_STRING)
-		if err != nil {
-			t.Fatal(err.Error())
+		var res *common.Response
+		db, res = connections.ConnectWithEnvironment(environment)
+		if res != nil {
+			t.Fatal(res.ParseToString())
 		}
 	})
 
@@ -58,10 +55,10 @@ func TestMigrations(t *testing.T) {
 		}
 	})
 
-	var res *transactions.Response
+	var res *common.Response
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("CREATE TABLE %s", table.Name()), func(t *testing.T) {
-			res = migrations.CreateTables(nil, table)
+			res = migrations.CreateTables(nil, table).Response
 
 			if res != nil {
 				t.Log("STATUS: ", res.Status)
@@ -77,7 +74,7 @@ func TestMigrations(t *testing.T) {
 
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("DROP TABLE %s", table.Name()), func(t *testing.T) {
-			res = migrations.DropTables(table)
+			res = migrations.DropTables(nil, table).Response
 			if res != nil {
 				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)
@@ -92,7 +89,7 @@ func TestMigrations(t *testing.T) {
 
 	for _, typ := range types {
 		t.Run(fmt.Sprintf("CREATE TYPE %s", typ.Name), func(t *testing.T) {
-			res = migrations.CreateType(typ)
+			res = migrations.CreateType(nil, typ).Response
 			if res != nil {
 				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)
@@ -107,7 +104,7 @@ func TestMigrations(t *testing.T) {
 
 	for _, typ := range types {
 		t.Run(fmt.Sprintf("DROP TYPE %s", typ.Name), func(t *testing.T) {
-			res = migrations.DropType(typ)
+			res = migrations.DropType(nil, typ).Response
 			if res != nil {
 				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)

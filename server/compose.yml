@@ -3,10 +3,10 @@ services:
     build:
       dockerfile: ./Dockerfile
       context: .
-    networks:
-      - internal
     volumes:
       - .:/singullar
+    networks:
+      - internal
 
   server:
     build:

@@ -7,19 +7,12 @@ import (
 )
 
 var rootCmd *cobra.Command = &cobra.Command{
-	Use:   "api",
+	Use:   "api [command]",
 	Short: "Shows help for the api command line interface",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(startCmd)
-
-	startCmd.Flags().BoolP("debug", "d", false, "Defines if the server should start in debug mode.")
-	startCmd.Flags().StringP("port", "p", "80", "Defines the port the server will listen to.")
 }
 
 func Execute() {

@@ -8,7 +8,8 @@
     * `DONE` `UPGRADABLE` Implement migrations  
     * `DONE` `UPGRADABLE` Implement dependency managment  
     * `DONE` Move to internal folder for security.
-    * Implement seeding.  
+    * Migrate users.
+    * Implement seeding. 
     * Implement command line backup utilities. (from a different repository)  
     
 * API
