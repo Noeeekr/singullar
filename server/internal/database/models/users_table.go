@@ -14,8 +14,19 @@ type CreateUsers struct {
 	Role          UserRole `json:"role" binding:"required"`
 }
 
+func CreateUser(name, email, password string, institutionId int, role UserRole) *CreateUsers {
+	return &CreateUsers{
+		Name:          name,
+		Email:         email,
+		Password:      password,
+		InstitutionId: institutionId,
+		Role:          role,
+	}
+}
+
 type Users struct {
 	DefaultFields
+	ID
 	CreateUsers
 
 	ProfilePicture string `json:"profile_picture"`
@@ -50,6 +61,7 @@ var usersTableRequests = &UsersRequests{
 	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
+			%s
 			name             VARCHAR(256)   NOT NULL,
 			email            VARCHAR(256)   NOT NULL UNIQUE,
 			password 	     VARCHAR(256)   NOT NULL,
@@ -62,7 +74,7 @@ var usersTableRequests = &UsersRequests{
 				REFERENCES %s(id)
 				ON DELETE CASCADE
 		);
-	`, usersTableName, DefaultFieldsQuery, UserRolesTypeName, InstitutionsTableName)),
+	`, usersTableName, DefaultFieldsQuery, SerialId, UserRolesTypeName, InstitutionsTableName)),
 	InsertMany: transactions.NewRequest(fmt.Sprintf(`
 		INSERT INTO %s (created_at, updated_at, name, email, password, institution_id, role)
 		VALUES %s

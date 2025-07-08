@@ -14,7 +14,7 @@ import (
 
 	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/common/logs"
-	"github.com/Noeeekr/singullar/server/internal/api/server/types"
+	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 )
@@ -25,15 +25,16 @@ type Handlers struct {
 
 	operations *operations.Operations
 
-	env *types.ApiEnvironment
+	*types.Environment
 }
 
-func New(ops *operations.Operations, env *types.ApiEnvironment) *Handlers {
+func New(ops *operations.Operations, env *types.Environment) *Handlers {
 	return &Handlers{
 		LogInfo:    logs.Info,
 		LogErr:     logs.Error,
 		operations: ops,
-		env:        env,
+
+		Environment: env,
 	}
 }
 
@@ -62,7 +63,7 @@ func (h *Handlers) Authenticate(ctx *gin.Context) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New(" Failed to parse token. Unexpected token method. ")
 		}
-		return []byte(h.env.JwtSecretString), nil
+		return []byte(h.env.JwtSecret), nil
 	})
 
 	if err != nil {
@@ -140,17 +141,25 @@ func (h *Handlers) SignIn(ctx *gin.Context) {
 		},
 	})
 
-	stringifiedToken, err := token.SignedString([]byte(h.env.JwtSecretString))
+	stringifiedToken, err := token.SignedString([]byte(h.JwtSecret))
 	if err != nil {
 		h.internalError(ctx, " Falha ao validar o usuario. ", err)
 	}
 
+	h.LogInfo.Println("_____________________")
+	h.LogInfo.Println(ctx.Request.RemoteAddr)
+	h.LogInfo.Println(ctx.Request.URL.Host)
+	h.LogInfo.Println(ctx.Request.URL.Hostname())
+	h.LogInfo.Println(ctx.Request.URL.Path)
+	h.LogInfo.Println(ctx.Request.URL.RawPath)
+	h.LogInfo.Println(ctx.Request.URL.String())
+	h.LogInfo.Println(ctx.Request.RequestURI)
 	ctx.SetCookie(
 		"auth",
 		stringifiedToken,
 		3600,
 		"/",
-		h.env.ClientUrl,
+		ctx.Request.URL.Host,
 		false, // SHOULD BE TRUE IN HTTPS
 		true,
 	)
@@ -167,7 +176,7 @@ func (h *Handlers) SignOut(ctx *gin.Context) {
 		"",
 		-1,
 		"/",
-		h.env.ClientUrl,
+		h.AllowedOrigins,
 		false,
 		true,
 	)

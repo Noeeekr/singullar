@@ -6,27 +6,33 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
-type UsersNotifications struct {
-	UserId         int
-	NotificationId int
+type CreateUsersNotifications struct {
+	// Notification can be sent to a Class using TargetRole=Unkown and TargetId=ClassID
+	// Notification can be sent to a Roles using TargetRole=Role and TargetId=InstitutionID
+	TargetRole UserRole `json:"targetRole" binding:"required"`
+	TargetId   int      `json:"targetId" binding:"required"`
+
+	// The id of the notification is the id of its creator
+	NotificationId int `json:"notificationId" binding:"required"`
 }
 
 type UsersNotificationsTable struct {
 	TableMethods
 	name         TableName
-	requests     *UsersNotificationsRequests
+	Requests     *UsersNotificationsRequests
 	dependencies *TableDependencies
 }
 
 type UsersNotificationsRequests struct {
-	Create *transactions.TransactionRequest
-	Drop   *transactions.TransactionRequest
+	Create     *transactions.TransactionRequest
+	Drop       *transactions.TransactionRequest
+	InsertMany *transactions.TransactionRequest
 }
 
 var usersNotificationsTable *UsersNotificationsTable = &UsersNotificationsTable{
 	name:         UsersNotificationsTableName,
 	dependencies: usersNotificationsTableDependencies,
-	requests:     usersNotificationsTableRequests,
+	Requests:     usersNotificationsTableRequests,
 }
 
 var usersNotificationsTableDependencies *TableDependencies = &TableDependencies{
@@ -37,16 +43,22 @@ var usersNotificationsTableDependencies *TableDependencies = &TableDependencies{
 var usersNotificationsTableRequests = &UsersNotificationsRequests{
 	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			user_id INT NOT NULL,
-			notification_id INT NOT NULL,
+			target_id INT NOT NULL,
+			target_role %s NOT NULL,
+			notification_id INT NOT NULL,  
 
-			FOREIGN KEY (user_id) REFERENCES %s(id),
-			FOREIGN KEY (notification_id) REFERENCES %s(id)
+			FOREIGN KEY (target_id) REFERENCES %s(id),
+			FOREIGN KEY (notification_id) REFERENCES %s(issuer_id)
 		);
-	`, UsersNotificationsTableName, usersTableName, NotificationsTableName)),
+	`, UsersNotificationsTableName, UserRolesTypeName, usersTableName, NotificationsTableName)),
 	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;
 	`, UsersNotificationsTableName)),
+	InsertMany: transactions.NewRequest(fmt.Sprintf(`
+		INSERT INTO %s (target_id, target_role, notification_id)
+		VALUES %s
+		RETURNING target_id, target_role, notification_id;
+	`, UsersNotificationsTableName, placeholder)).AllowValueRepeat(placeholder, 3),
 }
 
 func (t *UsersNotificationsTable) CreateRequestDependencies() *TableDependencies {
@@ -54,11 +66,11 @@ func (t *UsersNotificationsTable) CreateRequestDependencies() *TableDependencies
 }
 
 func (t *UsersNotificationsTable) CreateRequest() *transactions.TransactionRequest {
-	return t.requests.Create
+	return t.Requests.Create
 }
 
 func (t *UsersNotificationsTable) DropRequest() *transactions.TransactionRequest {
-	return t.requests.Drop
+	return t.Requests.Drop
 }
 
 func (t *UsersNotificationsTable) Name() TableName {

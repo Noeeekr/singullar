@@ -7,11 +7,13 @@ import (
 )
 
 var createCommand *cobra.Command = &cobra.Command{
-	Use:   "create [TABLE]",
+	Use:   "create [ institution ]",
 	Short: "Create allows inserting institutions into the database via command-line-interface (CLI).",
 	Long:  "",
 	Args:  cobra.MinimumNArgs(1),
-	Run:   func(cmd *cobra.Command, args []string) {},
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+	},
 }
 
 func init() {

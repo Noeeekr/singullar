@@ -45,7 +45,7 @@ type QueryTestUtil struct {
 
 	test *testing.T
 
-	migrations *migrations.MigrationsManager
+	migrations *migrations.Migrations
 	operations *operations.Operations
 }
 

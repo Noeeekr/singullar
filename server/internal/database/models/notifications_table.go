@@ -8,19 +8,20 @@ import (
 
 type NotificationsTable struct {
 	name         TableName
-	requests     *NotificationsRequests
+	Requests     *NotificationsRequests
 	dependencies *TableDependencies
 }
 
 type NotificationsRequests struct {
-	Create *transactions.TransactionRequest
-	Drop   *transactions.TransactionRequest
+	Create     *transactions.TransactionRequest
+	Drop       *transactions.TransactionRequest
+	InsertMany *transactions.TransactionRequest
 }
 
 var notificationsTable *NotificationsTable = &NotificationsTable{
 	name:         NotificationsTableName,
 	dependencies: notificationsTableDependencies,
-	requests:     notificationsTableRequests,
+	Requests:     notificationsTableRequests,
 }
 
 var notificationsTableDependencies *TableDependencies = &TableDependencies{
@@ -32,26 +33,46 @@ var notificationsTableRequests = &NotificationsRequests{
 	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
+			issuer_id    INT PRIMARY KEY,
 			title		 VARCHAR(256) NOT NULL,
 			description  VARCHAR(256) NOT NULL,
-			target_id 	 INT 		  NOT NULL,
-			target_type  %s 		  NOT NULL
+
+			CONSTRAINT fk_notifications FOREIGN KEY (issuer_id) REFERENCES %s (id)
 		);
-	`, NotificationsTableName, DefaultFieldsQuery, UserRolesTypeName)),
+	`, NotificationsTableName, DefaultFieldsQuery, usersTableName)),
 	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;
 	`, NotificationsTableName)),
+	InsertMany: transactions.NewRequest(fmt.Sprintf(`
+		INSERT INTO %s (created_at, updated_at, title, description, issuer_id)
+		VALUES %s
+		RETURNING created_at, updated_at, deleted_at, issuer_id, title, description;
+	`, NotificationsTableName, placeholder)).AllowValueRepeat(placeholder, 5),
+}
+
+/*
+Notification
+
+	id
+	title
+	description
+
+UserNotification
+
+	notId
+	usrId
+	usrType
+*/
+
+type CreateNotifications struct {
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	IssuerId    int    `json:"issuerId" binding:"required"`
 }
 
 type Notifications struct {
 	DefaultFields
-
-	Title       string `json:"title" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	// Notification can be sent to a Class using UserRole=Unkown and TargetId=ClassID
-	// Notification can be sent to a Roles using UserRole=Role and TargetId=InstitutionID
-	TargetId   int      `json:"target_id" binding:"required"`
-	TargetType UserRole `json:"target_type" binding:"required"`
+	CreateNotifications
 }
 
 func (t *NotificationsTable) CreateRequestDependencies() *TableDependencies {
@@ -59,10 +80,10 @@ func (t *NotificationsTable) CreateRequestDependencies() *TableDependencies {
 }
 
 func (t *NotificationsTable) CreateRequest() *transactions.TransactionRequest {
-	return t.requests.Create
+	return t.Requests.Create
 }
 func (t *NotificationsTable) DropRequest() *transactions.TransactionRequest {
-	return t.requests.Drop
+	return t.Requests.Drop
 }
 func (t *NotificationsTable) Name() TableName {
 	return t.name

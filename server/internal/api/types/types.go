@@ -5,10 +5,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type ApiEnvironment struct {
-	JwtSecretString string `env:"JWT_SECRET_STRING,required"`
-	Port            string `env:"PORT,required"`
-	ClientUrl       string `env:"CLIENT_URL,required"`
+type Environment struct {
+	JwtSecret string `env:"API_JWT_SECRET,required"`
+
+	Port           string `env:"API_PORT,required"`
+	AllowedOrigins string `env:"API_ALLOWED_ORIGINS,required"`
+
+	Environment string `env:"API_ENVIRONMENT"`
 }
 
 type SignInRequest struct { // FOR JSON

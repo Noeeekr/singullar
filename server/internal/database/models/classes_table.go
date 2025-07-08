@@ -32,6 +32,7 @@ var classesTableRequests = &ClassesRequests{
 	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
+			%s
 			name VARCHAR(256) NOT NULL,
 			segment VARCHAR(256) NOT NULL,
 			series VARCHAR(256) NOT NULL,
@@ -40,7 +41,7 @@ var classesTableRequests = &ClassesRequests{
 
 			FOREIGN KEY (institution_id) REFERENCES %s(id)
 		);
-	`, ClassesTableName, DefaultFieldsQuery, InstitutionsTableName)),
+	`, ClassesTableName, DefaultFieldsQuery, SerialId, InstitutionsTableName)),
 	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;
 	`, ClassesTableName)),
@@ -48,6 +49,7 @@ var classesTableRequests = &ClassesRequests{
 
 type Classes struct {
 	DefaultFields
+	ID
 	Name    string `json:"name" binding:"required"`
 	Segment string `json:"segment" binding:"required"`
 	Series  string `json:"series" binding:"required"`

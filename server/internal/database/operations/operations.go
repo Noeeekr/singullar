@@ -1,3 +1,4 @@
+// package operations provides reliable database operations for the api
 package operations
 
 import (
@@ -7,6 +8,7 @@ import (
 
 	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
+	"github.com/Noeeekr/singullar/server/internal/database/scan"
 	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
@@ -39,14 +41,14 @@ func (ops *Operations) InsertManyUsers(transaction *transactions.Transaction, re
 
 	tx = tx.Query(models.TablesInfo.Users.Requests.InsertMany.
 		WithArgs(args...).
-		WithScanFunc(scanUsers(&users)),
+		WithScanFunc(scan.Users(&users)),
 	)
 	if tx.Response != nil {
 		return users, tx
 	}
 
 	if len(users) != len(requests) {
-		tx = transactions.NewTransaction()
+		tx = transactions.NewTransaction(nil)
 		tx.Response = common.NewResponse().
 			WithDescription("Users created incorrectly").
 			WithStatus(common.StatusNotEqual)
@@ -65,7 +67,7 @@ func (ops *Operations) SelectUserByEmail(email string) (user *models.Users, res 
 	res = ops.tx.Query(
 		models.TablesInfo.Users.Requests.SelectOneByEmail.
 			WithArgs(email).
-			WithScanFunc(scanUsers(&users)),
+			WithScanFunc(scan.Users(&users)),
 	)
 	if res != nil {
 		return user, res
@@ -90,7 +92,7 @@ func (ops *Operations) SelectUserById(id int) (user *models.Users, res *common.R
 	res = ops.tx.Query(
 		models.TablesInfo.Users.Requests.SelectOneById.
 			WithArgs(id).
-			WithScanFunc(scanUsers(&users)),
+			WithScanFunc(scan.Users(&users)),
 	)
 	if res != nil {
 		return user, res
@@ -109,7 +111,7 @@ func (ops *Operations) SelectUserById(id int) (user *models.Users, res *common.R
 	return users[0], nil
 }
 func (ops *Operations) SelectUsersByInstitutionId(id int) ([]*models.Users, *transactions.Transaction) {
-	tx := transactions.NewTransaction()
+	tx := transactions.NewTransaction(nil)
 	tx.Response = common.NewResponse().
 		WithStatus(common.StatusUnregisteredMethod).
 		WithDescription("Not implemented")
@@ -173,7 +175,7 @@ func (ops *Operations) InsertInstitution(transaction *transactions.Transaction, 
 
 	tx.Response = tx.Query(models.TablesInfo.Institutions.Requests.InsertOne.
 		WithArgs(time.Now(), time.Now(), name).
-		WithScanFunc(scanInstitutionsIds(&ids)),
+		WithScanFunc(scan.InstitutionsIds(&ids)),
 	).Response
 	if tx.Response != nil {
 		return
@@ -198,7 +200,7 @@ func (ops *Operations) InsertInstitution(transaction *transactions.Transaction, 
 	var users []*models.Users
 	tx.Response = tx.Query(models.TablesInfo.Users.Requests.InsertMany.
 		WithArgs(time.Now(), time.Now(), "Administrator", email, password, ids[0], models.Admin).
-		WithScanFunc(scanUsers(&users)),
+		WithScanFunc(scan.Users(&users)),
 	).Response
 	if tx.Response != nil {
 		return user, tx
@@ -229,7 +231,7 @@ func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Instit
 	res = ops.tx.Query(
 		models.TablesInfo.Institutions.Requests.SelectOneByName.
 			WithArgs(name).
-			WithScanFunc(scanInstitutions(&insts)),
+			WithScanFunc(scan.Institutions(&insts)),
 	)
 	if res != nil {
 		return inst, res
@@ -254,7 +256,7 @@ func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions,
 	res = ops.tx.Query(
 		models.TablesInfo.Institutions.Requests.SelectOneById.
 			WithArgs(id).
-			WithScanFunc(scanInstitutions(&insts)),
+			WithScanFunc(scan.Institutions(&insts)),
 	)
 
 	if res != nil {
@@ -317,46 +319,45 @@ func (ops *Operations) DeleteInstitutionById(transaction *transactions.Transacti
 	return tx
 }
 
-/*
-utils.Insert(&Table{
-		,
-		Name: models.InstitutionsTable.Name(),
-	})
-	if len(institutions_ids) == 0 {
-		test.Fatal("Failed Scan")
+func (ops *Operations) InsertNotifications(transaction *transactions.Transaction, requests ...*NotificationRequest) (tx *transactions.Transaction) {
+	if transaction == nil {
+		tx = ops.tx.Start()
+		if tx.Response != nil {
+			return tx
+		}
+	} else {
+		tx = transaction
 	}
-	utils.Select(&Table{
-		QueryInfo: models.InstitutionsTable.Queries.SelectOne.
-			WithArgs(institutions_ids[0]).
-			WithScanFunc(operations.ScanInstitutions(&institutions)),
-		Name: models.InstitutionsTable.Name(),
-	})
-	if len(institutions) == 0 {
-		test.Fatal("Failed Scan")
-	}
-	utils.Insert(&Table{
-		Name: models.UsersTable.Name(),
-		QueryInfo: models.UsersTable.Queries.InsertOne.
-			WithArgs(time.Now(), time.Now(), "noeeekr", user_email, "123123123", institutions_ids[0], models.Admin).
-			WithScanFunc(operations.ScanUsersEmails(&users_emails)),
-	})
-	if len(users_emails) == 0 {
-		test.Fatal("Failed Scan")
-	}
-	utils.Select(&Table{
-		Name: models.UsersTable.Name(),
-		QueryInfo: models.UsersTable.Queries.SelectOne.
-			WithArgs(users_emails[0]).
-			WithScanFunc(operations.ScanUsers(&users)),
-	})
-	if len(users) == 0 {
-		test.Fatal("Failed Scan")
-	}
-	utils.Delete(&Table{
-		//QueryInfo: models.UsersTable.Queries.,
-	})
-Delete User <- Email
-Delete Inst <- ID
 
+	var args []any = []any{}
+	for _, request := range requests {
+		args = append(args, time.Now(), time.Now(), request.Title, request.Description, request.IssuerId)
+	}
 
-*/
+	tx = tx.Query(
+		models.TablesInfo.Notifications.Requests.InsertMany.
+			WithArgs(args...),
+	)
+	if tx.Response != nil {
+		return tx
+	}
+
+	args = []any{}
+	for _, request := range requests {
+		args = append(args, request.TargetId, request.TargetRole, request.IssuerId)
+	}
+
+	tx = tx.Query(
+		models.TablesInfo.UsersNotifications.Requests.InsertMany.
+			WithArgs(args...),
+	)
+	if tx.Response != nil {
+		return tx
+	}
+	// ...
+
+	if transaction == nil {
+		return tx.Commit()
+	}
+	return tx
+}

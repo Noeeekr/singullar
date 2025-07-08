@@ -38,9 +38,10 @@ var institutionsTableRequests = &InstitutionsRequests{
 	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
+			%s
 			name VARCHAR(256) NOT NULL
 		);
-	`, InstitutionsTableName, DefaultFieldsQuery)),
+	`, InstitutionsTableName, DefaultFieldsQuery, SerialId)),
 	SelectOneById: transactions.NewRequest(fmt.Sprintf(`
 		SELECT created_at, updated_at, deleted_at, name, id FROM %s WHERE id = $1;
 	`, InstitutionsTableName)),
@@ -71,6 +72,7 @@ type CreateInstitution struct {
 
 type Institutions struct {
 	DefaultFields
+	ID
 
 	Name string `json:"name" binding:"required"`
 }

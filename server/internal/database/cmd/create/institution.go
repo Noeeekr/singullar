@@ -12,8 +12,9 @@ import (
 )
 
 var InstitutionCmd *cobra.Command = &cobra.Command{
-	Use:   "institution [--email EMAIL] [--password PASSWORD] []",
+	Use:   "institution [ --email EMAIL ] [ --password PASSWORD ] [ -f ENVIRONMENT_FILES... ] { development | production }",
 	Short: "Create a institution and an administrator user",
+	Args:  cobra.MinimumNArgs(1),
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Required creation flags
@@ -22,11 +23,12 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 		password, _ := cmd.Flags().GetString("password")
 
 		// Required connection flags
-		path, _ := cmd.Flags().GetString("environmentFile")
-		mode, _ := cmd.Flags().GetString("environment")
+		files, _ := cmd.Flags().GetStringArray("environmentFiles")
+		mode := args[0]
 
-		if res := environment.Parse(path); res != nil {
+		if res := environment.Parse(files...); res != nil {
 			fmt.Println(res.ParseToString())
+			return
 		}
 
 		db, res := connections.ConnectWithEnvironment(connections.ConnectionEnvironment(mode))
@@ -86,9 +88,5 @@ func init() {
 	InstitutionCmd.Flags().String("name", "", "The name of the institution to be created.")
 	InstitutionCmd.MarkFlagRequired("name")
 
-	InstitutionCmd.Flags().StringP("environment", "e", "development", "The environment to migrate on. Defaults to development.")
-	InstitutionCmd.MarkFlagRequired("environment")
-
-	InstitutionCmd.Flags().StringP("environmentFile", "f", "", "The path to the file containing the connection string.")
-	InstitutionCmd.MarkFlagRequired("environmentFile")
+	InstitutionCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "The path to the files containing the required environment variables.")
 }

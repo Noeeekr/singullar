@@ -6,7 +6,7 @@ import (
 
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server/handlers"
-	"github.com/Noeeekr/singullar/server/internal/api/server/types"
+	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 
@@ -14,19 +14,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func PrepareRouter(db *sql.DB, env *types.ApiEnvironment) (*gin.Engine, error) {
+func PrepareRouter(db *sql.DB, env *types.Environment) (*gin.Engine, error) {
 	handlers := handlers.New(operations.New(db), env)
 
 	middlewares := RouterMiddlewares{
-		env: env,
+		Environment: env,
 	}
 
 	r := gin.Default()
 
-	logs.Info.Println("Allowing access origin: ", strings.Join(strings.Split(env.ClientUrl, ","), " "))
+	logs.Info.Println("Allowing access origin: ", strings.ReplaceAll(env.AllowedOrigins, ",", " "))
 	// User auth session and store for authentication
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     strings.Split(env.ClientUrl, ","),
+		AllowOrigins:     strings.Split(env.AllowedOrigins, ","),
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

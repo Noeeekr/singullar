@@ -3,38 +3,22 @@ package server
 import (
 	"log"
 	"net/http"
-
-	"github.com/Noeeekr/singullar/server/common"
 )
 
 type Server struct {
-	s http.Server
+	*http.Server
 }
 
-func New() *Server {
+func New(router http.Handler, addr string) *Server {
 	return &Server{
-		s: http.Server{},
+		Server: &http.Server{
+			Handler: router,
+			Addr:    addr,
+		},
 	}
-}
-func (s *Server) WithRouter(router http.Handler) *Server {
-	s.s.Handler = router
-	return s
-}
-func (s *Server) WithAddr(addr string) *Server {
-	s.s.Addr = addr
-	return s
-}
-func (s *Server) WithErrLogger(logger *log.Logger) *Server {
-	s.s.ErrorLog = logger
-	return s
 }
 
-func (s *Server) ListenAndServe() *common.Response {
-	err := s.s.ListenAndServe()
-	if err != nil {
-		return common.NewResponse().
-			WithStatus(common.StatusInternalError).
-			WithDescription(err.Error())
-	}
-	return nil
+func (s *Server) WithErrLogger(logger *log.Logger) *Server {
+	s.ErrorLog = logger
+	return s
 }

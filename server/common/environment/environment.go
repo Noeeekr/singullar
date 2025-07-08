@@ -22,18 +22,16 @@ type EnvironmentVariables struct {
 	// UserAuthStoreSecret string `env:"USER_AUTH_STORE_SECRET,required"`
 }
 
-// Set "key" to "value" if "key" is empty. If "value" is empty mantains "key" as it is. If "key" is not empty override it. Returns the value present in the key at the end.
+// Set "key" to "value" if "key" is empty. If "value" is empty mantains "key" as it is. If "key" is not empty ignores it. Returns the value present in the key at the end.
 func SetIfNotEmpty(key string, value string) (string, error) {
-	if value != "" {
-		return key, os.Setenv(key, value)
+	if value != "" && os.Getenv(key) == "" {
+		return value, os.Setenv(key, value)
 	}
 	return os.Getenv(key), nil
 }
 func Parse(files ...string) *common.Response {
 	if len(files) == 0 {
-		return common.NewResponse().
-			WithStatus(common.StatusEmpty).
-			WithDescription("Insufficient amount of files.")
+		return nil
 	}
 
 	for _, file := range files {

@@ -5,16 +5,13 @@ import (
 	"fmt"
 
 	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
+	"github.com/Noeeekr/singullar/server/internal/database/scan"
 	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
-type Context struct {
-	alreadyCreatedTables map[models.TableName]bool
-	alreadyCreatedTypes  map[models.TypeName]bool
-}
-
-type MigrationsManager struct {
+type Migrations struct {
 	// Having a single ctx for all cases is kinda bad in concurrency since the code underneath would make it go crazy:
 	//
 	// 	m := NewMigrationsManager(db)
@@ -27,8 +24,8 @@ type MigrationsManager struct {
 	tx           *transactions.TransactionManager
 }
 
-func New(db *sql.DB) *MigrationsManager {
-	return &MigrationsManager{
+func New(db *sql.DB) *Migrations {
+	return &Migrations{
 		ctx: &Context{
 			alreadyCreatedTables: map[models.TableName]bool{},
 			alreadyCreatedTypes:  map[models.TypeName]bool{},
@@ -37,12 +34,12 @@ func New(db *sql.DB) *MigrationsManager {
 	}
 }
 
-func (m *MigrationsManager) StartTransaction() *transactions.Transaction {
+func (m *Migrations) StartTransaction() *transactions.Transaction {
 	return m.tx.Start()
 }
 
 // Doesn't need user.Database to be set | drop users if fail happens
-func (m *MigrationsManager) CreateUsers(users ...*models.CreateDatabaseUser) (res *common.Response) {
+func (m *Migrations) CreateUsers(users ...*models.CreateDatabaseUser) (res *common.Response) {
 	// Create users until error
 	for _, user := range users {
 		// check if users already exist
@@ -83,7 +80,7 @@ func (m *MigrationsManager) CreateUsers(users ...*models.CreateDatabaseUser) (re
 }
 
 // Doesn't need users.Password to be set
-func (m *MigrationsManager) GrantAllPrivilegesOnDatabase(users ...*models.CreateDatabaseUser) (res *common.Response) {
+func (m *Migrations) GrantAllPrivilegesOnDatabase(users ...*models.CreateDatabaseUser) (res *common.Response) {
 	for _, user := range users {
 		// check if users already exist
 		res = m.tx.Query(
@@ -121,7 +118,7 @@ func (m *MigrationsManager) GrantAllPrivilegesOnDatabase(users ...*models.Create
 	return nil
 }
 
-func (m *MigrationsManager) DropUsers(names ...string) (res *common.Response) {
+func (m *Migrations) DropUsers(names ...string) (res *common.Response) {
 	for _, name := range names {
 		// check if users already exist
 		res = m.tx.Query(
@@ -154,29 +151,9 @@ func (m *MigrationsManager) DropUsers(names ...string) (res *common.Response) {
 	return res
 }
 
-func (m *MigrationsManager) CreateDatabases(names ...string) *common.Response {
-	for _, name := range names {
-		res := m.tx.Query(
-			// returns nil if database doesn't exist
-			transactions.NewRequest(fmt.Sprintf("SELECT * FROM pg_database WHERE datname = '%s'", name)).
-				WithScanFunc(func(rows *sql.Rows) *common.Response {
-					defer rows.Close()
-					if rows.Next() {
-						return common.NewResponse().WithDescription("Database already exists.").WithStatus(common.StatusFound)
-					}
-					if rows.Err() != nil {
-						return common.NewResponse().WithDescription(rows.Err().Error()).WithStatus(common.StatusFailedTransaction)
-					}
-					return nil
-				}),
-		)
-		if res != nil {
-			fmt.Println("[Database already exists]: " + name)
-			return res
-		}
-
-		fmt.Println("[Creating database]: " + name)
-		res = m.tx.Query(transactions.NewRequest(fmt.Sprintf("CREATE DATABASE %s", name)))
+func (m *Migrations) CreateDatabases(requests []*RequestCreateDatabase, configuration *Configuration) *common.Response {
+	for _, request := range requests {
+		res := m.CreateDatabase(request, configuration)
 		if res != nil {
 			return res
 		}
@@ -185,8 +162,36 @@ func (m *MigrationsManager) CreateDatabases(names ...string) *common.Response {
 	return nil
 }
 
+func (m *Migrations) CreateDatabase(request *RequestCreateDatabase, configuration *Configuration) *common.Response {
+	if configuration == nil {
+		configuration = &Configuration{}
+	}
+	var databaseNames []string
+	// Check if database exists
+	res := m.tx.Query(
+		// Returns nil if doesn't exist
+		transactions.NewRequest(fmt.Sprintf("SELECT datname FROM pg_database WHERE datname = '%s'", request.Database)).
+			WithScanFunc(scan.DatabaseNames(&databaseNames)),
+	)
+	if res != nil {
+		if res.Status != common.StatusFound {
+			return res
+		}
+		if res.Status == common.StatusFound && configuration.IgnoreExisting {
+			return nil
+		}
+	}
+
+	logs.Info.Println("[Creating database]: " + request.Database)
+	res = m.tx.Query(transactions.NewRequest(fmt.Sprintf("CREATE DATABASE %s WITH OWNER = %s", request.Database, request.User)))
+	if res != nil {
+		return res
+	}
+	return nil
+}
+
 // Drops all databases found and returns an error if at least one wasn't found
-func (m *MigrationsManager) DropDatabases(names ...string) (res *common.Response) {
+func (m *Migrations) DropDatabases(names ...string) (res *common.Response) {
 	for _, name := range names {
 		res = m.tx.Query(transactions.NewRequest(fmt.Sprintf("SELECT * FROM pg_database WHERE datname = '%s'", name)).
 			// Returns nil if the database exists
@@ -216,7 +221,7 @@ func (m *MigrationsManager) DropDatabases(names ...string) (res *common.Response
 }
 
 // If transaction is different than nil, executes in the context of the given transaction without commiting. Otherwise creates a new transaction and commits at the end.
-func (m *MigrationsManager) CreateTables(transaction *transactions.Transaction, tables ...models.TableMethods) *transactions.Transaction {
+func (m *Migrations) CreateTables(transaction *transactions.Transaction, tables ...models.TableMethods) *transactions.Transaction {
 	var tx *transactions.Transaction
 	if transaction == nil {
 		tx = m.tx.Start()
@@ -296,7 +301,7 @@ func (m *MigrationsManager) CreateTables(transaction *transactions.Transaction, 
 	return tx
 }
 
-func (m *MigrationsManager) CreateType(transaction *transactions.Transaction, types ...*models.TypeInfo) *transactions.Transaction {
+func (m *Migrations) CreateType(transaction *transactions.Transaction, types ...*models.TypeInfo) *transactions.Transaction {
 	var tx *transactions.Transaction
 	if transaction == nil {
 		tx = m.tx.Start()
@@ -323,7 +328,7 @@ func (m *MigrationsManager) CreateType(transaction *transactions.Transaction, ty
 	return tx
 }
 
-func (m *MigrationsManager) DropTables(transaction *transactions.Transaction, tables ...models.TableMethods) *transactions.Transaction {
+func (m *Migrations) DropTables(transaction *transactions.Transaction, tables ...models.TableMethods) *transactions.Transaction {
 	var tx *transactions.Transaction
 	if transaction == nil {
 		tx = m.tx.Start()
@@ -346,7 +351,7 @@ func (m *MigrationsManager) DropTables(transaction *transactions.Transaction, ta
 	return tx.Commit()
 }
 
-func (m *MigrationsManager) DropType(transaction *transactions.Transaction, types ...*models.TypeInfo) *transactions.Transaction {
+func (m *Migrations) DropType(transaction *transactions.Transaction, types ...*models.TypeInfo) *transactions.Transaction {
 	var tx *transactions.Transaction
 	if transaction == nil {
 		tx = m.tx.Start()

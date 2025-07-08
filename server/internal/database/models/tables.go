@@ -44,15 +44,20 @@ type TableDependencies struct {
 	Tables []TableMethods
 }
 
+type ID struct {
+	Id int `json:"id" binding:"required"`
+}
+
 type DefaultFields struct {
-	Id        int        `json:"id" binding:"required"`
 	CreatedAt time.Time  `json:"created_at" binding:"required"`
 	UpdatedAt time.Time  `json:"updated_at" binding:"required"`
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
-const DefaultFieldsQuery = `
+const SerialId = `
 	id         SERIAL      PRIMARY KEY,
+`
+const DefaultFieldsQuery = `
 	created_at TIMESTAMPTZ NOT NULL,
 	updated_at TIMESTAMPTZ NOT NULL,
 	deleted_at TIMESTAMPTZ,

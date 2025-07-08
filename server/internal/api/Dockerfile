@@ -8,5 +8,4 @@ RUN go build -o api ./internal/api/
 FROM alpine:latest
 WORKDIR /singullar
 COPY --from=build /singullar/api .
-CMD ["./api", "start"]
-
+CMD ["./api", "start", "--enable-migrations", "--ignore-existing"]

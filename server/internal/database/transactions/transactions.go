@@ -1,3 +1,4 @@
+// Package transactions contains types that abstract the golang database/sql package transaction operations for easy chaining, gracefull errors and operations.
 package transactions
 
 import (
@@ -6,23 +7,25 @@ import (
 	"github.com/Noeeekr/singullar/server/common"
 )
 
-// Response must be nil on success
+// Functions that are not part of Transaction will operate without starting transaction.
+// Transaction Automatically switches between Query() and Exec() when necessary.
+//
+// Methods on Transaction created with a nil pointer will commit at the end of operation.
+// Methods on Transaction created with an already started transactions won't commit at the end of operation and will execute in the transaction.
 type Transaction struct {
+	// Response must be nil on success
 	Response *common.Response
-	tx       *sql.Tx
+
+	// Transaction context, if exists all operations will be done in this tx and won't commit at the end.
+	tx *sql.Tx
 }
 
-// Used to pass a transaction. If the transaction is different than nil uses it and doesnt commit neither start a new one
-func NewTransaction() *Transaction {
+// NewTransaction creates a transaction. If a tx is != nil all operations will be done in its context and won't commit at the end.
+func NewTransaction(tx *sql.Tx) *Transaction {
 	return &Transaction{
 		Response: nil,
-		tx:       nil,
+		tx:       tx,
 	}
-}
-
-func (t *Transaction) WithTransaction(tx *sql.Tx) *Transaction {
-	t.tx = tx
-	return t
 }
 
 type TransactionManager struct {
@@ -66,14 +69,14 @@ func (m *TransactionManager) Query(query *TransactionRequest) *common.Response {
 func (m *TransactionManager) Start() *Transaction {
 	tx, err := m.db.Begin()
 	if err != nil {
-		t := NewTransaction()
+		t := NewTransaction(nil)
 		t.Response = common.NewResponse().
 			WithDescription(err.Error()).
 			WithStatus(common.StatusFailedTransactionStart)
 		return t
 	}
 
-	t := NewTransaction().WithTransaction(tx)
+	t := NewTransaction(tx)
 	return t
 }
 

@@ -4,14 +4,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/Noeeekr/singullar/server/internal/api/server/types"
+	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 type RouterMiddlewares struct {
-	env *types.ApiEnvironment
+	*types.Environment
 }
 
 // Need to be tested : Redirect users that are not logged from protected routes.
@@ -34,7 +34,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("failed to parse token")
 			}
-			return []byte(m.env.JwtSecretString), nil
+			return []byte(m.JwtSecret), nil
 		})
 
 		if err != nil {

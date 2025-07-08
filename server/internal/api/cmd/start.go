@@ -1,15 +1,17 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/common/environment"
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server"
-	"github.com/Noeeekr/singullar/server/internal/api/server/types"
+	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/connections"
-	"github.com/Noeeekr/singullar/server/internal/database/migrations"
-	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/gin-gonic/gin"
+
+	"github.com/Noeeekr/singullar/server/internal/database/cmd/migrate"
 
 	"github.com/spf13/cobra"
 )
@@ -40,9 +42,13 @@ var startCmd *cobra.Command = &cobra.Command{
 
 		// Execute migrations if enable-migrations is present
 		shouldMigrate, _ := cmd.Flags().GetBool("enable-migrations")
+		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
 		if shouldMigrate {
-			res := Migrate()
-			if res != nil {
+			flags := []string{}
+			if ignoreExisting {
+				flags = append(flags, "--ignore-existing")
+			}
+			if res := Migrate(mode, flags...); res != nil {
 				logs.Info.Fatal(res.ParseToString())
 			}
 		}
@@ -58,9 +64,10 @@ func init() {
 
 	startCmd.Flags().Bool("enable-debug", false, "Defines if the server should start in debug mode. Defaults to false")
 	startCmd.Flags().Bool("enable-migrations", false, "Defines if the server should start with migrations. Defaults to false")
+	startCmd.Flags().Bool("ignore-existing", false, "Doesn't throw errors and proceed if the database relation already exists.")
 
 	startCmd.Flags().String("port", "80", "Defines the port the server will listen to.")
-	startCmd.Flags().String("mode", "", "The environment to migrate on. Defaults to development.")
+	startCmd.Flags().String("mode", "development", "The environment to migrate on. Defaults to development.")
 
 	startCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "The path to the files containing the required environment variables.")
 }
@@ -71,48 +78,46 @@ func StartApi(port, mode string) *common.Response {
 		return res
 	}
 
-	var env types.ApiEnvironment
-	if err := environment.Scan(&env); err != nil {
+	var env types.Environment
+	if res := environment.Scan(&env); res != nil {
 		return res
 	}
 
 	router, err := server.PrepareRouter(db, &env)
 	if err != nil {
-		return res
+		return common.NewResponse().
+			WithDescription(err.Error()).
+			WithStatus(common.StatusInternalError)
 	}
 
-	server := server.New().
-		WithAddr(":" + port).
-		WithErrLogger(logs.Error).
-		WithRouter(router)
+	server := server.New(router, ":"+port).
+		WithErrLogger(logs.Error)
 
 	logs.Info.Printf("Server is running on http://localhost:%s", port)
-	return server.ListenAndServe()
+	err = server.ListenAndServe()
+
+	return common.NewResponse().
+		WithDescription(err.Error()).
+		WithStatus(common.StatusInternalError)
 }
 
-func Migrate() *common.Response {
-	db, err := connections.ConnectWithEnvironment(connections.Postgres)
+func Migrate(mode string, flags ...string) *common.Response {
+	args := []string{"./api", mode}
+	args = append(args, flags...)
+
+	os.Args = args
+
+	err := migrate.EnvironmentCmd.Execute()
 	if err != nil {
-		return err
+		return common.NewResponse().WithDescription(err.Error()).WithStatus(common.StatusInternalError)
 	}
 
-	mig := migrations.New(db)
-	tx := mig.StartTransaction()
-	if tx.Response != nil {
-		return tx.Response
+	os.Args = args
+
+	err = migrate.RelationsCmd.Execute()
+	if err != nil {
+		return common.NewResponse().WithDescription(err.Error()).WithStatus(common.StatusInternalError)
 	}
 
-	tx = mig.CreateTables(
-		tx,
-		models.TablesInfo.Institutions,
-		models.TablesInfo.Users,
-		models.TablesInfo.Classes,
-		models.TablesInfo.Notifications,
-		models.TablesInfo.UsersClasses,
-		models.TablesInfo.UsersNotifications,
-	)
-	if tx.Response != nil {
-		return tx.Response
-	}
 	return nil
 }

@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +12,7 @@ import (
 // It accepts a main "errType" and insert the error object inside it to be parsed into JSON for frontend.
 // It also accepts an err for debug porpuses.
 func (h *Handlers) internalError(ctx *gin.Context, message string, err error) {
-	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
+	trace := fmt.Sprintf("%s : %s\n", message, err.Error())
 
 	h.LogErr.Output(2, trace)
 

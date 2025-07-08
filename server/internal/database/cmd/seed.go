@@ -2,28 +2,28 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
 
-	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/common/environment"
 	"github.com/Noeeekr/singullar/server/internal/database/connections"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
-
+	"github.com/Noeeekr/singullar/server/internal/database/seeder"
+	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 	"github.com/spf13/cobra"
 )
 
 var seedCmd *cobra.Command = &cobra.Command{
-	Use:   "seed [-e \"production\"|\"development\"] [-f env_file_path] [-t table] [-n amount] [arguments]",
-	Short: "Seeds the table the specified amount of times. If the table needs some dependency it may seed it too, if it needs some parameters it will ask for.",
+	Use:   "seed [ -f ENVIRONMENT_FILES... ] [ -n QUANTITY ] [ -i ID ] { production | development }",
+	Args:  cobra.MinimumNArgs(1),
+	Short: "Seeds all tables with objects related to a specific institution defined by the id flag..",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		tablename, _ := cmd.Flags().GetString("table")
-		amount, _ := cmd.Flags().GetInt("amount")
-		mode, _ := cmd.Flags().GetString("environment")
-		path, _ := cmd.Flags().GetString("environmentFile")
+		quantity, _ := cmd.Flags().GetInt("quantity")
+		institutionId, _ := cmd.Flags().GetInt("id")
+		mode := args[0]
 
-		if res := environment.Parse(path); res != nil {
+		files, _ := cmd.Flags().GetStringArray("environmentFiles")
+		if res := environment.Parse(files...); res != nil {
 			fmt.Println(res.ParseToString())
 			return
 		}
@@ -33,58 +33,59 @@ var seedCmd *cobra.Command = &cobra.Command{
 			fmt.Println(res.ParseToString())
 			return
 		}
+		defer db.Close()
 
-		seeder := Seeder{
-			ops: operations.New(db),
+		// To make everything in a single transaction
+		tx := transactions.New(db).Start()
+		ops := operations.New(db)
+
+		createdUsers := seeder.CreateUsers(quantity, institutionId)
+		users, tx := ops.InsertManyUsers(tx, createdUsers...)
+		if tx.Response != nil {
+			fmt.Println(tx.Response.ParseToString())
+			return
 		}
 
-		switch models.TableName(tablename) {
-		case models.TablesInfo.Users.Name():
-			if len(args) == 0 {
-				fmt.Println("Please specify the id of the institution to insert users into")
-				return
-			}
-
-			institution_id, err := strconv.Atoi(args[0])
-			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
-
-			res := seeder.Users(institution_id, amount)
-			if res != nil {
-				fmt.Println(res.ParseToString())
-				return
+		var teachers []*models.Users
+		for _, user := range users {
+			if user.Role == models.Teacher {
+				teachers = append(teachers, user)
 			}
 		}
+		var students []*models.Users
+		for _, user := range users {
+			if user.Role == models.Student {
+				students = append(students, user)
+			}
+		}
+
+		for _, teacher := range teachers {
+			for _, student := range students {
+				notifications := seeder.CreateNotifications(4, teacher.Id, student.Id, student.Role)
+				res := ops.InsertNotifications(tx, notifications...).Response
+				if res != nil {
+					fmt.Println(res.ParseToString())
+					return
+				}
+			}
+		}
+		// Create users
+		//   -> If teacher
+		//       -> Create more ten users
+		//			-> Create notifications for them
+		//	 -> If student nothing
+		//
+		//
 	},
 }
 
-type Seeder struct {
-	ops *operations.Operations
-}
-
-func (s *Seeder) Users(institution_id, amount int) *common.Response {
-	requests := make([]*models.CreateUsers, amount)
-	for i := range amount {
-		requests[i] = &models.CreateUsers{
-			Name:          common.GenerateRandomStrings(10),
-			Email:         common.GenerateRandomStrings(10),
-			Password:      common.GenerateRandomStrings(10),
-			InstitutionId: institution_id,
-			Role:          models.Student,
-		}
-	}
-	_, tx := s.ops.InsertManyUsers(nil, requests...)
-	return tx.Response
-}
-
 func init() {
-	seedCmd.Flags().IntP("amount", "n", 50, "The amount of times to seed the table. Defaults to 50")
-	seedCmd.MarkFlagRequired("amount")
+	seedCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "Defines environment files to parse the required environment variables.")
 
-	seedCmd.Flags().StringP("table", "t", "", "The table to be seeded")
-	seedCmd.MarkFlagRequired("table")
+	seedCmd.Flags().IntP("quantity", "n", 50, "The amount of times to seed the table. Defaults to 50")
+
+	seedCmd.Flags().IntP("id", "i", 0, "The id of the institution to seed")
+	seedCmd.MarkFlagRequired("id")
 
 	rootCmd.AddCommand(seedCmd)
 }
