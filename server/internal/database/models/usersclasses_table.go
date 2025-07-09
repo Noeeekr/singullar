@@ -19,8 +19,8 @@ type UsersClassesTable struct {
 }
 
 type UsersClassesRequests struct {
-	Create *transactions.TransactionRequest
-	Drop   *transactions.TransactionRequest
+	Create *transactions.Request
+	Drop   *transactions.Request
 }
 
 var usersClassesTable *UsersClassesTable = &UsersClassesTable{
@@ -53,7 +53,7 @@ func (t *UsersClassesTable) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *UsersClassesTable) CreateRequest() *transactions.TransactionRequest {
+func (t *UsersClassesTable) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
 
@@ -61,6 +61,6 @@ func (t *UsersClassesTable) Name() TableName {
 	return t.name
 }
 
-func (t *UsersClassesTable) DropRequest() *transactions.TransactionRequest {
+func (t *UsersClassesTable) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }

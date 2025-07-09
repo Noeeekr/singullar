@@ -49,14 +49,15 @@ type QueryTestUtil struct {
 	operations *operations.Operations
 }
 
-func (m *QueryTestUtil) CreateTables(tables []models.TableMethods) (res *common.Response) {
-	res = m.migrations.CreateTables(nil, tables...).Response
-	if res != nil {
-		m.test.Log(res.Status, "|", res.Description)
+func (m *QueryTestUtil) CreateTables(configuration *migrations.Configuration, tables []models.TableMethods) (res *common.Response) {
+	transaction := m.migrations.CreateTables(configuration, nil, tables...)
+	if transaction.Response != nil {
+		m.test.Log(transaction.Response.ParseToString())
 	}
-	return res
+	return transaction.Response
 }
 func (m *QueryTestUtil) DropTables(tables []models.TableMethods) (res *common.Response) {
+	m.test.Log("Finished operations, dropping tables")
 	res = m.migrations.DropTables(nil, tables...).Response
 	if res != nil {
 		m.test.Log(res.Status, "|", res.Description)
@@ -95,7 +96,7 @@ func (m *QueryTestUtil) CreateUsersData(institutions []*models.Institutions) []*
 }
 
 // Start database connection, create necessary tables.
-func (m *QueryTestUtil) Prepare(tables []models.TableMethods) *sql.DB {
+func (m *QueryTestUtil) PrepareDatabaseWithTables(configuration *migrations.Configuration, tables []models.TableMethods) *sql.DB {
 	m.test.Run("SETUP", func(t *testing.T) {
 		if err := environment.Parse(flagEnvironmentFile); err != nil {
 			t.Fatal(err.Status, err.Description)
@@ -119,7 +120,7 @@ func (m *QueryTestUtil) Prepare(tables []models.TableMethods) *sql.DB {
 	})
 
 	m.Run("CREATE TABLES", func(t *testing.T) {
-		if res := m.CreateTables(tables); res != nil {
+		if res := m.CreateTables(configuration, tables); res != nil {
 			t.Fatal(res.Status, res.Description)
 		}
 	})
@@ -139,7 +140,11 @@ func TestOperations(test *testing.T) {
 		test: test,
 	}
 
-	db := utils.Prepare(tables)
+	configuration := migrations.Configuration{
+		RecreateExisting: true,
+	}
+
+	db := utils.PrepareDatabaseWithTables(&configuration, tables)
 	if db == nil {
 		test.Fatal("Database not prepared")
 	}

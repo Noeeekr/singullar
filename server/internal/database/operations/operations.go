@@ -3,7 +3,6 @@ package operations
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/Noeeekr/singullar/server/common"
@@ -173,10 +172,10 @@ func (ops *Operations) InsertInstitution(transaction *transactions.Transaction, 
 
 	var ids []int
 
-	tx.Response = tx.Query(models.TablesInfo.Institutions.Requests.InsertOne.
+	tx = tx.Query(models.TablesInfo.Institutions.Requests.InsertOne.
 		WithArgs(time.Now(), time.Now(), name).
 		WithScanFunc(scan.InstitutionsIds(&ids)),
-	).Response
+	)
 	if tx.Response != nil {
 		return
 	}
@@ -194,9 +193,6 @@ func (ops *Operations) InsertInstitution(transaction *transactions.Transaction, 
 		return
 	}
 
-	fmt.Println(models.TablesInfo.Users.Requests.InsertMany.
-		WithArgs(time.Now(), time.Now(), "Administrator", email, password, ids[0], models.Admin).Query,
-	)
 	var users []*models.Users
 	tx.Response = tx.Query(models.TablesInfo.Users.Requests.InsertMany.
 		WithArgs(time.Now(), time.Now(), "Administrator", email, password, ids[0], models.Admin).

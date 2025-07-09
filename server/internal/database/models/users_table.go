@@ -33,15 +33,15 @@ type Users struct {
 }
 
 type UsersRequests struct {
-	Create           *transactions.TransactionRequest
-	InsertMany       *transactions.TransactionRequest
-	DeleteOneByEmail *transactions.TransactionRequest
-	DeleteOneById    *transactions.TransactionRequest
-	SelectOneByEmail *transactions.TransactionRequest
-	SelectOneById    *transactions.TransactionRequest
-	Drop             *transactions.TransactionRequest
+	Create           *transactions.Request
+	InsertMany       *transactions.Request
+	DeleteOneByEmail *transactions.Request
+	DeleteOneById    *transactions.Request
+	SelectOneByEmail *transactions.Request
+	SelectOneById    *transactions.Request
+	Drop             *transactions.Request
 
-	SelectManyByInstitutionId *transactions.TransactionRequest
+	SelectManyByInstitutionId *transactions.Request
 }
 
 type UsersTable struct {
@@ -115,7 +115,7 @@ func (t *UsersTable) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *UsersTable) CreateRequest() *transactions.TransactionRequest {
+func (t *UsersTable) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
 
@@ -123,6 +123,6 @@ func (t *UsersTable) Name() TableName {
 	return t.name
 }
 
-func (t *UsersTable) DropRequest() *transactions.TransactionRequest {
+func (t *UsersTable) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }

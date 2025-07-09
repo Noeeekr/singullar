@@ -43,10 +43,14 @@ var startCmd *cobra.Command = &cobra.Command{
 		// Execute migrations if enable-migrations is present
 		shouldMigrate, _ := cmd.Flags().GetBool("enable-migrations")
 		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
+		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
 		if shouldMigrate {
 			flags := []string{}
 			if ignoreExisting {
 				flags = append(flags, "--ignore-existing")
+			}
+			if recreateExisting {
+				flags = append(flags, "--recreate-existing")
 			}
 			if res := Migrate(mode, flags...); res != nil {
 				logs.Info.Fatal(res.ParseToString())
@@ -64,7 +68,10 @@ func init() {
 
 	startCmd.Flags().Bool("enable-debug", false, "Defines if the server should start in debug mode. Defaults to false")
 	startCmd.Flags().Bool("enable-migrations", false, "Defines if the server should start with migrations. Defaults to false")
+
 	startCmd.Flags().Bool("ignore-existing", false, "Doesn't throw errors and proceed if the database relation already exists.")
+	startCmd.Flags().BoolP("ignore-existing", "i", false, "Doesn't throw errors if the database relation already exists.")
+	startCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
 
 	startCmd.Flags().String("port", "80", "Defines the port the server will listen to.")
 	startCmd.Flags().String("mode", "development", "The environment to migrate on. Defaults to development.")

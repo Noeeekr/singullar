@@ -1,4 +1,12 @@
 // Package transactions contains types that abstract the golang database/sql package transaction operations for easy chaining, gracefull errors and operations.
+//
+//	Request
+//
+// Allows creating queries and making requests from those queries.
+//
+//	Transaction
+//
+// Allows making chained transactions with gracefull error handling.
 package transactions
 
 import (
@@ -46,23 +54,23 @@ func (m *TransactionManager) Ping() error {
 }
 
 // No transaction.
-func (m *TransactionManager) Query(query *TransactionRequest) *common.Response {
-	stmt, err := m.db.Prepare(query.Query)
+func (m *TransactionManager) Query(request *Request) *common.Response {
+	stmt, err := m.db.Prepare(request.Query)
 	if err != nil {
 		return common.NewResponse().
 			WithDescription(err.Error()).
 			WithStatus(common.StatusInvalidSyntax)
 	}
 
-	rows, err := stmt.Query(query.Args...)
+	rows, err := stmt.Query(request.Args...)
 	if err != nil {
 		return common.NewResponse().
 			WithStatus(common.StatusFailedTransaction).
 			WithDescription("Failed operation. " + err.Error())
 	}
 
-	if query.ReturnHandler != nil {
-		return query.ReturnHandler(rows)
+	if request.RowsScanner != nil {
+		return request.RowsScanner(rows, request.throwErrorOnFound)
 	}
 	return nil
 }
@@ -81,15 +89,15 @@ func (m *TransactionManager) Start() *Transaction {
 }
 
 // On success Transaction == nil. Doesnt commit
-func (t *Transaction) Query(query *TransactionRequest) *Transaction {
-	if query == nil {
+func (t *Transaction) Query(request *Request) *Transaction {
+	if request == nil {
 		t.Response = common.NewResponse().
 			WithDescription("Invalid query. Empty query.").
 			WithStatus(common.StatusInvalidSyntax)
 		return t
 	}
 
-	stmt, err := t.tx.Prepare(query.Query)
+	stmt, err := t.tx.Prepare(request.Query)
 	if err != nil {
 		t.Response = common.NewResponse().
 			WithDescription(err.Error()).
@@ -97,12 +105,11 @@ func (t *Transaction) Query(query *TransactionRequest) *Transaction {
 		return t
 	}
 
-	if query.ReturnHandler != nil {
-
-		return t.query(stmt, query.ReturnHandler, query.Args...)
+	if request.RowsScanner != nil {
+		return t.query(stmt, request)
 	}
 
-	return t.exec(stmt, query.Args...)
+	return t.exec(stmt, request.Args...)
 }
 
 func (t *Transaction) Commit() *Transaction {
@@ -117,8 +124,8 @@ func (t *Transaction) Commit() *Transaction {
 }
 
 // On success Transaction == nil
-func (t *Transaction) query(stmt *sql.Stmt, handlerFunc RequestReturnHandler, args ...any) *Transaction {
-	rows, err := stmt.Query(args...)
+func (t *Transaction) query(stmt *sql.Stmt, request *Request) *Transaction {
+	rows, err := stmt.Query(request.Args...)
 	if err != nil {
 		if err := t.tx.Rollback(); err != nil {
 			t.Response = common.NewResponse().
@@ -132,7 +139,7 @@ func (t *Transaction) query(stmt *sql.Stmt, handlerFunc RequestReturnHandler, ar
 		return t
 	}
 
-	if res := handlerFunc(rows); t != nil {
+	if res := request.RowsScanner(rows, request.throwErrorOnFound); t != nil {
 		t.Response = res
 		return t
 	}

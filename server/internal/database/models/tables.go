@@ -32,8 +32,8 @@ type Tables struct {
 }
 
 type TableMethods interface {
-	CreateRequest() *transactions.TransactionRequest
-	DropRequest() *transactions.TransactionRequest
+	GetCreateRequest() *transactions.Request
+	GetDropRequest() *transactions.Request
 
 	CreateRequestDependencies() *TableDependencies
 	Name() TableName

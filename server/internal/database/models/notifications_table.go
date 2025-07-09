@@ -13,9 +13,9 @@ type NotificationsTable struct {
 }
 
 type NotificationsRequests struct {
-	Create     *transactions.TransactionRequest
-	Drop       *transactions.TransactionRequest
-	InsertMany *transactions.TransactionRequest
+	Create     *transactions.Request
+	Drop       *transactions.Request
+	InsertMany *transactions.Request
 }
 
 var notificationsTable *NotificationsTable = &NotificationsTable{
@@ -79,10 +79,10 @@ func (t *NotificationsTable) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *NotificationsTable) CreateRequest() *transactions.TransactionRequest {
+func (t *NotificationsTable) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
-func (t *NotificationsTable) DropRequest() *transactions.TransactionRequest {
+func (t *NotificationsTable) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }
 func (t *NotificationsTable) Name() TableName {

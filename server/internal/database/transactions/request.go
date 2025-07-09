@@ -8,64 +8,82 @@ import (
 	"github.com/Noeeekr/singullar/server/common"
 )
 
-type TransactionRequest struct {
-	// Wether or not that query returns rows
-	ReturnHandler RequestReturnHandler
-	Query         string
-	Args          []any
+// Allows creating queries for insert, create, update, select and more
+// Allows creating requests from created queries
+type Request struct {
+	// Query writting related fields
+	Query             string
+	valuesPlaceholder string
+	valuesFieldAmount int
 
-	placeholder string
-	valueLength int
+	// Query return related fields
+	RowsScanner RequestRowsScanner
+
+	// Query request values related fields
+	// If present the Transaction will make the operation in a query and use RowsScanner to scan the rows
+	Args              []any
+	throwErrorOnFound bool
 }
 
-type RequestReturnHandler func(rows *sql.Rows) *common.Response
+type RequestRowsScanner func(rows *sql.Rows, throwErrorOnFound bool) *common.Response
 
-func NewRequest(query string) *TransactionRequest {
-	return &TransactionRequest{
-		ReturnHandler: nil,
-		Query:         query,
-		Args:          []any{},
+func NewRequest(query string) *Request {
+	return &Request{
+		RowsScanner: nil,
+		Query:       query,
 	}
 }
 
 // Allows putting a placeholder instead of values inside the sql query to use a later to define many values. WithArgs automatically handles the parsing and throws error if amount is not sufficient
-func (q *TransactionRequest) AllowValueRepeat(placeholder string, valueLength int) *TransactionRequest {
-	q.placeholder = placeholder
-	q.valueLength = valueLength
-	return q
+func (r *Request) AllowValueRepeat(placeholder string, fieldAmount int) *Request {
+	r.valuesPlaceholder = placeholder
+	r.valuesFieldAmount = fieldAmount
+	return r
 }
 
-// WithArgs inserts the args to be passed to UPDATE | INSERT | DELETE | SELECT queries
-func (t *TransactionRequest) WithArgs(args ...any) *TransactionRequest {
-	q := *t
+// WithArgs created a copy of the query and inserts the args to be passed to UPDATE | INSERT | DELETE | SELECT queries
+func (r *Request) WithArgs(args ...any) *Request {
+	r.Args = args
 
-	q.Args = args
-
-	// Value Repeat not enabled
-	if q.valueLength == 0 {
-		return &q
+	// Value Repeat feature
+	if r.valuesFieldAmount == 0 {
+		return r
 	}
 
-	var values string
-
-	var index int = 1
-	for range len(args) / q.valueLength {
-		stack := make([]string, q.valueLength)
-		for i := range q.valueLength {
-			stack[i] = fmt.Sprintf("$%d", index)
-			index++
-		}
-		values += "(" + strings.Join(stack, ", ") + ")"
-
-	}
-
-	q.Query = strings.Replace(q.Query, q.placeholder, values, 1)
-
-	return &q
+	return r.reflectQueryValuesOnArgs(args)
 }
 
 // Defines a function to handle returned rows. If no function is passed at all then it doesn't query the returned rows.
-func (q *TransactionRequest) WithScanFunc(fun RequestReturnHandler) *TransactionRequest {
-	q.ReturnHandler = fun
-	return q
+func (r *Request) WithScanFunc(fun RequestRowsScanner) *Request {
+	r.RowsScanner = fun
+	return r
+}
+
+// Switch to throw response error on found instead of not found..
+func (r *Request) ThrowErrorOnFound() *Request {
+	r.throwErrorOnFound = true
+	return r
+}
+
+func (r *Request) reflectQueryValuesOnArgs(args []any) *Request {
+	var placeholder string
+
+	var index int = 1
+	for range len(args) / r.valuesFieldAmount {
+		stack := make([]string, r.valuesFieldAmount)
+		for i := range r.valuesFieldAmount {
+			stack[i] = fmt.Sprintf("$%d", index)
+			index++
+		}
+		placeholder += "(" + strings.Join(stack, ", ") + ")"
+	}
+
+	r.Query = strings.Replace(
+		r.Query,
+		r.valuesPlaceholder,
+		placeholder,
+		1,
+	)
+
+	return r
 }

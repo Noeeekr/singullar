@@ -8,8 +8,8 @@ type Context struct {
 }
 
 type Configuration struct {
-	IgnoreExisting bool
-	// Not implemented recreateExisting
+	IgnoreExisting   bool
+	RecreateExisting bool
 }
 
 type RequestCreateDatabase struct {

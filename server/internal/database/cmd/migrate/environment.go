@@ -18,7 +18,12 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
 		if ignoreExisting {
-			logs.Info.Println("[Ignore exist flag]: Existing relations won't stop the operations neither throw errors..")
+			logs.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
+		}
+
+		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
+		if recreateExisting {
+			logs.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
 		}
 
 		path, _ := cmd.Flags().GetStringArray("environmentFiles")
@@ -40,7 +45,13 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 
 		utils := Utils{migrations: migrations.New(db)}
 
-		res = utils.MigrateEnvironment(connections.ConnectionEnvironment(args[0]), ignoreExisting)
+		res = utils.MigrateEnvironment(
+			connections.ConnectionEnvironment(args[0]),
+			&migrations.Configuration{
+				IgnoreExisting:   ignoreExisting,
+				RecreateExisting: recreateExisting,
+			},
+		)
 		if res != nil {
 			logs.Error.Fatal(res.ParseToString())
 		}
@@ -51,44 +62,46 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 func init() {
 	EnvironmentCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "Defines the path to the environment files containing the necessary environment variables if not already supplied in the environment")
 	EnvironmentCmd.Flags().BoolP("ignore-existing", "i", false, "Doesn't throw errors and proceed if the database relation already exists.")
-	// Not implemented Environment.Flags().BoolP("recreate-existing", "r", false, "Drop and recreate the relation if already exists.")
+	// Not implemented
+	EnvironmentCmd.Flags().BoolP("recreate-existing", "r", false, "Drop and recreate the relation if already exists.")
+	EnvironmentCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
 }
 
-func (u *Utils) MigrateEnvironment(environment connections.ConnectionEnvironment, ignoreExisting bool) *common.Response {
+func (u *Utils) MigrateEnvironment(environment connections.ConnectionEnvironment, configuration *migrations.Configuration) *common.Response {
 	// PARSE DESIRED ENVIRONMENT SETTINGS FROM ENVIRONMENT
 	conn, res := connections.ScanEnvironmentForConnection(connections.ConnectionEnvironment(environment))
 	if res != nil {
 		return res
 	}
 
-	// CREATE DESIRED ENVIRONMENT ON POSTGRES
-	res = u.CreateEnvironmentDatabases(
-		[]*migrations.RequestCreateDatabase{
-			{User: conn.User(), Database: conn.Database()},
-		},
-		&migrations.Configuration{
-			IgnoreExisting: ignoreExisting,
-		},
-	)
-	if res != nil {
+	var databaseUsers []*models.CreateDatabaseUser = make([]*models.CreateDatabaseUser, 1)
+	databaseUsers[0] = models.NewDatabaseUser(conn.User(), conn.Password(), conn.Database())
+	if res := u.migrations.CreateDatabaseUsers(databaseUsers, configuration); res != nil {
 		return res
 	}
 
-	if u.CreateEnvironmentUsers(conn) {
-		res := u.migrations.DropDatabases(conn.Database())
-		if res != nil {
-			return res
-		}
+	// CREATE DESIRED ENVIRONMENT ON POSTGRES
+	res = u.migrations.CreateDatabase(
+		&migrations.RequestCreateDatabase{User: conn.User(), Database: conn.Database()},
+		configuration,
+	)
+	if res != nil {
+		logs.Error.Println(res.ParseToString())
+		return u.migrations.DropDatabaseUsers(conn.User())
 	}
 
-	res = u.GrantAllPrivilegesOnDatabase(models.NewDatabaseUser(conn.User(), conn.Password(), conn.Database()))
+	res = u.migrations.GrantAllPrivilegesOnDatabase(
+		[]*models.CreateDatabaseUser{
+			{Name: conn.User(), Password: conn.Password(), Database: conn.Database()},
+		},
+	)
 	if res != nil {
 		res = u.migrations.DropDatabases(conn.Database())
 		if res != nil {
 			return res
 		}
 
-		res = u.migrations.DropUsers(conn.User())
+		res = u.migrations.DropDatabaseUsers(conn.User())
 		if res != nil {
 			return res
 		}

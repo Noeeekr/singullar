@@ -5,8 +5,8 @@ import (
 )
 
 type TypeQueries struct {
-	Create *transactions.TransactionRequest
-	Drop   *transactions.TransactionRequest
+	Create *transactions.Request
+	Drop   *transactions.Request
 }
 
 type TypeInfo struct {

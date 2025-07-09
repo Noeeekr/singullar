@@ -11,7 +11,7 @@ import (
 /*
 // If the return value is nil scan only check for errors on scan
 
-	func UsersIds(ids *[]int) transactions.RequestReturnHandler {
+	func UsersIds(ids *[]int) transactions.RequestRowsScanner {
 
 		return func(Rows *sql.Rows, throwOnNotFound, throwOnFound) *common.Response {
 
@@ -22,6 +22,11 @@ import (
 			}
 
 			for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("Database found.").
+					WithStatus(common.StatusFound)
+			}
 
 				if throwOnFound {
 					return common.NewResponse()
@@ -48,14 +53,20 @@ import (
 				return common.NewResponse().
 					WithDescription(Rows.Err().Error()).
 					WithStatus(common.StatusFailedTransaction)
-			}
+					}
+					if !throwErrorOnFound {
+						return common.NewResponse().
+							WithDescription("Database not found.").
+							WithStatus(common.StatusNotFound)
+					}
 
 			return nil
 		}
 	}
 */
-func DatabaseNames(names *[]string) transactions.RequestReturnHandler {
-	return func(Rows *sql.Rows) *common.Response {
+
+func DatabaseTypes(names *[]string) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
 		if names == nil {
 			return common.NewResponse().
 				WithDescription("Cannot scan to nil pointer").
@@ -64,26 +75,158 @@ func DatabaseNames(names *[]string) transactions.RequestReturnHandler {
 		defer Rows.Close()
 
 		var name string
-		if Rows.Next() {
-			if Rows.Scan(&name) != nil {
+		for Rows.Next() {
+			if throwErrorOnFound {
 				return common.NewResponse().
-					WithDescription(Rows.Err().Error()).
-					WithStatus(common.StatusFailedTransaction)
+					WithDescription("Database type already exists").
+					WithStatus(common.StatusFound)
+			}
+			if err := Rows.Scan(&name); err != nil {
+				return common.NewResponse().
+					WithDescription(err.Error()).
+					WithStatus(common.StatusInternalError)
 			}
 			*names = append(*names, name)
-			return common.NewResponse().WithDescription("Database already exists.").WithStatus(common.StatusFound)
 		}
+
 		if Rows.Err() != nil {
-			return common.NewResponse().WithDescription(Rows.Err().Error()).WithStatus(common.StatusFailedTransaction)
+			return common.NewResponse().
+				WithDescription(Rows.Err().Error()).
+				WithStatus(common.StatusInternalError)
+		}
+		if !throwErrorOnFound {
+			if len(*names) == 0 {
+				return common.NewResponse().
+					WithDescription("Database type not found.").
+					WithStatus(common.StatusNotFound)
+			}
 		}
 
 		return nil
 	}
 }
 
+func DatabaseTables(names *[]string) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
+		if names == nil {
+			return common.NewResponse().
+				WithDescription("Cannot scan to nil pointer").
+				WithStatus(common.StatusInvalidSyntax)
+		}
+		defer Rows.Close()
+
+		var name string
+		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("Database table already exists").
+					WithStatus(common.StatusFound)
+			}
+			if err := Rows.Scan(&name); err != nil {
+				return common.NewResponse().
+					WithDescription(err.Error()).
+					WithStatus(common.StatusInternalError)
+			}
+			*names = append(*names, name)
+		}
+
+		if Rows.Err() != nil {
+			return common.NewResponse().
+				WithDescription(Rows.Err().Error()).
+				WithStatus(common.StatusInternalError)
+		}
+		if !throwErrorOnFound {
+			if len(*names) == 0 {
+				return common.NewResponse().
+					WithDescription("Database table not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
+
+		return nil
+	}
+}
+
+func DatabaseUsers(names *[]string) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
+		if names == nil {
+			return common.NewResponse().
+				WithDescription("Cannot scan to nil pointer").
+				WithStatus(common.StatusInvalidSyntax)
+		}
+		defer Rows.Close()
+
+		var name string
+		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("Database user already exists").
+					WithStatus(common.StatusFound)
+			}
+			if err := Rows.Scan(&name); err != nil {
+				return common.NewResponse().
+					WithDescription(err.Error()).
+					WithStatus(common.StatusInternalError)
+			}
+			*names = append(*names, name)
+		}
+
+		if Rows.Err() != nil {
+			return common.NewResponse().
+				WithDescription(Rows.Err().Error()).
+				WithStatus(common.StatusInternalError)
+		}
+		if !throwErrorOnFound {
+			if len(*names) == 0 {
+				return common.NewResponse().
+					WithDescription("Database user not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
+
+		return nil
+	}
+}
+func DatabaseNames(names *[]string) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
+		if names == nil {
+			return common.NewResponse().
+				WithDescription("Cannot scan to nil pointer").
+				WithStatus(common.StatusInvalidSyntax)
+		}
+		defer Rows.Close()
+
+		var name string
+		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("Database found.").
+					WithStatus(common.StatusFound)
+			}
+			if Rows.Scan(&name) != nil {
+				return common.NewResponse().
+					WithDescription(Rows.Err().Error()).
+					WithStatus(common.StatusFailedTransaction)
+			}
+			*names = append(*names, name)
+		}
+		if Rows.Err() != nil {
+			return common.NewResponse().WithDescription(Rows.Err().Error()).WithStatus(common.StatusFailedTransaction)
+		}
+		if !throwErrorOnFound {
+			if len(*names) == 0 {
+				return common.NewResponse().
+					WithDescription("Database not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
+		return nil
+	}
+}
+
 // If the return value is nil scan only check for errors on scan
-func Notifications(notifications *[]*models.Notifications) transactions.RequestReturnHandler {
-	return func(Rows *sql.Rows) *common.Response {
+func Notifications(notifications *[]*models.Notifications) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
 		if notifications == nil {
 			return common.NewResponse().
 				WithDescription("Cannot scan to nil pointer").
@@ -91,6 +234,11 @@ func Notifications(notifications *[]*models.Notifications) transactions.RequestR
 		}
 
 		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("Notification found.").
+					WithStatus(common.StatusFound)
+			}
 			var notification *models.Notifications
 			if Rows.Scan(&notification) != nil {
 				return common.NewResponse().
@@ -105,14 +253,21 @@ func Notifications(notifications *[]*models.Notifications) transactions.RequestR
 				WithDescription(Rows.Err().Error()).
 				WithStatus(common.StatusFailedTransaction)
 		}
+		if !throwErrorOnFound {
+			if len(*notifications) == 0 {
+				return common.NewResponse().
+					WithDescription("Notification not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
 
 		return nil
 	}
 }
 
 // If the return value is nil scan only check for errors on scan
-func UsersIds(ids *[]int) transactions.RequestReturnHandler {
-	return func(Rows *sql.Rows) *common.Response {
+func UsersIds(ids *[]int) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
 		if ids == nil {
 			return common.NewResponse().
 				WithDescription("Cannot scan to nil pointer").
@@ -120,6 +275,11 @@ func UsersIds(ids *[]int) transactions.RequestReturnHandler {
 		}
 
 		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("User found.").
+					WithStatus(common.StatusFound)
+			}
 			var id int
 			if Rows.Scan(&id) != nil {
 				return common.NewResponse().
@@ -134,14 +294,21 @@ func UsersIds(ids *[]int) transactions.RequestReturnHandler {
 				WithDescription(Rows.Err().Error()).
 				WithStatus(common.StatusFailedTransaction)
 		}
+		if !throwErrorOnFound {
+			if len(*ids) == 0 {
+				return common.NewResponse().
+					WithDescription("User not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
 
 		return nil
 	}
 }
 
 // If the return value is nil scan only check for errors on scan
-func UsersEmail(emails *[]string) transactions.RequestReturnHandler {
-	return func(Rows *sql.Rows) *common.Response {
+func UsersEmail(emails *[]string) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
 		if emails == nil {
 			return common.NewResponse().
 				WithDescription("Cannot scan to nil pointer").
@@ -149,6 +316,11 @@ func UsersEmail(emails *[]string) transactions.RequestReturnHandler {
 		}
 
 		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("User found.").
+					WithStatus(common.StatusFound)
+			}
 			var email string
 			if Rows.Scan(&email) != nil {
 				return common.NewResponse().
@@ -163,14 +335,21 @@ func UsersEmail(emails *[]string) transactions.RequestReturnHandler {
 				WithDescription(Rows.Err().Error()).
 				WithStatus(common.StatusFailedTransaction)
 		}
+		if !throwErrorOnFound {
+			if len(*emails) == 0 {
+				return common.NewResponse().
+					WithDescription("User not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
 
 		return nil
 	}
 }
 
 // If the return value is nil scan only check for errors on scan
-func Users(users *[]*models.Users) transactions.RequestReturnHandler {
-	return func(Rows *sql.Rows) *common.Response {
+func Users(users *[]*models.Users) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
 		if users == nil {
 			return common.NewResponse().
 				WithDescription("Cannot scan to nil pointer").
@@ -178,6 +357,11 @@ func Users(users *[]*models.Users) transactions.RequestReturnHandler {
 		}
 
 		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("User found.").
+					WithStatus(common.StatusFound)
+			}
 			u := models.Users{}
 			err := Rows.Scan(&u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Name, &u.Email, &u.Password, &u.InstitutionId, &u.Role, &u.Id, &u.ProfilePicture)
 			if err != nil {
@@ -193,14 +377,21 @@ func Users(users *[]*models.Users) transactions.RequestReturnHandler {
 				WithDescription(Rows.Err().Error()).
 				WithStatus(common.StatusFailedTransaction)
 		}
+		if !throwErrorOnFound {
+			if len(*users) == 0 {
+				return common.NewResponse().
+					WithDescription("User not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
 
 		return nil
 	}
 }
 
 // If the return value is nil scan only check for errors on scan
-func InstitutionsIds(ids *[]int) transactions.RequestReturnHandler {
-	return func(Rows *sql.Rows) *common.Response {
+func InstitutionsIds(ids *[]int) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
 		if ids == nil {
 			return common.NewResponse().
 				WithDescription("Cannot scan to nil pointer").
@@ -208,6 +399,11 @@ func InstitutionsIds(ids *[]int) transactions.RequestReturnHandler {
 		}
 
 		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("Institution found.").
+					WithStatus(common.StatusFound)
+			}
 			var id int
 			if Rows.Scan(&id) != nil {
 				return common.NewResponse().
@@ -222,14 +418,21 @@ func InstitutionsIds(ids *[]int) transactions.RequestReturnHandler {
 				WithDescription(Rows.Err().Error()).
 				WithStatus(common.StatusFailedTransaction)
 		}
+		if !throwErrorOnFound {
+			if len(*ids) == 0 {
+				return common.NewResponse().
+					WithDescription("Institution not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
 
 		return nil
 	}
 }
 
 // If the return value is nil scan only check for errors on scan
-func Institutions(institutions *[]*models.Institutions) transactions.RequestReturnHandler {
-	return func(Rows *sql.Rows) *common.Response {
+func Institutions(institutions *[]*models.Institutions) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
 		if institutions == nil {
 			return common.NewResponse().
 				WithDescription("Cannot scan to nil pointer").
@@ -237,6 +440,11 @@ func Institutions(institutions *[]*models.Institutions) transactions.RequestRetu
 		}
 
 		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("Institution found.").
+					WithStatus(common.StatusFound)
+			}
 			i := models.Institutions{}
 			err := Rows.Scan(&i.CreatedAt, &i.UpdatedAt, &i.DeletedAt, &i.Name, &i.Id)
 			if err != nil {
@@ -251,6 +459,13 @@ func Institutions(institutions *[]*models.Institutions) transactions.RequestRetu
 			return common.NewResponse().
 				WithDescription(Rows.Err().Error()).
 				WithStatus(common.StatusFailedTransaction)
+		}
+		if !throwErrorOnFound {
+			if len(*institutions) == 0 {
+				return common.NewResponse().
+					WithDescription("Institution not found.").
+					WithStatus(common.StatusNotFound)
+			}
 		}
 
 		return nil

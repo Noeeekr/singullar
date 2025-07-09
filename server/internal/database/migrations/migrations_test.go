@@ -30,6 +30,9 @@ func TestMigrations(t *testing.T) {
 		}
 	})
 
+	configurations := &migrations.Configuration{
+		RecreateExisting: true,
+	}
 	migrations := migrations.New(db)
 	defer db.Close()
 
@@ -58,7 +61,7 @@ func TestMigrations(t *testing.T) {
 	var res *common.Response
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("CREATE TABLE %s", table.Name()), func(t *testing.T) {
-			res = migrations.CreateTables(nil, table).Response
+			res = migrations.CreateTables(configurations, nil, table).Response
 
 			if res != nil {
 				t.Log("STATUS: ", res.Status)
@@ -89,7 +92,7 @@ func TestMigrations(t *testing.T) {
 
 	for _, typ := range types {
 		t.Run(fmt.Sprintf("CREATE TYPE %s", typ.Name), func(t *testing.T) {
-			res = migrations.CreateType(nil, typ).Response
+			res = migrations.CreateTypes(configurations, nil, typ).Response
 			if res != nil {
 				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)
@@ -104,7 +107,7 @@ func TestMigrations(t *testing.T) {
 
 	for _, typ := range types {
 		t.Run(fmt.Sprintf("DROP TYPE %s", typ.Name), func(t *testing.T) {
-			res = migrations.DropType(nil, typ).Response
+			res = migrations.DropTypes(nil, typ).Response
 			if res != nil {
 				t.Log("STATUS: ", res.Status)
 				t.Fatal(res.Description)

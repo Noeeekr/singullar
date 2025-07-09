@@ -13,14 +13,14 @@ type InstitutionsTable struct {
 }
 
 type InstitutionsRequests struct {
-	Create          *transactions.TransactionRequest
-	SelectOneByName *transactions.TransactionRequest
-	SelectOneById   *transactions.TransactionRequest
-	DeleteOneByName *transactions.TransactionRequest
-	DeleteOneById   *transactions.TransactionRequest
-	InsertOne       *transactions.TransactionRequest
-	InsertMany      *transactions.TransactionRequest
-	Drop            *transactions.TransactionRequest
+	Create          *transactions.Request
+	SelectOneByName *transactions.Request
+	SelectOneById   *transactions.Request
+	DeleteOneByName *transactions.Request
+	DeleteOneById   *transactions.Request
+	InsertOne       *transactions.Request
+	InsertMany      *transactions.Request
+	Drop            *transactions.Request
 }
 
 var institutionsTable = &InstitutionsTable{
@@ -81,7 +81,7 @@ func (t *InstitutionsTable) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *InstitutionsTable) CreateRequest() *transactions.TransactionRequest {
+func (t *InstitutionsTable) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
 
@@ -89,6 +89,6 @@ func (t *InstitutionsTable) Name() TableName {
 	return t.name
 }
 
-func (t *InstitutionsTable) DropRequest() *transactions.TransactionRequest {
+func (t *InstitutionsTable) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }

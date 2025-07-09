@@ -9,10 +9,13 @@ import (
 )
 
 var RelationsCmd *cobra.Command = &cobra.Command{
-	Use:   "relations [-f ...ENVIRONMENT_FILES] [--ignore-existing] [ production | environment ]",
+	Use:   "relations [-f ...ENVIRONMENT_FILES] [--ignore-existing] [--recreate-existing] [ production | environment ]",
 	Args:  cobra.MinimumNArgs(1),
 	Short: "Migrates the tables and roles to the database specified in the file",
 	Run: func(cmd *cobra.Command, args []string) {
+		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
+		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
+
 		path, _ := cmd.Flags().GetStringArray("environmentFiles")
 		if res := environment.Parse(path...); res != nil {
 			logs.Error.Fatal("[Invalid environment file]:", res.ParseToString())
@@ -34,7 +37,11 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 
 		utils := Utils{migrations: migrations.New(db)}
 
-		if utils.MigrateTables() {
+		configuration := migrations.Configuration{
+			IgnoreExisting:   ignoreExisting,
+			RecreateExisting: recreateExisting,
+		}
+		if utils.MigrateTables(&configuration) {
 			return
 		}
 
@@ -44,8 +51,9 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 
 func init() {
 	RelationsCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "Defines the path to the environment files containing the necessary environment variables if not already supplied in the environment")
-	// not implemented
+	// Not implemented
 	RelationsCmd.Flags().BoolP("ignore-existing", "i", false, "Doesn't throw errors if the database relation already exists.")
-
-	// Not implemented RelationsCmd.Flags().BoolP("recreate-existing", "r", false, "Drop and recreate the relation if already exists.")
+	// Not implemented
+	RelationsCmd.Flags().BoolP("recreate-existing", "r", false, "Drop and recreate the relation if already exists.")
+	RelationsCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
 }
