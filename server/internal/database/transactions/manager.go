@@ -45,9 +45,9 @@ func (m *Manager) Commit() (res *common.Response) {
 			WithStatus(common.StatusFailedTransactionCommit)
 	}
 
+	res = m.currentTransaction.Commit().Response
 	m.currentTransaction = nil
-
-	return m.currentTransaction.Commit().Response
+	return res
 }
 
 func (m *Manager) Query(request *Request) *common.Response {

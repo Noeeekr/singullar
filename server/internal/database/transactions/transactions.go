@@ -57,7 +57,6 @@ func (t *Transaction) Query(request *Request) *Transaction {
 	if request.RowsScanner != nil {
 		return t.query(stmt, request)
 	}
-
 	return t.exec(stmt, request.Args...)
 }
 

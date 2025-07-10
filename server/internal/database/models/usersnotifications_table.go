@@ -48,7 +48,7 @@ var usersNotificationsTableRequests = &UsersNotificationsRequests{
 			notification_id INT NOT NULL,  
 
 			FOREIGN KEY (target_id) REFERENCES %s(id),
-			FOREIGN KEY (notification_id) REFERENCES %s(issuer_id)
+			FOREIGN KEY (notification_id) REFERENCES %s(id)
 		);
 	`, UsersNotificationsTableName, UserRolesTypeName, usersTableName, NotificationsTableName)),
 	Drop: transactions.NewRequest(fmt.Sprintf(`

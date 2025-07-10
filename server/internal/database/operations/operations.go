@@ -143,13 +143,12 @@ func (ops *Operations) InsertInstitution(name, email, password string) (user *mo
 	}
 
 	var ids []int
-
 	tx = tx.Query(models.TablesInfo.Institutions.Requests.InsertOne.
 		WithArgs(time.Now(), time.Now(), name).
 		WithRowsScanner(scan.InstitutionsIds(&ids)),
 	)
 	if tx.Response != nil {
-		return
+		return user, tx
 	}
 
 	if len(ids) > 1 {
@@ -158,18 +157,12 @@ func (ops *Operations) InsertInstitution(name, email, password string) (user *mo
 			WithStatus(common.StatusInvalidResponse)
 		return
 	}
-	if len(ids) == 0 {
-		tx.Response = common.NewResponse().
-			WithDescription("Empty response").
-			WithStatus(common.StatusNotFound)
-		return
-	}
 
 	var users []*models.Users
-	tx.Response = tx.Query(models.TablesInfo.Users.Requests.InsertMany.
+	tx = tx.Query(models.TablesInfo.Users.Requests.InsertMany.
 		WithArgs(time.Now(), time.Now(), "Administrator", email, password, ids[0], models.Admin).
 		WithRowsScanner(scan.Users(&users)),
-	).Response
+	)
 	if tx.Response != nil {
 		return user, tx
 	}
@@ -216,7 +209,6 @@ func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Instit
 }
 func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions, res *common.Response) {
 	var insts []*models.Institutions = []*models.Institutions{}
-
 	res = ops.Query(
 		models.TablesInfo.Institutions.Requests.SelectOneById.
 			WithArgs(id).
@@ -230,11 +222,6 @@ func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions,
 		return nil, common.NewResponse().
 			WithDescription("Unexpected return").
 			WithStatus(common.StatusInvalidResponse)
-	}
-	if len(insts) == 0 {
-		return inst, common.NewResponse().
-			WithDescription("Not found").
-			WithStatus(common.StatusNotFound)
 	}
 	return insts[0], nil
 }

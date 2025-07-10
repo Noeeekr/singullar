@@ -33,11 +33,11 @@ var notificationsTableRequests = &NotificationsRequests{
 	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			%s
-			issuer_id    INT PRIMARY KEY,
+			id   		 INT PRIMARY KEY,
 			title		 VARCHAR(256) NOT NULL,
 			description  VARCHAR(256) NOT NULL,
 
-			CONSTRAINT fk_notifications FOREIGN KEY (issuer_id) REFERENCES %s (id)
+			CONSTRAINT fk_notifications FOREIGN KEY (id) REFERENCES %s (id)
 		);
 	`, NotificationsTableName, DefaultFieldsQuery, usersTableName)),
 	Drop: transactions.NewRequest(fmt.Sprintf(`

@@ -21,8 +21,8 @@ type Migrations struct {
 	//
 
 	// must be true on instance creation
-	resetContext bool
-	ctx          *Context
+	callStack int
+	ctx       *Context
 	*transactions.Manager
 	ops *operations.Operations
 }
@@ -33,9 +33,9 @@ func New(db *sql.DB) *Migrations {
 			alreadyCreatedTables: map[models.TableName]bool{},
 			alreadyCreatedTypes:  map[models.TypeName]bool{},
 		},
-		Manager:      transactions.NewManager(db),
-		ops:          operations.New(db),
-		resetContext: true,
+		Manager:   transactions.NewManager(db),
+		ops:       operations.New(db),
+		callStack: 0,
 	}
 }
 
@@ -235,7 +235,7 @@ func (m *Migrations) DropDatabases(names ...string) (res *common.Response) {
 			continue
 		}
 
-		fmt.Println("[Dropping database]: " + name)
+		logs.Info.Println("[Dropping database]: " + name)
 		res = m.Query(transactions.NewRequest(fmt.Sprintf("DROP DATABASE %s;", name)))
 		if res != nil {
 			return res
@@ -250,7 +250,6 @@ func (m *Migrations) CreateTable(configuration *Configuration, tableMethods mode
 		configuration = &Configuration{}
 	}
 
-	var singleOperation bool
 	transaction := m.Start()
 	if transaction.Response != nil {
 		return transaction
@@ -260,7 +259,7 @@ func (m *Migrations) CreateTable(configuration *Configuration, tableMethods mode
 	// Skip table if already exists
 	_, exists := m.ctx.alreadyCreatedTables[name]
 	if exists {
-		return nil
+		return transaction
 	}
 
 	// Check if table exists
@@ -309,9 +308,9 @@ func (m *Migrations) CreateTable(configuration *Configuration, tableMethods mode
 			continue
 		}
 
-		m.resetContext = false
+		m.callStack++
 		transaction := m.CreateTable(configuration, subtable)
-		m.resetContext = true
+		m.callStack--
 
 		if transaction.Response != nil {
 			return transaction
@@ -322,7 +321,7 @@ func (m *Migrations) CreateTable(configuration *Configuration, tableMethods mode
 
 	// Create table after creating its parent types and tables
 	logs.Info.Println("[Creating table]: " + tableMethods.Name())
-	transaction.Response = transaction.Query(tableMethods.GetCreateRequest()).Response
+	transaction = transaction.Query(tableMethods.GetCreateRequest())
 	if transaction.Response != nil {
 		return transaction
 	}
@@ -330,16 +329,13 @@ func (m *Migrations) CreateTable(configuration *Configuration, tableMethods mode
 	m.ctx.alreadyCreatedTables[tableMethods.Name()] = true
 
 	// prevents recursive calls to reset context before the time
-	if m.resetContext {
+	if m.callStack == 0 {
 		m.ctx = &Context{
 			alreadyCreatedTables: map[models.TableName]bool{},
 			alreadyCreatedTypes:  map[models.TypeName]bool{},
 		}
 	}
 
-	if singleOperation {
-		return transaction.Commit()
-	}
 	return transaction
 }
 
@@ -355,13 +351,15 @@ func (m *Migrations) CreateTables(configuration *Configuration, tables ...models
 
 	// Create each table until error
 	for _, table := range tables {
+		m.callStack++
 		tx := m.CreateTable(configuration, table)
+		m.callStack--
 		if tx.Response != nil {
 			return tx
 		}
 	}
 	// prevents recursive calls to reset context before the time
-	if m.resetContext {
+	if m.callStack == 0 {
 		m.ctx = &Context{
 			alreadyCreatedTables: map[models.TableName]bool{},
 			alreadyCreatedTypes:  map[models.TypeName]bool{},
@@ -418,11 +416,11 @@ func (m *Migrations) DropTables(tablesMethods ...models.TableMethods) *transacti
 	tx := m.Start()
 	if tx.Response != nil {
 		return tx
-
 	}
-	for _, tableMethods := range tablesMethods {
-		logs.Info.Println("[Dropping table]: " + tableMethods.Name())
-		tx.Response = tx.Query(tableMethods.GetDropRequest()).Response
+
+	for _, tables := range tablesMethods {
+		logs.Info.Println("[Dropping table]: " + tables.Name())
+		tx := tx.Query(tables.GetDropRequest())
 		if tx.Response != nil {
 			return tx
 		}

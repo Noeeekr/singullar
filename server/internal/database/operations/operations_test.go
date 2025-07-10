@@ -6,6 +6,7 @@ import (
 
 	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/common/environment"
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/connections"
 	"github.com/Noeeekr/singullar/server/internal/database/migrations"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
@@ -13,7 +14,10 @@ import (
 )
 
 var flagEnvironmentFile = "../../../secrets/postgres.env"
-var tables = []models.TableMethods{models.TablesInfo.Users, models.TablesInfo.Institutions}
+var tables = []models.TableMethods{
+	models.TablesInfo.Users,
+	models.TablesInfo.Institutions,
+}
 
 type InstitutionData struct {
 	Name     string
@@ -56,13 +60,17 @@ func (m *QueryTestUtil) CreateTables(configuration *migrations.Configuration, ta
 	}
 	return transaction.Response
 }
-func (m *QueryTestUtil) DropTables(tables []models.TableMethods) (res *common.Response) {
+func (m *QueryTestUtil) DropTables(tables []models.TableMethods) *common.Response {
 	m.test.Log("Finished operations, dropping tables")
-	res = m.migrations.DropTables(tables...).Response
-	if res != nil {
-		m.test.Log(res.Status, "|", res.Description)
+	tx := m.migrations.DropTables(tables...)
+	if tx.Response != nil {
+		logs.Error.Fatal(tx.Response.ParseToString())
 	}
-	return res
+	if tx := tx.Commit(); tx.Response != nil {
+		logs.Error.Fatal(tx.Response.ParseToString())
+	}
+	defer m.db.Close()
+	return nil
 }
 func (m *QueryTestUtil) CreateInstitutionsData(amount int) []*InstitutionData {
 	data := []*InstitutionData{}
@@ -97,19 +105,19 @@ func (m *QueryTestUtil) CreateUsersData(institutions []*models.Institutions) []*
 
 // Start database connection, create necessary tables.
 func (m *QueryTestUtil) PrepareDatabaseWithTables(configuration *migrations.Configuration, tables []models.TableMethods) *sql.DB {
-	m.test.Run("SETUP", func(t *testing.T) {
+	m.test.Run("CONNECT INTO ENVIRONMENT DATABASE AS TEST USER", func(t *testing.T) {
 		if err := environment.Parse(flagEnvironmentFile); err != nil {
 			t.Fatal(err.Status, err.Description)
 		}
 
-		db, res := connections.ConnectWithEnvironment(connections.Postgres)
+		db, res := connections.ConnectWithEnvironment(connections.Development)
 		if res != nil {
 			t.Fatal(res.ParseToError().Error())
 		}
 
 		m.db = db
-		m.migrations = migrations.New(m.db)
-		m.operations = operations.New(m.db)
+		m.migrations = migrations.New(db)
+		m.operations = operations.New(db)
 	})
 
 	m.Run("PING", func(t *testing.T) {
@@ -121,6 +129,9 @@ func (m *QueryTestUtil) PrepareDatabaseWithTables(configuration *migrations.Conf
 
 	m.Run("CREATE TABLES", func(t *testing.T) {
 		if res := m.CreateTables(configuration, tables); res != nil {
+			t.Fatal(res.Status, res.Description)
+		}
+		if res := m.migrations.Commit(); res != nil {
 			t.Fatal(res.Status, res.Description)
 		}
 	})
@@ -148,7 +159,6 @@ func TestOperations(test *testing.T) {
 	if db == nil {
 		test.Fatal("Database not prepared")
 	}
-	defer db.Close()
 	defer utils.DropTables(tables)
 
 	institution_source_data := utils.CreateInstitutionsData(10)
@@ -165,6 +175,9 @@ func TestOperations(test *testing.T) {
 				if tx.Response != nil {
 					t.Fatal(tx.Response.ParseToString())
 				}
+				if res := utils.operations.Commit(); res != nil {
+					t.Fatal(res.ParseToString())
+				}
 				created_users = append(created_users, user)
 			}
 		}).
@@ -172,7 +185,7 @@ func TestOperations(test *testing.T) {
 			for _, user := range created_users {
 				institution, res := utils.operations.SelectInstitutionById(user.InstitutionId)
 				if res != nil {
-					t.Fatal(res.Description)
+					t.Fatal(res.ParseToString())
 				}
 				if institution == nil {
 					t.Fatal("Nil institution")
@@ -195,7 +208,7 @@ func TestOperations(test *testing.T) {
 	utils.Run("INSERT USERS", func(t *testing.T) {
 		for _, institution := range created_institutions {
 			email := common.GenerateRandomStrings(10)
-			users, tx := utils.operations.InsertManyUsers(nil, &models.CreateUsers{
+			users, tx := utils.operations.InsertManyUsers(&models.CreateUsers{
 				Name:          common.GenerateRandomStrings(10),
 				Email:         email,
 				Password:      common.GenerateRandomStrings(10),
@@ -210,6 +223,9 @@ func TestOperations(test *testing.T) {
 			}
 			if users[0].Email != email {
 				t.Fatal("Emails don't match")
+			}
+			if res := utils.operations.Commit(); res != nil {
+				t.Fatal(res.ParseToString())
 			}
 			created_users = append(created_users, users[0])
 		}
@@ -263,6 +279,9 @@ func TestOperations(test *testing.T) {
 			if res != nil {
 				test.Fatal(res.Status, res.Description)
 			}
+		}
+		if res := utils.operations.Commit(); res != nil {
+			test.Fatal(res.ParseToString())
 		}
 	})
 }

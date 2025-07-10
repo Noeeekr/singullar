@@ -60,6 +60,7 @@ func TestMigrations(t *testing.T) {
 	var res *common.Response
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("CREATE TABLE %s", table.Name()), func(t *testing.T) {
+			migrations.Start()
 			res = migrations.CreateTables(configurations, table).Response
 
 			if res != nil {
