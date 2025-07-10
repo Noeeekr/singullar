@@ -12,25 +12,20 @@ import (
 )
 
 type Operations struct {
-	tx *transactions.TransactionManager
+	*transactions.Manager
 }
 
 // Returns an instance of Operations. Operations contains methods that to make the most used transactions instantly.
 func New(db *sql.DB) *Operations {
 	return &Operations{
-		tx: transactions.New(db),
+		Manager: transactions.NewManager(db),
 	}
 }
 
-// returns the email
-func (ops *Operations) InsertManyUsers(transaction *transactions.Transaction, requests ...*models.CreateUsers) (users []*models.Users, tx *transactions.Transaction) {
-	if transaction == nil {
-		tx = ops.tx.Start()
-		if tx.Response != nil {
-			return users, tx
-		}
-	} else {
-		tx = transaction
+func (ops *Operations) InsertManyUsers(requests ...*models.CreateUsers) (users []*models.Users, tx *transactions.Transaction) {
+	tx = ops.Start()
+	if tx.Response != nil {
+		return users, tx
 	}
 
 	var args []any = []any{}
@@ -54,16 +49,12 @@ func (ops *Operations) InsertManyUsers(transaction *transactions.Transaction, re
 		return users, tx
 	}
 
-	if transaction == nil {
-		return users, tx.Commit()
-	}
 	return users, tx
 }
-
 func (ops *Operations) SelectUserByEmail(email string) (user *models.Users, res *common.Response) {
 	var users []*models.Users
 
-	res = ops.tx.Query(
+	res = ops.Query(
 		models.TablesInfo.Users.Requests.SelectOneByEmail.
 			WithArgs(email).
 			WithRowsScanner(scan.Users(&users)),
@@ -88,7 +79,7 @@ func (ops *Operations) SelectUserByEmail(email string) (user *models.Users, res 
 func (ops *Operations) SelectUserById(id int) (user *models.Users, res *common.Response) {
 	var users []*models.Users
 
-	res = ops.tx.Query(
+	res = ops.Query(
 		models.TablesInfo.Users.Requests.SelectOneById.
 			WithArgs(id).
 			WithRowsScanner(scan.Users(&users)),
@@ -116,14 +107,10 @@ func (ops *Operations) SelectUsersByInstitutionId(id int) ([]*models.Users, *tra
 		WithDescription("Not implemented")
 	return nil, tx
 }
-func (ops *Operations) DeleteUserById(transaction *transactions.Transaction, id int) (tx *transactions.Transaction) {
-	if transaction == nil {
-		tx = ops.tx.Start()
-		if tx.Response != nil {
-			return tx
-		}
-	} else {
-		tx = transaction
+func (ops *Operations) DeleteUserById(id int) (tx *transactions.Transaction) {
+	tx = ops.Start()
+	if tx.Response != nil {
+		return tx
 	}
 
 	tx.Response = tx.Query(models.TablesInfo.Users.Requests.DeleteOneById.WithArgs(id)).Response
@@ -131,19 +118,12 @@ func (ops *Operations) DeleteUserById(transaction *transactions.Transaction, id 
 		return tx
 	}
 
-	if transaction == nil {
-		return tx.Commit()
-	}
 	return tx
 }
-func (ops *Operations) DeleteUserByEmail(transaction *transactions.Transaction, email string) (tx *transactions.Transaction) {
-	if transaction == nil {
-		tx = ops.tx.Start()
-		if tx.Response != nil {
-			return tx
-		}
-	} else {
-		tx = transaction
+func (ops *Operations) DeleteUserByEmail(email string) (tx *transactions.Transaction) {
+	tx = ops.Start()
+	if tx.Response != nil {
+		return tx
 	}
 
 	tx.Response = tx.Query(
@@ -154,20 +134,12 @@ func (ops *Operations) DeleteUserByEmail(transaction *transactions.Transaction, 
 		return tx
 	}
 
-	if transaction == nil {
-		return tx.Commit()
-	}
 	return tx
 }
-
-func (ops *Operations) InsertInstitution(transaction *transactions.Transaction, name, email, password string) (user *models.Users, tx *transactions.Transaction) {
-	if transaction == nil {
-		tx = ops.tx.Start()
-		if tx.Response != nil {
-			return user, tx
-		}
-	} else {
-		tx = transaction
+func (ops *Operations) InsertInstitution(name, email, password string) (user *models.Users, tx *transactions.Transaction) {
+	tx = ops.Start()
+	if tx.Response != nil {
+		return user, tx
 	}
 
 	var ids []int
@@ -215,16 +187,12 @@ func (ops *Operations) InsertInstitution(transaction *transactions.Transaction, 
 		return
 	}
 
-	if transaction == nil {
-		return users[0], tx.Commit()
-	}
-	return users[0], transaction
+	return users[0], tx
 }
-
 func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Institutions, res *common.Response) {
 	var insts []*models.Institutions
 
-	res = ops.tx.Query(
+	res = ops.Query(
 		models.TablesInfo.Institutions.Requests.SelectOneByName.
 			WithArgs(name).
 			WithRowsScanner(scan.Institutions(&insts)),
@@ -249,7 +217,7 @@ func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Instit
 func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions, res *common.Response) {
 	var insts []*models.Institutions = []*models.Institutions{}
 
-	res = ops.tx.Query(
+	res = ops.Query(
 		models.TablesInfo.Institutions.Requests.SelectOneById.
 			WithArgs(id).
 			WithRowsScanner(scan.Institutions(&insts)),
@@ -271,11 +239,9 @@ func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions,
 	return insts[0], nil
 }
 func (ops *Operations) DeleteInstitutionByName(transaction *transactions.Transaction, name string) (tx *transactions.Transaction) {
-	if transaction == nil {
-		tx = ops.tx.Start()
-		if tx.Response != nil {
-			return tx
-		}
+	tx = ops.Start()
+	if tx.Response != nil {
+		return tx
 	}
 
 	tx.Response = tx.Query(
@@ -286,19 +252,12 @@ func (ops *Operations) DeleteInstitutionByName(transaction *transactions.Transac
 		return tx
 	}
 
-	if transaction == nil {
-		return tx.Commit()
-	}
 	return tx
 }
 func (ops *Operations) DeleteInstitutionById(transaction *transactions.Transaction, id int) (tx *transactions.Transaction) {
-	if transaction == nil {
-		tx = ops.tx.Start()
-		if tx.Response != nil {
-			return tx
-		}
-	} else {
-		tx = transaction
+	tx = ops.Start()
+	if tx.Response != nil {
+		return tx
 	}
 
 	tx.Response = tx.Query(
@@ -309,20 +268,12 @@ func (ops *Operations) DeleteInstitutionById(transaction *transactions.Transacti
 		return tx
 	}
 
-	if transaction == nil {
-		return tx.Commit()
-	}
 	return tx
 }
-
 func (ops *Operations) InsertNotifications(transaction *transactions.Transaction, requests ...*NotificationRequest) (tx *transactions.Transaction) {
-	if transaction == nil {
-		tx = ops.tx.Start()
-		if tx.Response != nil {
-			return tx
-		}
-	} else {
-		tx = transaction
+	tx = ops.Start()
+	if tx.Response != nil {
+		return tx
 	}
 
 	var args []any = []any{}
@@ -350,10 +301,10 @@ func (ops *Operations) InsertNotifications(transaction *transactions.Transaction
 	if tx.Response != nil {
 		return tx
 	}
-	// ...
 
-	if transaction == nil {
-		return tx.Commit()
+	// Not done
+	if true {
+		panic("InsertNotifications implemented partially")
 	}
 	return tx
 }

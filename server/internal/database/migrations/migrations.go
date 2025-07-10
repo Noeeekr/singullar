@@ -23,8 +23,8 @@ type Migrations struct {
 	// must be true on instance creation
 	resetContext bool
 	ctx          *Context
-	tx           *transactions.TransactionManager
-	ops          *operations.Operations
+	*transactions.Manager
+	ops *operations.Operations
 }
 
 func New(db *sql.DB) *Migrations {
@@ -33,19 +33,15 @@ func New(db *sql.DB) *Migrations {
 			alreadyCreatedTables: map[models.TableName]bool{},
 			alreadyCreatedTypes:  map[models.TypeName]bool{},
 		},
-		tx:           transactions.New(db),
+		Manager:      transactions.NewManager(db),
 		ops:          operations.New(db),
 		resetContext: true,
 	}
 }
 
-func (m *Migrations) StartTransaction() *transactions.Transaction {
-	return m.tx.Start()
-}
-
 func (m *Migrations) CreateDatabaseUser(user *models.CreateDatabaseUser, configuration *Configuration) (res *common.Response) {
 	var dbusers []string
-	res = m.tx.Query(
+	res = m.Query(
 		// Could be in a model, inserted in a operation
 		transactions.NewRequest(fmt.Sprintf("SELECT * FROM pg_roles WHERE rolname = '%s'", user.Name)).
 			WithRowsScanner(scan.DatabaseUsers(&dbusers)).ThrowErrorOnFound(),
@@ -70,7 +66,7 @@ func (m *Migrations) CreateDatabaseUser(user *models.CreateDatabaseUser, configu
 	}
 
 	logs.Info.Println("[Creating user]: " + user.Name)
-	res = m.tx.Query(transactions.NewRequest(fmt.Sprintf(`
+	res = m.Query(transactions.NewRequest(fmt.Sprintf(`
 			CREATE USER %s WITH 
 			PASSWORD '%s' 
 			LOGIN;
@@ -97,7 +93,7 @@ func (m *Migrations) CreateDatabaseUsers(users []*models.CreateDatabaseUser, con
 func (m *Migrations) GrantAllPrivilegesOnDatabase(users []*models.CreateDatabaseUser) (res *common.Response) {
 	for _, user := range users {
 		var dbusers []string
-		res = m.tx.Query(
+		res = m.Query(
 			transactions.NewRequest(fmt.Sprintf("SELECT rolname FROM pg_roles WHERE rolname = '%s'", user.Name)).
 				WithRowsScanner(scan.DatabaseUsers(&dbusers)),
 		)
@@ -106,7 +102,7 @@ func (m *Migrations) GrantAllPrivilegesOnDatabase(users []*models.CreateDatabase
 		}
 
 		var dbnames []string
-		res = m.tx.Query(
+		res = m.Query(
 			transactions.NewRequest(fmt.Sprintf("SELECT rolname FROM pg_roles WHERE rolname = '%s'", user.Name)).
 				WithRowsScanner(scan.DatabaseNames(&dbnames)),
 		)
@@ -115,7 +111,7 @@ func (m *Migrations) GrantAllPrivilegesOnDatabase(users []*models.CreateDatabase
 		}
 
 		logs.Info.Println("[Grantting all privileges on database]: " + user.Name + " => " + user.Database)
-		res := m.tx.Query(transactions.NewRequest(
+		res := m.Query(transactions.NewRequest(
 			fmt.Sprintf(
 				"GRANT ALL PRIVILEGES ON DATABASE %s TO %s;",
 				user.Database, user.Name,
@@ -133,7 +129,7 @@ func (m *Migrations) DropDatabaseUsers(names ...string) (res *common.Response) {
 	for _, name := range names {
 		// check if users already exist
 		var dbusers []string
-		res = m.tx.Query(
+		res = m.Query(
 			transactions.NewRequest(fmt.Sprintf("SELECT rolname FROM pg_roles WHERE rolname = '%s'", name)).
 				WithRowsScanner(scan.DatabaseUsers(&dbusers)),
 		)
@@ -141,8 +137,39 @@ func (m *Migrations) DropDatabaseUsers(names ...string) (res *common.Response) {
 			return res
 		}
 
+		logs.Info.Println("[Dropping user owned relations]: " + name)
+		res = m.Query(transactions.NewRequest(
+			fmt.Sprintf("DROP OWNED BY %s CASCADE;", name)),
+		)
+		if res != nil {
+			return res
+		}
+
+		var datnames []string
+		res = m.Query(
+			transactions.NewRequest(
+				fmt.Sprintf("SELECT d.datname FROM pg_catalog.pg_database as d INNER JOIN pg_catalog.pg_user as u ON u.usesysid = d.datdba WHERE u.usename = '%s';", name),
+			).WithRowsScanner(scan.DatabaseNames(&datnames)),
+		)
+		if res != nil && res.Status != common.StatusNotFound {
+			return res
+		}
+
+		dnames := ""
+		for _, datname := range datnames {
+			dnames += " " + datname
+		}
+		logs.Info.Println("[Dropping user databases]: " + name + " =>" + dnames)
+
+		res = m.DropDatabases(datnames...)
+		if res != nil {
+			return res
+		}
+
 		logs.Info.Println("[Dropping user]: " + name)
-		res = m.tx.Query(transactions.NewRequest(fmt.Sprintf("DROP USER %s;", name)))
+		res = m.Query(transactions.NewRequest(
+			fmt.Sprintf("DROP USER %s;", name)),
+		)
 		if res != nil {
 			return res
 		}
@@ -167,7 +194,7 @@ func (m *Migrations) CreateDatabase(request *RequestCreateDatabase, configuratio
 	}
 
 	var dbnames []string
-	res := m.tx.Query(
+	res := m.Query(
 		transactions.NewRequest(fmt.Sprintf("SELECT datname FROM pg_database WHERE datname = '%s'", request.Database)).
 			WithRowsScanner(scan.DatabaseNames(&dbnames)).ThrowErrorOnFound(),
 	)
@@ -189,7 +216,7 @@ func (m *Migrations) CreateDatabase(request *RequestCreateDatabase, configuratio
 	}
 
 	logs.Info.Println("[Creating database]: " + request.Database)
-	res = m.tx.Query(transactions.NewRequest(fmt.Sprintf("CREATE DATABASE %s WITH OWNER = %s", request.Database, request.User)))
+	res = m.Query(transactions.NewRequest(fmt.Sprintf("CREATE DATABASE %s WITH OWNER = %s", request.Database, request.User)))
 	if res != nil {
 		return res
 	}
@@ -200,7 +227,7 @@ func (m *Migrations) CreateDatabase(request *RequestCreateDatabase, configuratio
 func (m *Migrations) DropDatabases(names ...string) (res *common.Response) {
 	for _, name := range names {
 		var dbnames []string
-		res = m.tx.Query(transactions.NewRequest(fmt.Sprintf("SELECT * FROM pg_database WHERE datname = '%s'", name)).
+		res = m.Query(transactions.NewRequest(fmt.Sprintf("SELECT datname FROM pg_database WHERE datname = '%s'", name)).
 			// Returns nil if the database exists
 			WithRowsScanner(scan.DatabaseNames(&dbnames)),
 		)
@@ -209,7 +236,7 @@ func (m *Migrations) DropDatabases(names ...string) (res *common.Response) {
 		}
 
 		fmt.Println("[Dropping database]: " + name)
-		res = m.tx.Query(transactions.NewRequest(fmt.Sprintf("DROP DATABASE %s;", name)))
+		res = m.Query(transactions.NewRequest(fmt.Sprintf("DROP DATABASE %s;", name)))
 		if res != nil {
 			return res
 		}
@@ -218,18 +245,15 @@ func (m *Migrations) DropDatabases(names ...string) (res *common.Response) {
 	return res
 }
 
-func (m *Migrations) CreateTable(configuration *Configuration, transaction *transactions.Transaction, tableMethods models.TableMethods) *transactions.Transaction {
+func (m *Migrations) CreateTable(configuration *Configuration, tableMethods models.TableMethods) *transactions.Transaction {
 	if configuration == nil {
 		configuration = &Configuration{}
 	}
 
 	var singleOperation bool
-	if transaction == nil {
-		singleOperation = true
-		transaction = m.tx.Start()
-		if transaction.Response != nil {
-			return transaction
-		}
+	transaction := m.Start()
+	if transaction.Response != nil {
+		return transaction
 	}
 
 	name := tableMethods.Name()
@@ -255,8 +279,8 @@ func (m *Migrations) CreateTable(configuration *Configuration, transaction *tran
 		}
 		if configuration.RecreateExisting {
 			transaction.Response = nil
-			fmt.Println("[Recreate existing flag active]")
-			transaction = m.DropTables(transaction, tableMethods)
+			logs.Info.Println("[Recreate existing flag]")
+			transaction = m.DropTables(tableMethods)
 			if transaction.Response != nil {
 				return transaction
 			}
@@ -270,7 +294,7 @@ func (m *Migrations) CreateTable(configuration *Configuration, transaction *tran
 		if exists {
 			continue
 		}
-		transaction := m.CreateTypes(configuration, transaction, typ)
+		transaction := m.CreateTypes(configuration, typ)
 		if transaction.Response != nil {
 			return transaction
 		}
@@ -286,7 +310,7 @@ func (m *Migrations) CreateTable(configuration *Configuration, transaction *tran
 		}
 
 		m.resetContext = false
-		transaction := m.CreateTable(configuration, transaction, subtable)
+		transaction := m.CreateTable(configuration, subtable)
 		m.resetContext = true
 
 		if transaction.Response != nil {
@@ -297,7 +321,7 @@ func (m *Migrations) CreateTable(configuration *Configuration, transaction *tran
 	}
 
 	// Create table after creating its parent types and tables
-	fmt.Println("[Creating table]: " + tableMethods.Name())
+	logs.Info.Println("[Creating table]: " + tableMethods.Name())
 	transaction.Response = transaction.Query(tableMethods.GetCreateRequest()).Response
 	if transaction.Response != nil {
 		return transaction
@@ -320,23 +344,18 @@ func (m *Migrations) CreateTable(configuration *Configuration, transaction *tran
 }
 
 // If transaction is different than nil, executes in the context of the given transaction without commiting. Otherwise creates a new transaction and commits at the end.
-func (m *Migrations) CreateTables(configuration *Configuration, transaction *transactions.Transaction, tables ...models.TableMethods) *transactions.Transaction {
+func (m *Migrations) CreateTables(configuration *Configuration, tables ...models.TableMethods) *transactions.Transaction {
 	if configuration == nil {
 		configuration = &Configuration{}
 	}
-	var tx *transactions.Transaction
-	if transaction == nil {
-		tx = m.tx.Start()
-		if tx.Response != nil {
-			return tx
-		}
-	} else {
-		tx = transaction
+	tx := m.Start()
+	if tx.Response != nil {
+		return tx
 	}
 
 	// Create each table until error
 	for _, table := range tables {
-		tx := m.CreateTable(configuration, transaction, table)
+		tx := m.CreateTable(configuration, table)
 		if tx.Response != nil {
 			return tx
 		}
@@ -349,26 +368,17 @@ func (m *Migrations) CreateTables(configuration *Configuration, transaction *tra
 		}
 	}
 
-	if transaction == nil {
-		return tx.Commit()
-	}
 	return tx
 }
 
-func (m *Migrations) CreateTypes(configuration *Configuration, transaction *transactions.Transaction, types ...*models.TypeInfo) *transactions.Transaction {
+func (m *Migrations) CreateTypes(configuration *Configuration, types ...*models.TypeInfo) *transactions.Transaction {
 	if configuration == nil {
 		configuration = &Configuration{}
 	}
-
-	var singleOperation bool
-	if transaction == nil {
-		singleOperation = true
-		transaction = m.tx.Start()
-		if transaction.Response != nil {
-			return transaction
-		}
+	transaction := m.Start()
+	if transaction.Response != nil {
+		return transaction
 	}
-
 	for _, typ := range types {
 		var typnames []string
 		transaction = transaction.Query(
@@ -387,74 +397,50 @@ func (m *Migrations) CreateTypes(configuration *Configuration, transaction *tran
 			if configuration.RecreateExisting {
 				logs.Info.Println("[Recreate existing flag]: Dropping existing type: " + typ.Name)
 				transaction.Response = nil
-				transaction = m.DropTypes(transaction, typ)
+				transaction = m.DropTypes(typ)
 				if transaction.Response != nil {
 					return transaction
 				}
 			}
 		}
 
-		fmt.Println("[Creating type]: " + typ.Name)
+		logs.Info.Println("[Creating type]: " + typ.Name)
 		transaction.Response = transaction.Query(typ.Queries.Create).Response
 		if transaction.Response != nil {
 			return transaction
 		}
 	}
 
-	if singleOperation {
-		return transaction.Commit()
-	}
-
 	return transaction
 }
 
-func (m *Migrations) DropTables(transaction *transactions.Transaction, tablesMethods ...models.TableMethods) *transactions.Transaction {
-	var tx *transactions.Transaction
-	if transaction == nil {
-		tx = m.tx.Start()
-		if tx.Response != nil {
-			return tx
-		}
-	} else {
-		tx = transaction
-	}
+func (m *Migrations) DropTables(tablesMethods ...models.TableMethods) *transactions.Transaction {
+	tx := m.Start()
+	if tx.Response != nil {
+		return tx
 
+	}
 	for _, tableMethods := range tablesMethods {
-		fmt.Println("[Dropping table]: " + tableMethods.Name())
+		logs.Info.Println("[Dropping table]: " + tableMethods.Name())
 		tx.Response = tx.Query(tableMethods.GetDropRequest()).Response
 		if tx.Response != nil {
 			return tx
 		}
 	}
 
-	if transaction == nil {
-		return tx.Commit()
-	}
 	return tx
 }
 
-func (m *Migrations) DropTypes(transaction *transactions.Transaction, types ...*models.TypeInfo) *transactions.Transaction {
-	var tx *transactions.Transaction
-	if transaction == nil {
-		tx = m.tx.Start()
-		if tx.Response != nil {
-			return tx
-		}
-	} else {
-		tx = transaction
-	}
+func (m *Migrations) DropTypes(types ...*models.TypeInfo) *transactions.Transaction {
+	tx := m.Start()
 
 	for _, typ := range types {
-		fmt.Println("[Dropping type]: " + typ.Name)
+		logs.Info.Println("[Dropping type]: " + typ.Name)
 		tx = tx.Query(typ.Queries.Drop)
 		if tx.Response != nil {
 			return tx
 		}
 	}
 
-	if transaction == nil {
-		return tx.Commit()
-	}
-
-	return transaction
+	return tx
 }

@@ -7,6 +7,11 @@ services:
       - .:/singullar
     networks:
       - internal
+    env_file:
+      - "./secrets/api.env"
+      - "./secrets/client.env"
+      - "./secrets/postgres.env"
+      - "./secrets/server.env"
 
   server:
     build:

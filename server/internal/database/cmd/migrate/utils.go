@@ -14,7 +14,6 @@ type Utils struct {
 func (u *Utils) MigrateTables(configuration *migrations.Configuration) bool {
 	res := u.migrations.CreateTables(
 		configuration,
-		nil,
 		models.TablesInfo.Users,
 		models.TablesInfo.Classes,
 		models.TablesInfo.Institutions,

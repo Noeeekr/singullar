@@ -53,7 +53,6 @@ func TestMigrations(t *testing.T) {
 
 	t.Run("PING", func(t *testing.T) {
 		if err := db.Ping(); err != nil {
-			t.Log("STATUS: " + err.Error())
 			t.Fatal("DESCRIPTION: Unable to ping. " + err.Error())
 		}
 	})
@@ -61,41 +60,47 @@ func TestMigrations(t *testing.T) {
 	var res *common.Response
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("CREATE TABLE %s", table.Name()), func(t *testing.T) {
-			res = migrations.CreateTables(configurations, nil, table).Response
+			res = migrations.CreateTables(configurations, table).Response
 
 			if res != nil {
-				t.Log("STATUS: ", res.Status)
-				t.Fatal(res.Description)
-				return
+				t.Fatal(res.ParseToString())
 			}
 		})
 		if res != nil {
-			t.Fatal("Tests failed.")
-			return
+			t.Fatal(res.ParseToString())
 		}
 	}
 
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("DROP TABLE %s", table.Name()), func(t *testing.T) {
-			res = migrations.DropTables(nil, table).Response
+			res = migrations.DropTables(table).Response
 			if res != nil {
-				t.Log("STATUS: ", res.Status)
-				t.Fatal(res.Description)
+				t.Fatal(res.ParseToString())
 				return
 			}
 		})
 		if res != nil {
-			t.Fatal("Tests failed.")
-			return
+			t.Fatal(res.ParseToString())
 		}
 	}
 
 	for _, typ := range types {
 		t.Run(fmt.Sprintf("CREATE TYPE %s", typ.Name), func(t *testing.T) {
-			res = migrations.CreateTypes(configurations, nil, typ).Response
+			res = migrations.CreateTypes(configurations, typ).Response
 			if res != nil {
-				t.Log("STATUS: ", res.Status)
-				t.Fatal(res.Description)
+				t.Fatal(res.ParseToString())
+			}
+		})
+		if res != nil {
+			t.Fatal(res.ParseToString())
+		}
+	}
+
+	for _, typ := range types {
+		t.Run(fmt.Sprintf("DROP TYPE %s", typ.Name), func(t *testing.T) {
+			res = migrations.DropTypes(typ).Response
+			if res != nil {
+				t.Fatal(res.ParseToString())
 				return
 			}
 		})
@@ -105,18 +110,10 @@ func TestMigrations(t *testing.T) {
 		}
 	}
 
-	for _, typ := range types {
-		t.Run(fmt.Sprintf("DROP TYPE %s", typ.Name), func(t *testing.T) {
-			res = migrations.DropTypes(nil, typ).Response
-			if res != nil {
-				t.Log("STATUS: ", res.Status)
-				t.Fatal(res.Description)
-				return
-			}
-		})
+	t.Run("COMMIT TRANSACTIONS", func(t *testing.T) {
+		res := migrations.Commit()
 		if res != nil {
-			t.Fatal("Tests failed.")
-			return
+			t.Fatal(res.ParseToString())
 		}
-	}
+	})
 }

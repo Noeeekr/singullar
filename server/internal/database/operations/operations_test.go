@@ -50,7 +50,7 @@ type QueryTestUtil struct {
 }
 
 func (m *QueryTestUtil) CreateTables(configuration *migrations.Configuration, tables []models.TableMethods) (res *common.Response) {
-	transaction := m.migrations.CreateTables(configuration, nil, tables...)
+	transaction := m.migrations.CreateTables(configuration, tables...)
 	if transaction.Response != nil {
 		m.test.Log(transaction.Response.ParseToString())
 	}
@@ -58,7 +58,7 @@ func (m *QueryTestUtil) CreateTables(configuration *migrations.Configuration, ta
 }
 func (m *QueryTestUtil) DropTables(tables []models.TableMethods) (res *common.Response) {
 	m.test.Log("Finished operations, dropping tables")
-	res = m.migrations.DropTables(nil, tables...).Response
+	res = m.migrations.DropTables(tables...).Response
 	if res != nil {
 		m.test.Log(res.Status, "|", res.Description)
 	}
@@ -161,7 +161,7 @@ func TestOperations(test *testing.T) {
 	utils.
 		Run("INSERT INSTITUTIONS", func(t *testing.T) {
 			for _, data := range institution_source_data {
-				user, tx := utils.operations.InsertInstitution(nil, data.Name, data.Email, data.Password)
+				user, tx := utils.operations.InsertInstitution(data.Name, data.Email, data.Password)
 				if tx.Response != nil {
 					t.Fatal(tx.Response.ParseToString())
 				}
@@ -241,9 +241,9 @@ func TestOperations(test *testing.T) {
 		}
 		for i, user := range created_users {
 			if i > len(created_users)/2 {
-				res = utils.operations.DeleteUserByEmail(nil, user.Email).Response
+				res = utils.operations.DeleteUserByEmail(user.Email).Response
 			} else {
-				res = utils.operations.DeleteUserById(nil, user.Id).Response
+				res = utils.operations.DeleteUserById(user.Id).Response
 			}
 			if res != nil {
 				test.Fatal(res.Status, res.Description)

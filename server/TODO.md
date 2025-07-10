@@ -10,12 +10,12 @@
     * `DONE` Move to internal folder for security.
     * `DONE` Command line interface migrations command.
     * Implement schema configuration for user, database and table migrations
-    * Implement --ignore-existing --recreate-exiting for database migrate commands
-    * Implement seeding. 
-    * Update database/scan to have => .IgnoreScanErrors() .ScanErrorOn() => With accepted errors: Not found, Found
-    * Implement command line backup utilities. (from a different repository)  
-    * Change operations|migrations to be created with a transaction already so they operate in its context instead of asking for one every time.
-
+    * `DONE` Implement --ignore-existing --recreate-exiting for database migrate commands
+    * `PARTIAL` Implement seeding. 
+    * `DONE` Implement database/scan to have a switch on errors RowFound and RowNotFound.
+    * Implement command line backup utilities. (in a different project a import and use here).  
+    * Change operations and migrations to never commit by default so .Commit() must be called.
+    
 * API
     * `DONE` Cobra command line interface.
     * `DONE` Decouple logistic services from API.

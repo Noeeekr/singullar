@@ -63,7 +63,7 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 		}
 
 		// CREATE INSTITUTION
-		if user, tx := ops.InsertInstitution(nil, name, email, string(pwd)); tx.Response != nil {
+		if user, tx := ops.InsertInstitution(name, email, string(pwd)); tx.Response != nil {
 			fmt.Println(tx.Response.ParseToString())
 			return
 		} else {

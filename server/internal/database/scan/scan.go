@@ -34,9 +34,9 @@ import (
 				}
 
 				var id int
-				if Rows.Scan(&id) != nil {
+				if err := Rows.Scan(&id); err != nil {
 					return common.NewResponse().
-						WithDescription(Rows.Close().Error()).
+						WithDescriptionerr().Error()).
 						WithStatus(common.StatusFailedTransaction)
 				}
 				*ids = append(*ids, id)
@@ -203,9 +203,9 @@ func DatabaseNames(names *[]string) transactions.RequestRowsScanner {
 					WithDescription("Database found.").
 					WithStatus(common.StatusFound)
 			}
-			if Rows.Scan(&name) != nil {
+			if err := Rows.Scan(&name); err != nil {
 				return common.NewResponse().
-					WithDescription(Rows.Err().Error()).
+					WithDescription(err.Error()).
 					WithStatus(common.StatusFailedTransaction)
 			}
 			*names = append(*names, name)
@@ -240,9 +240,9 @@ func Notifications(notifications *[]*models.Notifications) transactions.RequestR
 					WithStatus(common.StatusFound)
 			}
 			var notification *models.Notifications
-			if Rows.Scan(&notification) != nil {
+			if err := Rows.Scan(&notification); err != nil {
 				return common.NewResponse().
-					WithDescription(Rows.Err().Error()).
+					WithDescription(err.Error()).
 					WithStatus(common.StatusFailedTransaction)
 			}
 			*notifications = append(*notifications, notification)
@@ -281,9 +281,9 @@ func UsersIds(ids *[]int) transactions.RequestRowsScanner {
 					WithStatus(common.StatusFound)
 			}
 			var id int
-			if Rows.Scan(&id) != nil {
+			if err := Rows.Scan(&id); err != nil {
 				return common.NewResponse().
-					WithDescription(Rows.Err().Error()).
+					WithDescription(err.Error()).
 					WithStatus(common.StatusFailedTransaction)
 			}
 			*ids = append(*ids, id)
@@ -322,9 +322,9 @@ func UsersEmail(emails *[]string) transactions.RequestRowsScanner {
 					WithStatus(common.StatusFound)
 			}
 			var email string
-			if Rows.Scan(&email) != nil {
+			if err := Rows.Scan(&email); err != nil {
 				return common.NewResponse().
-					WithDescription(Rows.Err().Error()).
+					WithDescription(err.Error()).
 					WithStatus(common.StatusFailedTransaction)
 			}
 			*emails = append(*emails, email)
@@ -405,9 +405,9 @@ func InstitutionsIds(ids *[]int) transactions.RequestRowsScanner {
 					WithStatus(common.StatusFound)
 			}
 			var id int
-			if Rows.Scan(&id) != nil {
+			if err := Rows.Scan(&id); err != nil {
 				return common.NewResponse().
-					WithDescription(Rows.Err().Error()).
+					WithDescription(err.Error()).
 					WithStatus(common.StatusFailedTransaction)
 			}
 			*ids = append(*ids, id)

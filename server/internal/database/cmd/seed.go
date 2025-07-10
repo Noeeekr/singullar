@@ -36,11 +36,11 @@ var seedCmd *cobra.Command = &cobra.Command{
 		defer db.Close()
 
 		// To make everything in a single transaction
-		tx := transactions.New(db).Start()
+		tx := transactions.NewManager(db).Start()
 		ops := operations.New(db)
 
-		createdUsers := seeder.CreateUsers(quantity, institutionId)
-		users, tx := ops.InsertManyUsers(tx, createdUsers...)
+		createdUsers := seeder.CreateUserRequests(quantity, institutionId)
+		users, tx := ops.InsertManyUsers(createdUsers...)
 		if tx.Response != nil {
 			fmt.Println(tx.Response.ParseToString())
 			return
@@ -61,7 +61,7 @@ var seedCmd *cobra.Command = &cobra.Command{
 
 		for _, teacher := range teachers {
 			for _, student := range students {
-				notifications := seeder.CreateNotifications(4, teacher.Id, student.Id, student.Role)
+				notifications := seeder.CreateNotificationRequests(4, teacher.Id, student.Id, student.Role)
 				res := ops.InsertNotifications(tx, notifications...).Response
 				if res != nil {
 					fmt.Println(res.ParseToString())

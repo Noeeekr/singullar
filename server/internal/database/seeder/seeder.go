@@ -10,7 +10,7 @@ import (
 )
 
 // Package seeder
-func CreateUsers(amount, institutionId int) []*models.CreateUsers {
+func CreateUserRequests(amount, institutionId int) []*models.CreateUsers {
 	users := make([]*models.CreateUsers, amount)
 
 	for i := range amount {
@@ -43,7 +43,7 @@ func CreateUsers(amount, institutionId int) []*models.CreateUsers {
 	return users
 }
 
-func CreateNotifications(amount, issuerId, targetId int, targetRole models.UserRole) []*operations.NotificationRequest {
+func CreateNotificationRequests(amount, issuerId, targetId int, targetRole models.UserRole) []*operations.NotificationRequest {
 	notifications := make([]*operations.NotificationRequest, amount)
 	for i := range amount {
 		notifications[i] = operations.CreateNotificationRequest(

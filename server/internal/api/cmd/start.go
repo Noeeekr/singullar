@@ -69,8 +69,8 @@ func init() {
 	startCmd.Flags().Bool("enable-debug", false, "Defines if the server should start in debug mode. Defaults to false")
 	startCmd.Flags().Bool("enable-migrations", false, "Defines if the server should start with migrations. Defaults to false")
 
+	startCmd.Flags().Bool("recreate-existing", false, "Drop and recreate relations in the database migration if already exists.")
 	startCmd.Flags().Bool("ignore-existing", false, "Doesn't throw errors and proceed if the database relation already exists.")
-	startCmd.Flags().BoolP("ignore-existing", "i", false, "Doesn't throw errors if the database relation already exists.")
 	startCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
 
 	startCmd.Flags().String("port", "80", "Defines the port the server will listen to.")
