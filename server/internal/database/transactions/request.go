@@ -54,7 +54,7 @@ func (r *Request) WithArgs(args ...any) *Request {
 }
 
 // Defines a function to handle returned rows. If no function is passed at all then it doesn't query the returned rows.
-func (r *Request) WithScanFunc(fun RequestRowsScanner) *Request {
+func (r *Request) WithRowsScanner(fun RequestRowsScanner) *Request {
 	r.RowsScanner = fun
 	return r
 }

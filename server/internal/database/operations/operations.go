@@ -40,7 +40,7 @@ func (ops *Operations) InsertManyUsers(transaction *transactions.Transaction, re
 
 	tx = tx.Query(models.TablesInfo.Users.Requests.InsertMany.
 		WithArgs(args...).
-		WithScanFunc(scan.Users(&users)),
+		WithRowsScanner(scan.Users(&users)),
 	)
 	if tx.Response != nil {
 		return users, tx
@@ -66,7 +66,7 @@ func (ops *Operations) SelectUserByEmail(email string) (user *models.Users, res 
 	res = ops.tx.Query(
 		models.TablesInfo.Users.Requests.SelectOneByEmail.
 			WithArgs(email).
-			WithScanFunc(scan.Users(&users)),
+			WithRowsScanner(scan.Users(&users)),
 	)
 	if res != nil {
 		return user, res
@@ -91,7 +91,7 @@ func (ops *Operations) SelectUserById(id int) (user *models.Users, res *common.R
 	res = ops.tx.Query(
 		models.TablesInfo.Users.Requests.SelectOneById.
 			WithArgs(id).
-			WithScanFunc(scan.Users(&users)),
+			WithRowsScanner(scan.Users(&users)),
 	)
 	if res != nil {
 		return user, res
@@ -174,7 +174,7 @@ func (ops *Operations) InsertInstitution(transaction *transactions.Transaction, 
 
 	tx = tx.Query(models.TablesInfo.Institutions.Requests.InsertOne.
 		WithArgs(time.Now(), time.Now(), name).
-		WithScanFunc(scan.InstitutionsIds(&ids)),
+		WithRowsScanner(scan.InstitutionsIds(&ids)),
 	)
 	if tx.Response != nil {
 		return
@@ -196,7 +196,7 @@ func (ops *Operations) InsertInstitution(transaction *transactions.Transaction, 
 	var users []*models.Users
 	tx.Response = tx.Query(models.TablesInfo.Users.Requests.InsertMany.
 		WithArgs(time.Now(), time.Now(), "Administrator", email, password, ids[0], models.Admin).
-		WithScanFunc(scan.Users(&users)),
+		WithRowsScanner(scan.Users(&users)),
 	).Response
 	if tx.Response != nil {
 		return user, tx
@@ -227,7 +227,7 @@ func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Instit
 	res = ops.tx.Query(
 		models.TablesInfo.Institutions.Requests.SelectOneByName.
 			WithArgs(name).
-			WithScanFunc(scan.Institutions(&insts)),
+			WithRowsScanner(scan.Institutions(&insts)),
 	)
 	if res != nil {
 		return inst, res
@@ -252,7 +252,7 @@ func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions,
 	res = ops.tx.Query(
 		models.TablesInfo.Institutions.Requests.SelectOneById.
 			WithArgs(id).
-			WithScanFunc(scan.Institutions(&insts)),
+			WithRowsScanner(scan.Institutions(&insts)),
 	)
 
 	if res != nil {

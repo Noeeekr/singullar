@@ -48,7 +48,7 @@ func (m *Migrations) CreateDatabaseUser(user *models.CreateDatabaseUser, configu
 	res = m.tx.Query(
 		// Could be in a model, inserted in a operation
 		transactions.NewRequest(fmt.Sprintf("SELECT * FROM pg_roles WHERE rolname = '%s'", user.Name)).
-			WithScanFunc(scan.DatabaseUsers(&dbusers)).ThrowErrorOnFound(),
+			WithRowsScanner(scan.DatabaseUsers(&dbusers)).ThrowErrorOnFound(),
 	)
 	if res != nil {
 		// Return error
@@ -99,7 +99,7 @@ func (m *Migrations) GrantAllPrivilegesOnDatabase(users []*models.CreateDatabase
 		var dbusers []string
 		res = m.tx.Query(
 			transactions.NewRequest(fmt.Sprintf("SELECT rolname FROM pg_roles WHERE rolname = '%s'", user.Name)).
-				WithScanFunc(scan.DatabaseUsers(&dbusers)),
+				WithRowsScanner(scan.DatabaseUsers(&dbusers)),
 		)
 		if res != nil {
 			return res
@@ -108,7 +108,7 @@ func (m *Migrations) GrantAllPrivilegesOnDatabase(users []*models.CreateDatabase
 		var dbnames []string
 		res = m.tx.Query(
 			transactions.NewRequest(fmt.Sprintf("SELECT rolname FROM pg_roles WHERE rolname = '%s'", user.Name)).
-				WithScanFunc(scan.DatabaseNames(&dbnames)),
+				WithRowsScanner(scan.DatabaseNames(&dbnames)),
 		)
 		if res != nil {
 			return res
@@ -135,7 +135,7 @@ func (m *Migrations) DropDatabaseUsers(names ...string) (res *common.Response) {
 		var dbusers []string
 		res = m.tx.Query(
 			transactions.NewRequest(fmt.Sprintf("SELECT rolname FROM pg_roles WHERE rolname = '%s'", name)).
-				WithScanFunc(scan.DatabaseUsers(&dbusers)),
+				WithRowsScanner(scan.DatabaseUsers(&dbusers)),
 		)
 		if res != nil {
 			return res
@@ -169,7 +169,7 @@ func (m *Migrations) CreateDatabase(request *RequestCreateDatabase, configuratio
 	var dbnames []string
 	res := m.tx.Query(
 		transactions.NewRequest(fmt.Sprintf("SELECT datname FROM pg_database WHERE datname = '%s'", request.Database)).
-			WithScanFunc(scan.DatabaseNames(&dbnames)).ThrowErrorOnFound(),
+			WithRowsScanner(scan.DatabaseNames(&dbnames)).ThrowErrorOnFound(),
 	)
 	if res != nil {
 		if res.Status != common.StatusFound {
@@ -202,7 +202,7 @@ func (m *Migrations) DropDatabases(names ...string) (res *common.Response) {
 		var dbnames []string
 		res = m.tx.Query(transactions.NewRequest(fmt.Sprintf("SELECT * FROM pg_database WHERE datname = '%s'", name)).
 			// Returns nil if the database exists
-			WithScanFunc(scan.DatabaseNames(&dbnames)),
+			WithRowsScanner(scan.DatabaseNames(&dbnames)),
 		)
 		if res != nil {
 			continue
@@ -243,7 +243,7 @@ func (m *Migrations) CreateTable(configuration *Configuration, transaction *tran
 	var dbnames []string
 	transaction = transaction.Query(
 		transactions.NewRequest(fmt.Sprintf("SELECT tablename FROM pg_catalog.pg_tables WHERE tablename = '%s';", tableMethods.Name())).
-			WithScanFunc(scan.DatabaseNames(&dbnames)).ThrowErrorOnFound(),
+			WithRowsScanner(scan.DatabaseNames(&dbnames)).ThrowErrorOnFound(),
 	)
 	if transaction.Response != nil {
 		if transaction.Response.Status != common.StatusFound {
@@ -373,7 +373,7 @@ func (m *Migrations) CreateTypes(configuration *Configuration, transaction *tran
 		var typnames []string
 		transaction = transaction.Query(
 			transactions.NewRequest(fmt.Sprintf(`SELECT typname FROM pg_catalog.pg_type WHERE typname = '%s'`, typ.Name)).
-				WithScanFunc(scan.DatabaseTypes(&typnames)).ThrowErrorOnFound(),
+				WithRowsScanner(scan.DatabaseTypes(&typnames)).ThrowErrorOnFound(),
 		)
 
 		if transaction.Response != nil {
