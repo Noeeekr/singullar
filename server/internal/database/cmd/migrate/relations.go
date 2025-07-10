@@ -51,9 +51,7 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 
 func init() {
 	RelationsCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "Defines the path to the environment files containing the necessary environment variables if not already supplied in the environment")
-	// Not implemented
 	RelationsCmd.Flags().BoolP("ignore-existing", "i", false, "Doesn't throw errors if the database relation already exists.")
-	// Not implemented
 	RelationsCmd.Flags().BoolP("recreate-existing", "r", false, "Drop and recreate the relation if already exists.")
 	RelationsCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
 }
