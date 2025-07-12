@@ -50,7 +50,7 @@ func (r *Request) WithArgs(args ...any) *Request {
 		return r
 	}
 
-	return r.reflectQueryValuesOnArgs(args)
+	return r.setValueFieldSizeToArgsLength(args)
 }
 
 // Defines a function to handle returned rows. If no function is passed at all then it doesn't query the returned rows.
@@ -59,13 +59,17 @@ func (r *Request) WithRowsScanner(fun RequestRowsScanner) *Request {
 	return r
 }
 
+func (r *Request) GetValueFieldSize() int {
+	return r.valuesFieldAmount
+}
+
 // Switch to throw response error on found instead of not found..
 func (r *Request) ThrowErrorOnFound() *Request {
 	r.throwErrorOnFound = true
 	return r
 }
 
-func (r *Request) reflectQueryValuesOnArgs(args []any) *Request {
+func (r *Request) setValueFieldSizeToArgsLength(args []any) *Request {
 	var placeholder string
 
 	var index int = 1
