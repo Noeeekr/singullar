@@ -25,5 +25,11 @@ func (u *Utils) MigrateTables(configuration *migrations.Configuration) bool {
 		fmt.Println(res.ParseToString())
 		return true
 	}
+
+	res = u.migrations.Commit()
+	if res != nil {
+		fmt.Println(res.ParseToString())
+		return true
+	}
 	return false
 }

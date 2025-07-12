@@ -220,9 +220,9 @@ func (h *Handlers) CreateUser(ctx *gin.Context) {
 		InstitutionId: user.InstitutionId,
 	}
 
-	users, tx := h.operations.InsertManyUsers(nil, userRequest)
-	if tx.Response != nil {
-		h.internalError(ctx, "Falha ao criar o usuario.", tx.Response.ParseToError())
+	users, res := h.operations.InsertManyUsers(nil, userRequest)
+	if res != nil {
+		h.internalError(ctx, "Falha ao criar o usuario.", res.ParseToError())
 		return
 	}
 

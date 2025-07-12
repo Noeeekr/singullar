@@ -80,7 +80,12 @@ func init() {
 }
 
 func StartApi(port, mode string) *common.Response {
-	db, res := connections.ConnectWithEnvironment(connections.ConnectionEnvironment(mode))
+	databaseEnvironmentName := connections.ConnectionEnvironment(mode)
+	connection, res := connections.ScanEnvironmentForConnection(databaseEnvironmentName)
+	if res != nil {
+		return res
+	}
+	db, res := connections.ConnectWithEnvironment(databaseEnvironmentName)
 	if res != nil {
 		return res
 	}
@@ -100,6 +105,7 @@ func StartApi(port, mode string) *common.Response {
 	server := server.New(router, ":"+port).
 		WithErrLogger(logs.Error)
 
+	logs.Info.Println("Using database: " + connection.Database())
 	logs.Info.Printf("Server is running on http://localhost:%s", port)
 	err = server.ListenAndServe()
 
