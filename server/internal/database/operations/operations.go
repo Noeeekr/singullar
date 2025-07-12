@@ -136,51 +136,39 @@ func (ops *Operations) DeleteUserByEmail(email string) (tx *transactions.Transac
 
 	return tx
 }
-func (ops *Operations) InsertInstitution(name, email, password string) (user *models.Users, tx *transactions.Transaction) {
+func (ops *Operations) InsertInstitutions(requests ...*InstitutionRequest) (users []*models.Users, tx *transactions.Transaction) {
 	tx = ops.Start()
 	if tx.Response != nil {
-		return user, tx
+		return users, tx
+	}
+
+	var args []any
+	for _, request := range requests {
+		args = append(args, time.Now(), time.Now(), request.Name)
 	}
 
 	var ids []int
-	tx = tx.Query(models.TablesInfo.Institutions.Requests.InsertOne.
-		WithArgs(time.Now(), time.Now(), name).
+	tx = tx.Query(models.TablesInfo.Institutions.Requests.InsertMany.
+		WithArgs(args...).
 		WithRowsScanner(scan.InstitutionsIds(&ids)),
 	)
 	if tx.Response != nil {
-		return user, tx
+		return users, tx
 	}
 
-	if len(ids) > 1 {
-		tx.Response = common.NewResponse().
-			WithDescription("Unexpected return").
-			WithStatus(common.StatusInvalidResponse)
-		return
+	args = []any{}
+	for _, request := range requests {
+		args = append(args, time.Now(), time.Now(), "Administrator", request.Email, request.Password, ids[0], models.Admin)
 	}
-
-	var users []*models.Users
 	tx = tx.Query(models.TablesInfo.Users.Requests.InsertMany.
-		WithArgs(time.Now(), time.Now(), "Administrator", email, password, ids[0], models.Admin).
+		WithArgs(args...).
 		WithRowsScanner(scan.Users(&users)),
 	)
 	if tx.Response != nil {
-		return user, tx
+		return users, tx
 	}
 
-	if len(users) != 1 {
-		tx.Response = common.NewResponse().
-			WithDescription("Unexpected return").
-			WithStatus(common.StatusInvalidResponse)
-		return
-	}
-	if len(users) == 0 {
-		tx.Response = common.NewResponse().
-			WithDescription("Empty response").
-			WithStatus(common.StatusNotFound)
-		return
-	}
-
-	return users[0], tx
+	return users, tx
 }
 func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Institutions, res *common.Response) {
 	var insts []*models.Institutions

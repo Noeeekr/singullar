@@ -18,7 +18,6 @@ type InstitutionsRequests struct {
 	SelectOneById   *transactions.Request
 	DeleteOneByName *transactions.Request
 	DeleteOneById   *transactions.Request
-	InsertOne       *transactions.Request
 	InsertMany      *transactions.Request
 	Drop            *transactions.Request
 }
@@ -48,11 +47,11 @@ var institutionsTableRequests = &InstitutionsRequests{
 	SelectOneByName: transactions.NewRequest(fmt.Sprintf(`
 		SELECT created_at, updated_at, deleted_at, name, id FROM %s WHERE name = $1;
 	`, InstitutionsTableName)),
-	InsertOne: transactions.NewRequest(fmt.Sprintf(`
+	InsertMany: transactions.NewRequest(fmt.Sprintf(`
 		INSERT INTO %s (created_at, updated_at, name) 
-		VALUES ($1, $2, $3)
+		VALUES $$$$$
 		RETURNING id;
-	`, InstitutionsTableName)),
+	`, InstitutionsTableName)).AllowValueRepeat("$$$$$", 3),
 	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;
 	`, InstitutionsTableName)),

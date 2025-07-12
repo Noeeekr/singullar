@@ -63,17 +63,20 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 		}
 
 		// CREATE INSTITUTION
-		if user, tx := ops.InsertInstitution(name, email, string(pwd)); tx.Response != nil {
+		institution := operations.CreateInstitutionRequest(name, email, string(pwd))
+		users, tx := ops.InsertInstitutions(institution)
+		if tx.Response != nil {
 			fmt.Println(tx.Response.ParseToString())
 			return
 		} else {
-			// PRINT USER INFORMATION
-			fmt.Println("Create new institution.")
-			fmt.Println("Access it using the following user:")
-			fmt.Println("Institution: ", name)
-			fmt.Println("Name: ", user.Name)
-			fmt.Println("Email: ", user.Email)
-			fmt.Println("Password: ", password)
+			for _, user := range users {
+				fmt.Println("Created new institution.")
+				fmt.Println("Access it using the following user:")
+				fmt.Println("Institution: ", name)
+				fmt.Println("Name: ", user.Name)
+				fmt.Println("Email: ", user.Email)
+				fmt.Println("Password: ", password)
+			}
 		}
 	},
 }

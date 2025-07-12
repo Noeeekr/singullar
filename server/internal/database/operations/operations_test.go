@@ -171,14 +171,15 @@ func TestOperations(test *testing.T) {
 	utils.
 		Run("INSERT INSTITUTIONS", func(t *testing.T) {
 			for _, data := range institution_source_data {
-				user, tx := utils.operations.InsertInstitution(data.Name, data.Email, data.Password)
+				institution := operations.CreateInstitutionRequest(data.Name, data.Email, data.Password)
+				users, tx := utils.operations.InsertInstitutions(institution)
 				if tx.Response != nil {
 					t.Fatal(tx.Response.ParseToString())
 				}
 				if res := utils.operations.Commit(); res != nil {
 					t.Fatal(res.ParseToString())
 				}
-				created_users = append(created_users, user)
+				created_users = append(created_users, users...)
 			}
 		}).
 		Run("SELECT INSTITUTIONS BY ID", func(t *testing.T) {
