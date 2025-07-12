@@ -21,16 +21,6 @@ const (
 	UsersNotificationsTableName TableName = "users_notifications" // PARTIAL
 )
 
-type Tables struct {
-	Users         *UsersTable
-	Classes       *ClassesTable
-	Institutions  *InstitutionsTable
-	Notifications *NotificationsTable
-
-	UsersClasses       *UsersClassesTable
-	UsersNotifications *UsersNotificationsTable
-}
-
 type TableMethods interface {
 	GetCreateRequest() *transactions.Request
 	GetDropRequest() *transactions.Request
@@ -62,15 +52,6 @@ const DefaultFieldsQuery = `
 	updated_at TIMESTAMPTZ NOT NULL,
 	deleted_at TIMESTAMPTZ,
 `
-
-var TablesInfo = Tables{
-	Users:              usersTable,
-	Institutions:       institutionsTable,
-	Notifications:      notificationsTable,
-	Classes:            classesTable,
-	UsersClasses:       usersClassesTable,
-	UsersNotifications: usersNotificationsTable,
-}
 
 //
 //

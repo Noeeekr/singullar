@@ -44,14 +44,14 @@ type UsersRequests struct {
 	SelectManyByInstitutionId *transactions.Request
 }
 
-type UsersTable struct {
+type UsersTableInformation struct {
 	TableMethods
 	name         TableName
 	Requests     *UsersRequests
 	dependencies *TableDependencies
 }
 
-var usersTable = &UsersTable{
+var UsersTable = &UsersTableInformation{
 	name:         usersTableName,
 	dependencies: usersTableDependencies,
 	Requests:     usersTableRequests,
@@ -108,21 +108,21 @@ var usersTableRequests = &UsersRequests{
 
 var usersTableDependencies *TableDependencies = &TableDependencies{
 	Types:  []*TypeInfo{UserRolesType},
-	Tables: []TableMethods{institutionsTable},
+	Tables: []TableMethods{InstitutionsTable},
 }
 
-func (t *UsersTable) CreateRequestDependencies() *TableDependencies {
+func (t *UsersTableInformation) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *UsersTable) GetCreateRequest() *transactions.Request {
+func (t *UsersTableInformation) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
 
-func (t *UsersTable) Name() TableName {
+func (t *UsersTableInformation) Name() TableName {
 	return t.name
 }
 
-func (t *UsersTable) GetDropRequest() *transactions.Request {
+func (t *UsersTableInformation) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }

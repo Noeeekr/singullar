@@ -43,12 +43,12 @@ func TestMigrations(t *testing.T) {
 
 	// PUT YOUR TABLE FOR TESTS HERE
 	tables := []models.TableMethods{
-		models.TablesInfo.Institutions,
-		models.TablesInfo.Users,
-		models.TablesInfo.Classes,
-		models.TablesInfo.Notifications,
-		models.TablesInfo.UsersClasses,
-		models.TablesInfo.UsersNotifications,
+		models.InstitutionsTable,
+		models.UsersTable,
+		models.ClassesTable,
+		models.NotificationsTable,
+		models.UsersClassesTable,
+		models.UsersNotificationsTable,
 	}
 
 	t.Run("PING", func(t *testing.T) {

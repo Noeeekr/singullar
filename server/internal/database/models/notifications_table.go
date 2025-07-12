@@ -6,7 +6,7 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
-type NotificationsTable struct {
+type NotificationsTableInformation struct {
 	name         TableName
 	Requests     *NotificationsRequests
 	dependencies *TableDependencies
@@ -18,7 +18,7 @@ type NotificationsRequests struct {
 	InsertMany *transactions.Request
 }
 
-var notificationsTable *NotificationsTable = &NotificationsTable{
+var NotificationsTable *NotificationsTableInformation = &NotificationsTableInformation{
 	name:         NotificationsTableName,
 	dependencies: notificationsTableDependencies,
 	Requests:     notificationsTableRequests,
@@ -26,7 +26,7 @@ var notificationsTable *NotificationsTable = &NotificationsTable{
 
 var notificationsTableDependencies *TableDependencies = &TableDependencies{
 	Types:  []*TypeInfo{UserRolesType},
-	Tables: []TableMethods{classesTable, institutionsTable},
+	Tables: []TableMethods{ClassesTable, InstitutionsTable},
 }
 
 var notificationsTableRequests = &NotificationsRequests{
@@ -75,16 +75,16 @@ type Notifications struct {
 	CreateNotifications
 }
 
-func (t *NotificationsTable) CreateRequestDependencies() *TableDependencies {
+func (t *NotificationsTableInformation) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *NotificationsTable) GetCreateRequest() *transactions.Request {
+func (t *NotificationsTableInformation) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
-func (t *NotificationsTable) GetDropRequest() *transactions.Request {
+func (t *NotificationsTableInformation) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }
-func (t *NotificationsTable) Name() TableName {
+func (t *NotificationsTableInformation) Name() TableName {
 	return t.name
 }

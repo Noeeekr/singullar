@@ -6,7 +6,7 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
-type InstitutionsTable struct {
+type InstitutionsTableInformation struct {
 	name         TableName
 	Requests     *InstitutionsRequests
 	dependencies *TableDependencies
@@ -22,7 +22,7 @@ type InstitutionsRequests struct {
 	Drop            *transactions.Request
 }
 
-var institutionsTable = &InstitutionsTable{
+var InstitutionsTable = &InstitutionsTableInformation{
 	name:         InstitutionsTableName,
 	dependencies: institutionsTableDependencies,
 	Requests:     institutionsTableRequests,
@@ -76,18 +76,18 @@ type Institutions struct {
 	Name string `json:"name" binding:"required"`
 }
 
-func (t *InstitutionsTable) CreateRequestDependencies() *TableDependencies {
+func (t *InstitutionsTableInformation) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *InstitutionsTable) GetCreateRequest() *transactions.Request {
+func (t *InstitutionsTableInformation) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
 
-func (t *InstitutionsTable) Name() TableName {
+func (t *InstitutionsTableInformation) Name() TableName {
 	return t.name
 }
 
-func (t *InstitutionsTable) GetDropRequest() *transactions.Request {
+func (t *InstitutionsTableInformation) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }

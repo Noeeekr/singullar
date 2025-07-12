@@ -14,12 +14,12 @@ type Utils struct {
 func (u *Utils) MigrateTables(configuration *migrations.Configuration) bool {
 	res := u.migrations.CreateTables(
 		configuration,
-		models.TablesInfo.Users,
-		models.TablesInfo.Classes,
-		models.TablesInfo.Institutions,
-		models.TablesInfo.Notifications,
-		models.TablesInfo.UsersClasses,
-		models.TablesInfo.UsersNotifications,
+		models.UsersTable,
+		models.ClassesTable,
+		models.InstitutionsTable,
+		models.NotificationsTable,
+		models.UsersClassesTable,
+		models.UsersNotificationsTable,
 	).Response
 	if res != nil {
 		fmt.Println(res.ParseToString())

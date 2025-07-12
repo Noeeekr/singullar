@@ -11,7 +11,7 @@ type UsersClasses struct {
 	InstitutionId int
 }
 
-type UsersClassesTable struct {
+type UsersClassesTableInformation struct {
 	TableMethods
 	name         TableName
 	dependencies *TableDependencies
@@ -23,7 +23,7 @@ type UsersClassesRequests struct {
 	Drop   *transactions.Request
 }
 
-var usersClassesTable *UsersClassesTable = &UsersClassesTable{
+var UsersClassesTable *UsersClassesTableInformation = &UsersClassesTableInformation{
 	name:         UsersClassesTableName,
 	dependencies: usersClassesDependencies,
 	Requests:     usersClassesTableRequests,
@@ -31,7 +31,7 @@ var usersClassesTable *UsersClassesTable = &UsersClassesTable{
 
 var usersClassesDependencies *TableDependencies = &TableDependencies{
 	Types:  []*TypeInfo{UserRolesType},
-	Tables: []TableMethods{usersTable, classesTable},
+	Tables: []TableMethods{UsersTable, ClassesTable},
 }
 
 var usersClassesTableRequests = &UsersClassesRequests{
@@ -49,18 +49,18 @@ var usersClassesTableRequests = &UsersClassesRequests{
 	`, UsersClassesTableName)),
 }
 
-func (t *UsersClassesTable) CreateRequestDependencies() *TableDependencies {
+func (t *UsersClassesTableInformation) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *UsersClassesTable) GetCreateRequest() *transactions.Request {
+func (t *UsersClassesTableInformation) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
 
-func (t *UsersClassesTable) Name() TableName {
+func (t *UsersClassesTableInformation) Name() TableName {
 	return t.name
 }
 
-func (t *UsersClassesTable) GetDropRequest() *transactions.Request {
+func (t *UsersClassesTableInformation) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }

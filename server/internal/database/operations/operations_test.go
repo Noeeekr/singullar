@@ -15,8 +15,8 @@ import (
 
 var flagEnvironmentFile = "../../../secrets/postgres.env"
 var tables = []models.TableMethods{
-	models.TablesInfo.Users,
-	models.TablesInfo.Institutions,
+	models.UsersTable,
+	models.InstitutionsTable,
 }
 
 type InstitutionData struct {

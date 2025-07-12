@@ -16,7 +16,7 @@ type CreateUsersNotifications struct {
 	NotificationId int `json:"notificationId" binding:"required"`
 }
 
-type UsersNotificationsTable struct {
+type UsersNotificationsTableInformation struct {
 	TableMethods
 	name         TableName
 	Requests     *UsersNotificationsRequests
@@ -29,7 +29,7 @@ type UsersNotificationsRequests struct {
 	InsertMany *transactions.Request
 }
 
-var usersNotificationsTable *UsersNotificationsTable = &UsersNotificationsTable{
+var UsersNotificationsTable *UsersNotificationsTableInformation = &UsersNotificationsTableInformation{
 	name:         UsersNotificationsTableName,
 	dependencies: usersNotificationsTableDependencies,
 	Requests:     usersNotificationsTableRequests,
@@ -37,7 +37,7 @@ var usersNotificationsTable *UsersNotificationsTable = &UsersNotificationsTable{
 
 var usersNotificationsTableDependencies *TableDependencies = &TableDependencies{
 	Types:  []*TypeInfo{UserRolesType},
-	Tables: []TableMethods{usersTable, notificationsTable},
+	Tables: []TableMethods{UsersClassesTable, NotificationsTable},
 }
 
 var usersNotificationsTableRequests = &UsersNotificationsRequests{
@@ -61,18 +61,18 @@ var usersNotificationsTableRequests = &UsersNotificationsRequests{
 	`, UsersNotificationsTableName, placeholder)).AllowValueRepeat(placeholder, 3),
 }
 
-func (t *UsersNotificationsTable) CreateRequestDependencies() *TableDependencies {
+func (t *UsersNotificationsTableInformation) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *UsersNotificationsTable) GetCreateRequest() *transactions.Request {
+func (t *UsersNotificationsTableInformation) GetCreateRequest() *transactions.Request {
 	return t.Requests.Create
 }
 
-func (t *UsersNotificationsTable) GetDropRequest() *transactions.Request {
+func (t *UsersNotificationsTableInformation) GetDropRequest() *transactions.Request {
 	return t.Requests.Drop
 }
 
-func (t *UsersNotificationsTable) Name() TableName {
+func (t *UsersNotificationsTableInformation) Name() TableName {
 	return t.name
 }

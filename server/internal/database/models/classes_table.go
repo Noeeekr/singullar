@@ -6,7 +6,7 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 )
 
-type ClassesTable struct {
+type ClassesTableInformation struct {
 	name         TableName
 	dependencies *TableDependencies
 	requests     *ClassesRequests
@@ -17,7 +17,7 @@ type ClassesRequests struct {
 	Drop   *transactions.Request
 }
 
-var classesTable *ClassesTable = &ClassesTable{
+var ClassesTable *ClassesTableInformation = &ClassesTableInformation{
 	name:         ClassesTableName,
 	dependencies: classesTableDependencies,
 	requests:     classesTableRequests,
@@ -25,7 +25,7 @@ var classesTable *ClassesTable = &ClassesTable{
 
 var classesTableDependencies *TableDependencies = &TableDependencies{
 	Types:  []*TypeInfo{},
-	Tables: []TableMethods{institutionsTable},
+	Tables: []TableMethods{InstitutionsTable},
 }
 
 var classesTableRequests = &ClassesRequests{
@@ -57,18 +57,18 @@ type Classes struct {
 	InstitutionId int `json:"institution_id" binding:"required"`
 }
 
-func (t *ClassesTable) CreateRequestDependencies() *TableDependencies {
+func (t *ClassesTableInformation) CreateRequestDependencies() *TableDependencies {
 	return t.dependencies
 }
 
-func (t *ClassesTable) GetCreateRequest() *transactions.Request {
+func (t *ClassesTableInformation) GetCreateRequest() *transactions.Request {
 	return t.requests.Create
 }
 
-func (t *ClassesTable) GetDropRequest() *transactions.Request {
+func (t *ClassesTableInformation) GetDropRequest() *transactions.Request {
 	return t.requests.Drop
 }
 
-func (t *ClassesTable) Name() TableName {
+func (t *ClassesTableInformation) Name() TableName {
 	return t.name
 }
