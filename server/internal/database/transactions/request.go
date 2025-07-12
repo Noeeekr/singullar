@@ -79,7 +79,7 @@ func (r *Request) setValueFieldSizeToArgsLength(argAmount int) *Request {
 			stack[i] = fmt.Sprintf("$%d", index)
 			index++
 		}
-		placeholders = append(placeholders, "("+strings.Join(stack, ", ")+") ")
+		placeholders = append(placeholders, "("+strings.Join(stack, ", ")+")")
 	}
 
 	r.Query = strings.Replace(

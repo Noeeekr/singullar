@@ -11,12 +11,18 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/migrations"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
+	"github.com/Noeeekr/singullar/server/internal/database/seeder"
 )
 
-var flagEnvironmentFile = "../../../secrets/postgres.env"
-var tables = []models.TableMethods{
+var databaseInformationFile = "../../../secrets/postgres.env"
+var requiredTables = []models.TableMethods{
 	models.UsersTable,
 	models.InstitutionsTable,
+	models.NotificationsTable,
+	models.UsersNotificationsTable,
+}
+var migrationConfiguration = &migrations.Configuration{
+	RecreateExisting: true,
 }
 
 type InstitutionData struct {
@@ -33,35 +39,17 @@ type UserData struct {
 	InstitutionId int
 }
 
-/*
-    insertTest := []QueryTest{
-		Name: InstitutionTable.Name()
-		Query: InstitutionTable.Queries.Create,
-		Args: "Claretiano",
-		ReturnFunc: func (rows *sql.Rows) {
-			...
-		}
-	}
-*/
-
-type QueryTestUtil struct {
+type Utils struct {
 	db *sql.DB
 
-	test *testing.T
+	MainTest *testing.T
 
 	migrations *migrations.Migrations
 	operations *operations.Operations
 }
 
-func (m *QueryTestUtil) CreateTables(configuration *migrations.Configuration, tables []models.TableMethods) (res *common.Response) {
-	transaction := m.migrations.CreateTables(configuration, tables...)
-	if transaction.Response != nil {
-		m.test.Log(transaction.Response.ParseToString())
-	}
-	return transaction.Response
-}
-func (m *QueryTestUtil) DropTables(tables []models.TableMethods) *common.Response {
-	m.test.Log("Finished operations, dropping tables")
+func (m *Utils) DropTables(tables []models.TableMethods) *common.Response {
+	m.MainTest.Log("Finished operations, dropping tables")
 	tx := m.migrations.DropTables(tables...)
 	if tx.Response != nil {
 		logs.Error.Fatal(tx.Response.ParseToString())
@@ -72,7 +60,7 @@ func (m *QueryTestUtil) DropTables(tables []models.TableMethods) *common.Respons
 	defer m.db.Close()
 	return nil
 }
-func (m *QueryTestUtil) CreateInstitutionsData(amount int) []*InstitutionData {
+func (m *Utils) CreateInstitutionsData(amount int) []*InstitutionData {
 	data := []*InstitutionData{}
 	for range amount {
 		data = append(
@@ -86,7 +74,7 @@ func (m *QueryTestUtil) CreateInstitutionsData(amount int) []*InstitutionData {
 	}
 	return data
 }
-func (m *QueryTestUtil) CreateUsersData(institutions []*models.Institutions) []*UserData {
+func (m *Utils) CreateUsersData(institutions []*models.Institutions) []*UserData {
 	data := []*UserData{}
 	for _, institution := range institutions {
 		data = append(
@@ -102,187 +90,261 @@ func (m *QueryTestUtil) CreateUsersData(institutions []*models.Institutions) []*
 	}
 	return data
 }
-
-// Start database connection, create necessary tables.
-func (m *QueryTestUtil) PrepareDatabaseWithTables(configuration *migrations.Configuration, tables []models.TableMethods) *sql.DB {
-	m.test.Run("CONNECT INTO ENVIRONMENT DATABASE AS TEST USER", func(t *testing.T) {
-		if err := environment.Parse(flagEnvironmentFile); err != nil {
-			t.Fatal(err.Status, err.Description)
-		}
-
-		db, res := connections.ConnectWithEnvironment(connections.Development)
+func (m *Utils) CurrentDatabase() *sql.DB {
+	return m.db
+}
+func (m *Utils) MustPrepareEnvironmentForTests() {
+	m.MustConnectToDevelopmentDatabase()
+	m.MustPingDatabase()
+	m.MustPrepareTables()
+}
+func (m *Utils) MustConnectToDevelopmentDatabase() {
+	var res *common.Response
+	m.MainTest.Run("CONNECT TO DATABASE IN DEVELOPMENT ENVIRONMENT", func(t *testing.T) {
+		res = environment.Parse(databaseInformationFile)
 		if res != nil {
-			t.Fatal(res.ParseToError().Error())
+			t.Fatal(res.ParseToString())
 		}
 
-		m.db = db
-		m.migrations = migrations.New(db)
-		m.operations = operations.New(db)
-	})
+		m.db, res = connections.ConnectWithEnvironment(connections.Development)
+		if res != nil {
+			t.Fatal(res.ParseToString())
+		}
 
-	m.Run("PING", func(t *testing.T) {
-		err := m.db.Ping()
+		if m.db == nil {
+			t.Fatal("Database pointer empty")
+		}
+		m.migrations = migrations.New(m.db)
+		m.operations = operations.New(m.db)
+	})
+	if res != nil {
+		m.MainTest.Fatal(res.ParseToString())
+	}
+}
+func (m *Utils) MustPingDatabase() {
+	var err error
+	m.MainTest.Run("PING", func(t *testing.T) {
+		err = m.db.Ping()
 		if err != nil {
 			t.Fatal("Unable to ping database. " + err.Error())
 		}
 	})
-
-	m.Run("CREATE TABLES", func(t *testing.T) {
-		if res := m.CreateTables(configuration, tables); res != nil {
-			t.Fatal(res.Status, res.Description)
+	if err != nil {
+		m.MainTest.Fatal(err.Error())
+	}
+}
+func (m *Utils) MustPrepareTables() {
+	var res *common.Response
+	m.MainTest.Run("CREATE TABLES", func(t *testing.T) {
+		res = m.migrations.CreateTables(migrationConfiguration, requiredTables...)
+		if res != nil {
+			t.Fatal(res.ParseToString())
 		}
-		if res := m.migrations.Commit(); res != nil {
-			t.Fatal(res.Status, res.Description)
+		res = m.migrations.Commit()
+		if res != nil {
+			t.Fatal(res.ParseToString())
 		}
 	})
-
-	return m.db
-}
-
-func (m *QueryTestUtil) Run(title string, fun func(t *testing.T)) *QueryTestUtil {
-	if !m.test.Run(title, fun) {
-		m.test.FailNow()
+	if res != nil {
+		m.MainTest.Fatal(res.ParseToString())
 	}
-	return m
 }
-
+func (m *Utils) MustPass(title string, fun func(t *testing.T)) {
+	ok := m.MainTest.Run(title, fun)
+	if !ok {
+		m.MainTest.FailNow()
+	}
+}
 func TestOperations(test *testing.T) {
-	utils := QueryTestUtil{
-		test: test,
+	utils := Utils{
+		MainTest: test,
 	}
 
-	configuration := migrations.Configuration{
-		RecreateExisting: true,
-	}
+	utils.MustPrepareEnvironmentForTests()
+	defer utils.DropTables(requiredTables)
 
-	db := utils.PrepareDatabaseWithTables(&configuration, tables)
-	if db == nil {
-		test.Fatal("Database not prepared")
-	}
-	defer utils.DropTables(tables)
+	institutions_notifications := map[string][]*models.Notifications{}
+	institutions_users := map[string][]*models.Users{}
+	institutions := []*models.Institutions{}
 
-	institution_source_data := utils.CreateInstitutionsData(10)
-
-	created_users := []*models.Users{}
-	created_institutions := []*models.Institutions{}
-
-	var res *common.Response
-
-	utils.
-		Run("INSERT INSTITUTIONS", func(t *testing.T) {
-			for _, data := range institution_source_data {
-				institution := operations.CreateInstitutionRequest(data.Name, data.Email, data.Password)
-				users, tx := utils.operations.InsertInstitutions(institution)
-				if tx.Response != nil {
-					t.Fatal(tx.Response.ParseToString())
-				}
-				if res := utils.operations.Commit(); res != nil {
-					t.Fatal(res.ParseToString())
-				}
-				created_users = append(created_users, users...)
-			}
-		}).
-		Run("SELECT INSTITUTIONS BY ID", func(t *testing.T) {
-			for _, user := range created_users {
-				institution, res := utils.operations.SelectInstitutionById(user.InstitutionId)
-				if res != nil {
-					t.Fatal(res.ParseToString())
-				}
-				if institution == nil {
-					t.Fatal("Nil institution")
-				}
-				created_institutions = append(created_institutions, institution)
-			}
-		}).
-		Run("SELECT INSTITUTIONS BY NAME", func(t *testing.T) {
-			for _, data := range institution_source_data {
-				institution, res := utils.operations.SelectInstitutionByName(data.Name)
-				if res != nil {
-					t.Fatal(res.Description)
-				}
-				if institution == nil {
-					t.Fatal("Nil institution")
-				}
-			}
-		})
-
-	utils.Run("INSERT USERS", func(t *testing.T) {
-		for _, institution := range created_institutions {
-			email := common.GenerateRandomStrings(10)
-			users, tx := utils.operations.InsertManyUsers(&models.CreateUsers{
-				Name:          common.GenerateRandomStrings(10),
-				Email:         email,
-				Password:      common.GenerateRandomStrings(10),
-				InstitutionId: institution.Id,
-				Role:          models.Student,
-			})
-			if tx.Response != nil {
-				t.Fatal(tx.Response.ParseToString())
-			}
-			if len(users) != 1 {
-				t.Fatal("User not returned correctly")
-			}
-			if users[0].Email != email {
-				t.Fatal("Emails don't match")
+	utils.MustPass("INSERT INSTITUTIONS", func(t *testing.T) {
+		for _, data := range utils.CreateInstitutionsData(10) {
+			institution := operations.CreateInstitutionRequest(data.Name, data.Email, data.Password)
+			users, res := utils.operations.InsertInstitutions(institution)
+			if res != nil {
+				t.Fatal(res.ParseToString())
 			}
 			if res := utils.operations.Commit(); res != nil {
 				t.Fatal(res.ParseToString())
 			}
-			created_users = append(created_users, users[0])
+			institutions_users[institution.Name] = append(institutions_users[institution.Name], users...)
 		}
-	}).Run("SELECT USERS BY EMAIL", func(t *testing.T) {
-		for _, user := range created_users {
-			user, res := utils.operations.SelectUserByEmail(user.Email)
+	})
+	utils.MustPass("SELECT INSTITUTIONS BY ID", func(t *testing.T) {
+		for _, institution_users := range institutions_users {
+			institution, res := utils.operations.SelectInstitutionById(institution_users[0].InstitutionId)
+			if res != nil {
+				t.Fatal(res.ParseToString())
+			}
+			if institution == nil {
+				t.Fatal("Nil institution")
+			}
+			institutions = append(institutions, institution)
+		}
+	})
+	utils.MustPass("SELECT INSTITUTIONS BY NAME", func(t *testing.T) {
+		for _, created_institution := range institutions {
+			institution, res := utils.operations.SelectInstitutionByName(created_institution.Name)
 			if res != nil {
 				t.Fatal(res.Description)
 			}
-			if user == nil {
-				t.Fatal("Nil user")
-			}
-		}
-	}).Run("SELECT USERS BY ID", func(t *testing.T) {
-		for _, user := range created_users {
-			user, res = utils.operations.SelectUserById(user.Id)
-			if res != nil {
-				t.Fatal(res.Description)
-			}
-			if user == nil {
-				t.Fatal("Nil user")
+			if institution == nil {
+				t.Fatal("Nil institution")
 			}
 		}
 	})
 
-	utils.Run("DELETE USERS BY EMAIL AND ID", func(t *testing.T) {
-		if len(created_users) < 2 {
-			t.Fatal("Insufficient test cases for users")
-		}
-		for i, user := range created_users {
-			if i > len(created_users)/2 {
-				res = utils.operations.DeleteUserByEmail(user.Email).Response
-			} else {
-				res = utils.operations.DeleteUserById(user.Id).Response
-			}
+	utils.MustPass("INSERT USERS", func(t *testing.T) {
+		for _, institution := range institutions {
+			userRequests := seeder.CreateUserRequests(20, institution.Id)
+			users, res := utils.operations.InsertManyUsers(userRequests...)
 			if res != nil {
-				test.Fatal(res.Status, res.Description)
+				t.Fatal(res.ParseToString())
+			}
+			if res := utils.operations.Commit(); res != nil {
+				t.Fatal(res.ParseToString())
+			}
+			institutions_users[institution.Name] = append(institutions_users[institution.Name], users...)
+		}
+	})
+	utils.MustPass("SELECT USERS BY EMAIL", func(t *testing.T) {
+		for _, users := range institutions_users {
+			for _, user := range users {
+				_, res := utils.operations.SelectUserByEmail(user.Email)
+				if res != nil {
+					t.Fatal(res.Description)
+				}
 			}
 		}
 	})
-	utils.Run("DELETE INSTITUTIONS BY EMAIL AND ID", func(t *testing.T) {
-		if len(created_institutions) < 2 {
+
+	utils.MustPass("SELECT USERS BY ID", func(t *testing.T) {
+		for _, users := range institutions_users {
+			for _, user := range users {
+				_, res := utils.operations.SelectUserById(user.Id)
+				if res != nil {
+					t.Fatal(res.Description)
+				}
+			}
+		}
+	})
+
+	utils.MustPass("INSERT NOTIFICATIONS", func(t *testing.T) {
+		for institution, users := range institutions_users {
+			var teachers []*models.Users
+			var student_ids []int
+			for _, user := range users {
+				if user.Role == models.Teacher {
+					teachers = append(teachers, user)
+				}
+				if user.Role == models.Student {
+					student_ids = append(student_ids, user.Id)
+				}
+			}
+			for _, teacher := range teachers {
+				notificationRequests := seeder.CreateNotificationRequests(10, teacher.Id)
+				notifications, res := utils.operations.InsertNotifications(notificationRequests...)
+				if res != nil {
+					t.Fatal(res.ParseToString())
+				}
+				for _, notification := range notifications {
+					requests := seeder.CreatedNotificationUserRequest(notification.Id, models.Student, student_ids...)
+					res := utils.operations.InsertUsersNotifications(requests...)
+					if res != nil {
+						t.Fatal(res.ParseToString())
+					}
+				}
+				institutions_notifications[institution] = append(institutions_notifications[institution], notifications...)
+			}
+			res := utils.operations.Commit()
+			if res != nil {
+				t.Fatal(res.ParseToString())
+			}
+		}
+	})
+
+	utils.MustPass("SELECT NOTIFICATIONS BY TARGET ID", func(t *testing.T) {
+		var student_ids []int
+		for _, users := range institutions_users {
+			for _, user := range users {
+				if user.Role == models.Student {
+					student_ids = append(student_ids, user.Id)
+				}
+			}
+		}
+		for _, id := range student_ids {
+			notifications, res := utils.operations.SelectNotificationsByTargetId(id)
+			if res != nil {
+				t.Fatal(res.ParseToString())
+			}
+			if len(*notifications) == 0 {
+				t.Fatal("Notifications not found")
+			}
+		}
+	})
+	utils.MustPass("DELETE NOTIFICATIONS BY ISSUER ID", func(t *testing.T) {
+		for _, notifications := range institutions_notifications {
+			for _, notification := range notifications {
+				res := utils.operations.DeleteNotificationsByIssuerId(notification.IssuerId)
+				if res != nil {
+					t.Fatal(res.ParseToString())
+				}
+			}
+		}
+		res := utils.operations.Commit()
+		if res != nil {
+			t.Fatal(res.ParseToString())
+		}
+	})
+
+	utils.MustPass("DELETE USERS BY EMAIL AND ID", func(t *testing.T) {
+		for _, users := range institutions_users {
+			if len(users) < 2 {
+				t.Fatal("Insufficient test cases for users")
+			}
+			for i, user := range users {
+				var res *common.Response
+				if i > len(users)/2 {
+					res = utils.operations.DeleteUserByEmail(user.Email).Response
+				} else {
+					res = utils.operations.DeleteUserById(user.Id).Response
+				}
+				if res != nil {
+					t.Fatal(res.Status, res.Description)
+				}
+			}
+			if res := utils.operations.Commit(); res != nil {
+				t.Fatal(res.ParseToString())
+			}
+		}
+	})
+	utils.MustPass("DELETE INSTITUTIONS BY EMAIL AND ID", func(t *testing.T) {
+		if len(institutions) < 2 {
 			t.Fatal("Insufficient test cases for institutions")
 		}
-		for i, institution := range created_institutions {
-			if i > len(created_institutions)/2 {
+		var res *common.Response
+		for i, institution := range institutions {
+			if i > len(institutions)/2 {
 				res = utils.operations.DeleteInstitutionById(nil, institution.Id).Response
 			} else {
 				res = utils.operations.DeleteInstitutionByName(nil, institution.Name).Response
 			}
 			if res != nil {
-				test.Fatal(res.Status, res.Description)
+				t.Fatal(res.Status, res.Description)
 			}
 		}
 		if res := utils.operations.Commit(); res != nil {
-			test.Fatal(res.ParseToString())
+			t.Fatal(res.ParseToString())
 		}
 	})
 }

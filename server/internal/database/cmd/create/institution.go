@@ -64,9 +64,9 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 
 		// CREATE INSTITUTION
 		institution := operations.CreateInstitutionRequest(name, email, string(pwd))
-		users, tx := ops.InsertInstitutions(institution)
-		if tx.Response != nil {
-			fmt.Println(tx.Response.ParseToString())
+		users, res := ops.InsertInstitutions(institution)
+		if res != nil {
+			fmt.Println(res.ParseToString())
 			return
 		} else {
 			for _, user := range users {

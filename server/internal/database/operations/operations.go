@@ -22,6 +22,17 @@ func New(db *sql.DB) *Operations {
 	}
 }
 
+func (ops *Operations) SelectNotificationsByTargetId(id int) (*[]*models.DetailedNotifications, *common.Response) {
+	transaction := ops.Start()
+
+	var notifications []*models.DetailedNotifications
+	transaction.Query(models.NotificationsTable.Requests.SelectByTargetId.
+		WithArgs(id).
+		WithRowsScanner(scan.DetailedNotifications(&notifications)),
+	)
+
+	return &notifications, transaction.Response
+}
 func (ops *Operations) SelectUserByEmail(email string) (user *models.Users, res *common.Response) {
 	var users []*models.Users
 
@@ -121,10 +132,10 @@ func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions,
 	}
 	return insts[0], nil
 }
-func (ops *Operations) InsertManyUsers(requests ...*models.CreateUsers) (users []*models.Users, tx *transactions.Transaction) {
-	tx = ops.Start()
-	if tx.Response != nil {
-		return users, tx
+func (ops *Operations) InsertManyUsers(requests ...*models.CreateUsers) ([]*models.Users, *common.Response) {
+	transaction := ops.Start()
+	if transaction.Response != nil {
+		return nil, transaction.Response
 	}
 
 	var args []any = []any{}
@@ -132,28 +143,17 @@ func (ops *Operations) InsertManyUsers(requests ...*models.CreateUsers) (users [
 		args = append(args, time.Now(), time.Now(), request.Name, request.Email, request.Password, request.InstitutionId, request.Role)
 	}
 
-	tx = tx.Query(models.UsersTable.Requests.InsertMany.
+	var users []*models.Users
+	transaction = transaction.Query(models.UsersTable.Requests.InsertMany.
 		WithArgs(args...).
 		WithRowsScanner(scan.Users(&users)),
 	)
-	if tx.Response != nil {
-		return users, tx
-	}
-
-	if len(users) != len(requests) {
-		tx = transactions.NewTransaction(nil)
-		tx.Response = common.NewResponse().
-			WithDescription("Users created incorrectly").
-			WithStatus(common.StatusNotEqual)
-		return users, tx
-	}
-
-	return users, tx
+	return users, transaction.Response
 }
-func (ops *Operations) InsertInstitutions(requests ...*InstitutionRequest) (users []*models.Users, tx *transactions.Transaction) {
-	tx = ops.Start()
-	if tx.Response != nil {
-		return users, tx
+func (ops *Operations) InsertInstitutions(requests ...*InstitutionRequest) ([]*models.Users, *common.Response) {
+	transaction := ops.Start()
+	if transaction.Response != nil {
+		return nil, transaction.Response
 	}
 
 	var args []any
@@ -162,65 +162,66 @@ func (ops *Operations) InsertInstitutions(requests ...*InstitutionRequest) (user
 	}
 
 	var ids []int
-	tx = tx.Query(models.InstitutionsTable.Requests.InsertMany.
+	transaction.Query(models.InstitutionsTable.Requests.InsertMany.
 		WithArgs(args...).
 		WithRowsScanner(scan.InstitutionsIds(&ids)),
 	)
-	if tx.Response != nil {
-		return users, tx
+	if transaction.Response != nil {
+		return nil, transaction.Response
 	}
 
 	args = []any{}
 	for _, request := range requests {
 		args = append(args, time.Now(), time.Now(), "Administrator", request.Email, request.Password, ids[0], models.Admin)
 	}
-	tx = tx.Query(models.UsersTable.Requests.InsertMany.
+
+	var users []*models.Users
+	transaction.Query(models.UsersTable.Requests.InsertMany.
 		WithArgs(args...).
 		WithRowsScanner(scan.Users(&users)),
 	)
-	if tx.Response != nil {
-		return users, tx
-	}
-
-	return users, tx
+	return users, transaction.Response
 }
-func (ops *Operations) InsertNotifications(transaction *transactions.Transaction, requests ...*NotificationRequest) (tx *transactions.Transaction) {
-	tx = ops.Start()
-	if tx.Response != nil {
-		return tx
+func (ops *Operations) InsertNotifications(requests ...*models.CreateNotifications) ([]*models.Notifications, *common.Response) {
+	transaction := ops.Start()
+	if transaction.Response != nil {
+		return nil, transaction.Response
 	}
 
+	// Insert notification record
 	var args []any = []any{}
 	for _, request := range requests {
 		args = append(args, time.Now(), time.Now(), request.Title, request.Description, request.IssuerId)
 	}
 
-	tx = tx.Query(
+	var notifications []*models.Notifications
+	transaction.Query(
 		models.NotificationsTable.Requests.InsertMany.
-			WithArgs(args...),
+			WithArgs(args...).
+			WithRowsScanner(scan.Notifications(&notifications)),
 	)
-	if tx.Response != nil {
-		return tx
+	if transaction.Response != nil {
+		return notifications, transaction.Response
 	}
+	return notifications, transaction.Response
+}
 
-	args = []any{}
+func (ops *Operations) InsertUsersNotifications(requests ...*models.CreateUsersNotifications) *common.Response {
+	transaction := ops.Start()
+	if transaction.Response != nil {
+		return transaction.Response
+	}
+	// Insert notification recievers
+	args := []any{}
 	for _, request := range requests {
-		args = append(args, request.TargetId, request.TargetRole, request.IssuerId)
+		args = append(args, request.UserId, request.UserRole, request.NotificationId)
 	}
 
-	tx = tx.Query(
+	transaction.Query(
 		models.UsersNotificationsTable.Requests.InsertMany.
 			WithArgs(args...),
 	)
-	if tx.Response != nil {
-		return tx
-	}
-
-	// Not done
-	if true {
-		panic("InsertNotifications implemented partially")
-	}
-	return tx
+	return transaction.Response
 }
 func (ops *Operations) DeleteUserById(id int) (tx *transactions.Transaction) {
 	tx = ops.Start()
@@ -282,4 +283,22 @@ func (ops *Operations) DeleteInstitutionById(transaction *transactions.Transacti
 	}
 
 	return tx
+}
+
+func (ops *Operations) DeleteNotificationsByIssuerId(ids ...int) *common.Response {
+	transaction := ops.Start()
+	if transaction.Response != nil {
+		return transaction.Response
+	}
+
+	for _, id := range ids {
+		transaction.Query(models.NotificationsTable.Requests.DeleteByIssuerId.
+			WithArgs(id),
+		)
+		if transaction.Response != nil {
+			return transaction.Response
+		}
+	}
+
+	return nil
 }

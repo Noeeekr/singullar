@@ -8,7 +8,6 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/Noeeekr/singullar/server/internal/database/seeder"
-	"github.com/Noeeekr/singullar/server/internal/database/transactions"
 	"github.com/spf13/cobra"
 )
 
@@ -36,13 +35,12 @@ var seedCmd *cobra.Command = &cobra.Command{
 		defer db.Close()
 
 		// To make everything in a single transaction
-		tx := transactions.NewManager(db).Start()
 		ops := operations.New(db)
 
 		createdUsers := seeder.CreateUserRequests(quantity, institutionId)
-		users, tx := ops.InsertManyUsers(createdUsers...)
-		if tx.Response != nil {
-			fmt.Println(tx.Response.ParseToString())
+		users, res := ops.InsertManyUsers(createdUsers...)
+		if res != nil {
+			fmt.Println(res.ParseToString())
 			return
 		}
 
@@ -59,15 +57,34 @@ var seedCmd *cobra.Command = &cobra.Command{
 			}
 		}
 
+		var notifications []*models.Notifications
 		for _, teacher := range teachers {
-			for _, student := range students {
-				notifications := seeder.CreateNotificationRequests(4, teacher.Id, student.Id, student.Role)
-				res := ops.InsertNotifications(tx, notifications...).Response
-				if res != nil {
-					fmt.Println(res.ParseToString())
-					return
-				}
+			notificationsRequests := seeder.CreateNotificationRequests(10, teacher.Id)
+			_, res := ops.InsertNotifications(notificationsRequests...)
+			if res != nil {
+				fmt.Println(res.ParseToString())
+				return
 			}
+		}
+
+		var students_ids []int = make([]int, len(students))
+		for i, student := range students {
+			students_ids[i] = student.Id
+		}
+
+		for _, notification := range notifications {
+			notificationUsersRequests := seeder.CreatedNotificationUserRequest(notification.Id, models.Student, students_ids...)
+			res = ops.InsertUsersNotifications(notificationUsersRequests...)
+			if res != nil {
+				fmt.Println(res.ParseToString())
+				return
+			}
+		}
+
+		res = ops.Commit()
+		if res != nil {
+			fmt.Println(res.ParseToString())
+			return
 		}
 		// Create users
 		//   -> If teacher

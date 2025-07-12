@@ -20,7 +20,7 @@ func (u *Utils) MigrateTables(configuration *migrations.Configuration) bool {
 		models.NotificationsTable,
 		models.UsersClassesTable,
 		models.UsersNotificationsTable,
-	).Response
+	)
 	if res != nil {
 		fmt.Println(res.ParseToString())
 		return true

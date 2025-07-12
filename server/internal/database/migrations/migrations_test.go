@@ -61,7 +61,7 @@ func TestMigrations(t *testing.T) {
 	for _, table := range tables {
 		t.Run(fmt.Sprintf("CREATE TABLE %s", table.Name()), func(t *testing.T) {
 			migrations.Start()
-			res = migrations.CreateTables(configurations, table).Response
+			res = migrations.CreateTables(configurations, table)
 
 			if res != nil {
 				t.Fatal(res.ParseToString())

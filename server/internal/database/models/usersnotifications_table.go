@@ -9,13 +9,15 @@ import (
 type CreateUsersNotifications struct {
 	// Notification can be sent to a Class using TargetRole=Unkown and TargetId=ClassID
 	// Notification can be sent to a Roles using TargetRole=Role and TargetId=InstitutionID
-	TargetRole UserRole `json:"targetRole" binding:"required"`
-	TargetId   int      `json:"targetId" binding:"required"`
+	UserRole UserRole `json:"targetRole" binding:"required"`
+	UserId   int      `json:"targetId" binding:"required"`
 
 	// The id of the notification is the id of its creator
 	NotificationId int `json:"notificationId" binding:"required"`
 }
-
+type UsersNotifications struct {
+	CreateUsersNotifications
+}
 type UsersNotificationsTableInformation struct {
 	TableMethods
 	name         TableName
@@ -27,6 +29,7 @@ type UsersNotificationsRequests struct {
 	Create     *transactions.Request
 	Drop       *transactions.Request
 	InsertMany *transactions.Request
+	// DELETE should be done via deleting the notification
 }
 
 var UsersNotificationsTable *UsersNotificationsTableInformation = &UsersNotificationsTableInformation{
@@ -43,21 +46,27 @@ var usersNotificationsTableDependencies *TableDependencies = &TableDependencies{
 var usersNotificationsTableRequests = &UsersNotificationsRequests{
 	Create: transactions.NewRequest(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			target_id INT NOT NULL,
 			target_role %s NOT NULL,
+			user_id INT NOT NULL,
 			notification_id INT NOT NULL,  
 
-			FOREIGN KEY (target_id) REFERENCES %s(id),
-			FOREIGN KEY (notification_id) REFERENCES %s(id)
+			CONSTRAINT fk_users_notifications_target_id 
+			FOREIGN KEY (user_id) 
+			REFERENCES %s(id),
+
+			CONSTRAINT fk_users_notifications_source_id 
+			FOREIGN KEY (notification_id) 
+			REFERENCES %s(id)
+			ON DELETE CASCADE
 		);
 	`, UsersNotificationsTableName, UserRolesTypeName, usersTableName, NotificationsTableName)),
 	Drop: transactions.NewRequest(fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s CASCADE;
 	`, UsersNotificationsTableName)),
 	InsertMany: transactions.NewRequest(fmt.Sprintf(`
-		INSERT INTO %s (target_id, target_role, notification_id)
+		INSERT INTO %s (user_id, target_role, notification_id)
 		VALUES %s
-		RETURNING target_id, target_role, notification_id;
+		RETURNING user_id, target_role, notification_id;
 	`, UsersNotificationsTableName, placeholder)).AllowValueRepeat(placeholder, 3),
 }
 

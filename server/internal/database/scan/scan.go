@@ -239,13 +239,13 @@ func Notifications(notifications *[]*models.Notifications) transactions.RequestR
 					WithDescription("Notification found.").
 					WithStatus(common.StatusFound)
 			}
-			var notification *models.Notifications
-			if err := Rows.Scan(&notification); err != nil {
+			var n models.Notifications
+			if err := Rows.Scan(&n.CreatedAt, &n.UpdatedAt, &n.DeletedAt, &n.Id, &n.IssuerId, &n.Title, &n.Description); err != nil {
 				return common.NewResponse().
 					WithDescription(err.Error()).
 					WithStatus(common.StatusFailedTransaction)
 			}
-			*notifications = append(*notifications, notification)
+			*notifications = append(*notifications, &n)
 		}
 
 		if Rows.Err() != nil {
@@ -255,6 +255,46 @@ func Notifications(notifications *[]*models.Notifications) transactions.RequestR
 		}
 		if !throwErrorOnFound {
 			if len(*notifications) == 0 {
+				return common.NewResponse().
+					WithDescription("Notification not found.").
+					WithStatus(common.StatusNotFound)
+			}
+		}
+
+		return nil
+	}
+}
+
+func DetailedNotifications(detailedNotifications *[]*models.DetailedNotifications) transactions.RequestRowsScanner {
+	return func(Rows *sql.Rows, throwErrorOnFound bool) *common.Response {
+		if detailedNotifications == nil {
+			return common.NewResponse().
+				WithDescription("Cannot scan to nil pointer").
+				WithStatus(common.StatusInvalidSyntax)
+		}
+
+		for Rows.Next() {
+			if throwErrorOnFound {
+				return common.NewResponse().
+					WithDescription("Notification found.").
+					WithStatus(common.StatusFound)
+			}
+			var dn models.DetailedNotifications
+			if err := Rows.Scan(&dn.CreatedAt, &dn.UpdatedAt, &dn.DeletedAt, &dn.TargetId, &dn.TargetName, &dn.IssuerId, &dn.Title, &dn.Description); err != nil {
+				return common.NewResponse().
+					WithDescription(err.Error()).
+					WithStatus(common.StatusFailedTransaction)
+			}
+			*detailedNotifications = append(*detailedNotifications, &dn)
+		}
+
+		if Rows.Err() != nil {
+			return common.NewResponse().
+				WithDescription(Rows.Err().Error()).
+				WithStatus(common.StatusFailedTransaction)
+		}
+		if !throwErrorOnFound {
+			if len(*detailedNotifications) == 0 {
 				return common.NewResponse().
 					WithDescription("Notification not found.").
 					WithStatus(common.StatusNotFound)

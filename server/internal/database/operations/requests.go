@@ -3,11 +3,17 @@ package operations
 import "github.com/Noeeekr/singullar/server/internal/database/models"
 
 type NotificationRequest struct {
+	// For notification
 	Title       string
 	Description string
 	IssuerId    int
-	TargetId    int
-	TargetRole  models.UserRole
+}
+
+type UsersNotificationRequest struct {
+	// For usersNotifications
+	NotificationId int
+	TargetRole     models.UserRole
+	TargetsIds     []int
 }
 
 type InstitutionRequest struct {
@@ -17,13 +23,18 @@ type InstitutionRequest struct {
 	Email    string
 }
 
-func CreateNotificationRequest(title, description string, issuerId, targetId int, targetRole models.UserRole) *NotificationRequest {
+func CreateNotificationRequest(title, description string, issuerId int, targetsIds []int, targetRole models.UserRole) *NotificationRequest {
 	return &NotificationRequest{
 		Title:       title,
 		Description: description,
 		IssuerId:    issuerId,
-		TargetId:    targetId,
-		TargetRole:  targetRole,
+	}
+}
+func CreateUsersNotificationsRequest(notificationId int, targetRole models.UserRole, targetsIds ...int) *UsersNotificationRequest {
+	return &UsersNotificationRequest{
+		NotificationId: notificationId,
+		TargetRole:     targetRole,
+		TargetsIds:     targetsIds,
 	}
 }
 
