@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
-import { useDispatch } from 'react-redux'
 import { updateUser } from '../slices/userSlice'
-import { AppDispatch } from '../slices/store'
+import { useAppDispatch } from '../slices/store'
+
+import { SERVER_ADDR } from '../configs'
 
 const useSignOut = () => {
-    const dispatch = useDispatch<AppDispatch>()
+    const dispatch = useAppDispatch()
 
     const [isSigningOut, setIsSigningOut] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -14,23 +15,19 @@ const useSignOut = () => {
         setIsSigningOut(true)
 
         try {
-            const response = await fetch("http://localhost:8000/api/auth/", {
+            const response = await fetch(`${SERVER_ADDR}/api/auth/`, {
                 credentials: "include"
             })
-            
+
             if (response.ok) {
                 dispatch(updateUser(null))
             } else {
                 const res = await response.json()
                 setError(res.Error)
             }
-
         } catch {
             setError("Falha ao requisitar deslogamento do usuário")
-        } finally {
-            setIsSigningOut(false)
         }
-    
     }
 
     return { signout, isSigningOut, error } 

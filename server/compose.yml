@@ -8,21 +8,13 @@ services:
     networks:
       - internal
     env_file:
+      - "./secrets/app.env"
       - "./secrets/api.env"
       - "./secrets/client.env"
       - "./secrets/postgres.env"
       - "./secrets/server.env"
-
-  server:
-    build:
-      dockerfile: ./internal/server/Dockerfile
-      context: .
-    env_file:
-      - "./secrets/client.env"
     ports:
-      - "3334:80"
-    depends_on:
-      - api
+      - "8080:80"
 
   api:
     build: 
@@ -32,6 +24,7 @@ services:
       - "./secrets/client.env"
       - "./secrets/postgres.env"
       - "./secrets/api.env"
+      - "./secrets/app.env"
     ports:
       - "8000:80"
     depends_on:

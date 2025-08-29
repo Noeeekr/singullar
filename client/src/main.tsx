@@ -11,49 +11,17 @@ import { lightTheme } from "./themes";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import PgAuthentication from "./pages/auth/Auth";
-import {
-  PgInstitutionSelection as PgInstitutionSelection,
-  LoaderInstitutionSelection,
-  PgMyClasses,
-  PgClassesCreate,
-  PgStudentsSearch,
-  PgStudentsCreate,
-} from "./pages/admin";
 
 import Layout from "./components/Layout";
 import Root from "./components/DefaultRoot";
 import ProtectedRoutes from "@components/ProtectedRoutes";
 
-// This and route provider component might become App.tsx file
-// so I can put redux store and things like that there.
-/*const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Routes>
-      <Route path="/" element={<ProtectedRoutes />}>
-        <Route path="auth" element={<PgAuthentication />} />
-        <Route path="home" element={<Layout />}>
-          <Route index element={<div>Home root page</div>} />
-          <Route path="*" element={<div>Not found specific home</div>} />
-        </Route>
-        <Route path="teacher" element={<Root />}>
-          <Route index element={<div>Index page teach</div>} />
-        </Route>
-        <Route path="supervisor" element={<div>Layout</div>}>
-          <Route index element={<Root />} />
-        </Route>
-        <Route path="admin" element={<Layout />}>
-          <Route index element={<Root />} />
-          <Route path="search" element={<PgInstitutionSelection />} loader={InstitutionSelectionLoader} />
-          <Route path="classes/create" element={<PgCreate />} />
-          <Route path="classes/:id" element={<PgClasses />} />
-          <Route path="*" element={<div>Not index page adm</div>} />
-        </Route>
-        <Route path="*" element={<div>Not found general page</div>} />
-      </Route>
-    </Routes>
-  )
-)
-  */
+import { lazy, Suspense } from "react";
+
+const PgStudentsSearch = lazy(() => import("./pages/admin/students/Search")) 
+const PgStudentsCreate = lazy(() => import("./pages/admin/students/pages/Create")) 
+const PgMyClasses = lazy(() => import("./pages/admin/classes/pages/Create")) 
+const PgClassesCreate = lazy(() => import("./pages/admin/classes/pages/MyClasses")) 
 
 const r2 = createBrowserRouter([
   {
@@ -108,24 +76,19 @@ const r2 = createBrowserRouter([
               },
               {
                 path: "students",
-                element: <PgStudentsSearch />,
+                element: <Suspense fallback={<div>Loading...</div>}><PgStudentsSearch /></Suspense>,
               },
               {
                 path: "students/create",
-                element: <PgStudentsCreate />,
-              },
-              {
-                path: "classes/search",
-                element: <PgInstitutionSelection nextUrl="/admin/classes"/>,
-                loader: LoaderInstitutionSelection,
+                element: <Suspense fallback={<div>Loading...</div>}><PgStudentsCreate /></Suspense>,
               },
               {
                 path: "classes/create",
-                element: <PgClassesCreate />,
+                element: <Suspense fallback={<div>Loading...</div>}><PgClassesCreate /></Suspense>,
               },
               {
                 path: "classes",
-                element: <PgMyClasses />,
+                element: <Suspense fallback={<div>Loading...</div>}><PgMyClasses /></Suspense>,
               },
               {
                 path: "*",

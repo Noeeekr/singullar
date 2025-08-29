@@ -1,7 +1,5 @@
 package connections
 
-var Development ConnectionEnvironment = "development"
-
 type PostgresDevelopmentConnection struct {
 	HOST     string `env:"POSTGRES_HOST,required"`
 	USER     string `env:"SINGULLAR_TEST_USER,required"`

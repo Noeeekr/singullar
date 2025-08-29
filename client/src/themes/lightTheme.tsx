@@ -72,7 +72,7 @@ const lightPaletteTheme = createTheme({
             whiteMedium: 'rgb(150,150,150)',
             whiteSemiMedium: 'rgb(150,150,150)',
             whiteSemiHigh: 'rgb(185,185,185)',
-            whiteHigh: 'rgb(240,240,240)',
+            whiteHigh: 'rgba(241, 241, 241)',
 
             contrast: 'rgb(255, 102, 0)',
         },

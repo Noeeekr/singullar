@@ -8,6 +8,7 @@ import (
 type Environment struct {
 	JwtSecret string `env:"API_JWT_SECRET,required"`
 
+	Domain         string `env:"API_DOMAIN"`
 	Port           string `env:"API_PORT,required"`
 	AllowedOrigins string `env:"API_ALLOWED_ORIGINS,required"`
 
@@ -23,4 +24,13 @@ type SignInRequest struct { // FOR JSON
 type AuthClaims struct {
 	User models.Users
 	jwt.RegisteredClaims
+}
+
+type ServerResponse map[string]any
+
+func NewServerResponse(data any, err string) *ServerResponse {
+	return &ServerResponse{
+		"data":  data,
+		"error": err,
+	}
 }

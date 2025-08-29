@@ -7,36 +7,51 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 )
 
-// Package seeder
+func CreateInstitutionRequest(amount int) []*models.CreateInstitutions {
+	data := []*models.CreateInstitutions{}
+	for range amount {
+		data = append(
+			data,
+			&models.CreateInstitutions{
+				Name:     common.GenerateRandomStrings(10),
+				Email:    common.GenerateRandomStrings(10),
+				Password: common.GenerateRandomStrings(10),
+			},
+		)
+	}
+	return data
+}
 func CreateUserRequests(amount, institutionId int) []*models.CreateUsers {
 	users := make([]*models.CreateUsers, amount)
 
 	for i := range amount {
 		password := common.GenerateRandomStrings(10)
-		role := models.Student
+		role := models.STUDENT
 		luckyNumber := rand.N(50)
 		if luckyNumber > 45 {
-			role = models.Supervisor
+			role = models.SUPERVISOR
 		}
 		if luckyNumber <= 10 {
-			role = models.Teacher
+			role = models.TEACHER
 		}
+		segment := models.EF1
 		users[i] = models.CreateUser(
 			common.GenerateRandomStrings(10),
 			common.GenerateRandomStrings(10),
 			password,
 			institutionId,
 			role,
+			&segment,
 		)
 	}
 
 	return users
 }
 
-func CreateNotificationRequests(amount, issuerId int) []*models.CreateNotifications {
-	notifications := make([]*models.CreateNotifications, amount)
+func CreateNotificationContentRequests(amount, issuerId int) []*models.CreateNotificationContents {
+	notifications := make([]*models.CreateNotificationContents, amount)
 	for i := range amount {
-		notifications[i] = &models.CreateNotifications{
+		notifications[i] = &models.CreateNotificationContents{
 			Title:       common.GenerateRandomStrings(10),
 			Description: common.GenerateRandomStrings(10),
 			IssuerId:    issuerId,
@@ -45,13 +60,12 @@ func CreateNotificationRequests(amount, issuerId int) []*models.CreateNotificati
 	return notifications
 }
 
-func CreatedNotificationUserRequest(notificationId int, userRole models.UserRole, usersIds ...int) []*models.CreateUsersNotifications {
+func CreateUsersNotificationsRequests(userRole models.UserRole, usersIds ...int) []*models.CreateUsersNotifications {
 	usersNotifications := make([]*models.CreateUsersNotifications, len(usersIds))
 	for i, id := range usersIds {
 		usersNotifications[i] = &models.CreateUsersNotifications{
-			UserRole:       userRole,
-			NotificationId: notificationId,
-			UserId:         id,
+			UserRole: userRole,
+			UserId:   id,
 		}
 	}
 	return usersNotifications

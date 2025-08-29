@@ -57,12 +57,12 @@ const CreateStudent = (): JSX.Element => {
   const students = watch("students");
 
   const onSubmit: SubmitHandler<INewbornStudent> = (data) => {
-    let stds = getValues().students;
-    let emailsInUse = getValues().emailsInUse;
+    const stds = getValues().students;
+    const emailsInUse = getValues().emailsInUse;
 
     if (stds[data.name.trim()]) {
       // Get older email to remove it from emails already in use
-      let oldEmail = stds[data.name.trim()];
+      const oldEmail = stds[data.name.trim()];
 
       emailsInUse[oldEmail] = false;
     } else if (emailsInUse[data.email]) {

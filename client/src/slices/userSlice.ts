@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
-import { IUser } from '../types/server';
+import { User } from '../types/server';
 import { UserState } from '../types/data'
 
 const initialState: UserState = {
@@ -13,7 +13,7 @@ const userSlice = createSlice({
     name: "user",
     initialState: initialState,
     reducers: {
-        updateUser: (state, action: PayloadAction<IUser | null>) => {
+        updateUser: (state, action: PayloadAction<User | null>) => {
             state.user = action.payload
         },
         incrementUrlVisitedCount: (state, action: PayloadAction<string>) => {

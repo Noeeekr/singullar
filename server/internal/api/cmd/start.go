@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/common/environment"
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server"
+	"github.com/Noeeekr/singullar/server/internal/api/server/handlers"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
-	"github.com/Noeeekr/singullar/server/internal/database/connections"
+	"github.com/Noeeekr/singullar/server/internal/database/models"
+	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/gin-gonic/gin"
 
 	"github.com/Noeeekr/singullar/server/internal/database/cmd/migrate"
@@ -27,18 +31,13 @@ var startCmd *cobra.Command = &cobra.Command{
 		}
 
 		mode, _ := cmd.Flags().GetString("mode")
-		mode, err := environment.SetIfNotEmpty("API_ENVIRONMENT", mode)
-		if err != nil {
-			logs.Info.Fatal(err.Error())
-			return
-		}
+		mode = environment.OverrideEmpty("API_ENVIRONMENT", mode)
 
 		port, _ := cmd.Flags().GetString("port")
-		port, err = environment.SetIfNotEmpty("API_PORT", port)
-		if err != nil {
-			logs.Info.Fatal(err.Error())
-			return
-		}
+		port = environment.OverrideEmpty("API_PORT", port)
+
+		domain, _ := cmd.Flags().GetString("domain")
+		domain = environment.OverrideEmpty("API_DOMAIN", domain)
 
 		// Execute migrations if enable-migrations is present
 		shouldMigrate, _ := cmd.Flags().GetBool("enable-migrations")
@@ -53,12 +52,12 @@ var startCmd *cobra.Command = &cobra.Command{
 				flags = append(flags, "--recreate-existing")
 			}
 			if res := Migrate(mode, flags...); res != nil {
-				logs.Info.Fatal(res.ParseToString())
+				logs.Info.Fatal(res.String())
 			}
 		}
 
-		if res := StartApi(port, mode); res != nil {
-			logs.Info.Fatal(res.ParseToString())
+		if err := StartApi(domain, port, mode); err != nil {
+			logs.Info.Fatal(err.Error())
 		}
 	},
 }
@@ -73,45 +72,38 @@ func init() {
 	startCmd.Flags().Bool("ignore-existing", false, "Doesn't throw errors and proceed if the database relation already exists.")
 	startCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
 
-	startCmd.Flags().String("port", "80", "Defines the port the server will listen to.")
 	startCmd.Flags().String("mode", "development", "The environment to migrate on. Defaults to development.")
+	startCmd.Flags().String("port", "80", "Defines the port the server will listen to.")
+	startCmd.Flags().String("domain", "", "Defines the server host portion of the URI")
 
 	startCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "The path to the files containing the required environment variables.")
 }
 
-func StartApi(port, mode string) *common.Response {
-	databaseEnvironmentName := connections.ConnectionEnvironment(mode)
-	connection, res := connections.ScanEnvironmentForConnection(databaseEnvironmentName)
-	if res != nil {
-		return res
-	}
-	db, res := connections.ConnectWithEnvironment(databaseEnvironmentName)
-	if res != nil {
-		return res
+func StartApi(domain, port, mode string) error {
+	commiter, err := borm.Connect(models.EnvironmentDatabase)
+	if err != nil {
+		return err
 	}
 
 	var env types.Environment
-	if res := environment.Scan(&env); res != nil {
-		return res
+	if err := environment.Scan(&env); err != nil {
+		return err.ParseToError()
 	}
 
-	router, err := server.PrepareRouter(db, &env)
+	router, err := server.PrepareRouter(handlers.New(operations.New(commiter), &env), &env)
 	if err != nil {
-		return common.NewResponse().
-			WithDescription(err.Error()).
-			WithStatus(common.StatusInternalError)
+		return err
 	}
 
-	server := server.New(router, ":"+port).
+	addr := fmt.Sprintf("%s:%s", domain, port)
+	server := server.New(router, addr).
 		WithErrLogger(logs.Error)
 
-	logs.Info.Println("Using database: " + connection.Database())
-	logs.Info.Printf("Server is running on http://localhost:%s", port)
-	err = server.ListenAndServe()
-
-	return common.NewResponse().
-		WithDescription(err.Error()).
-		WithStatus(common.StatusInternalError)
+	logs.Info.Printf("Mode: %s", mode)
+	logs.Info.Printf("Domain: %s", domain)
+	logs.Info.Printf("Database: %s", commiter.Name)
+	logs.Info.Printf("Address: %s\n", addr)
+	return server.ListenAndServe()
 }
 
 func Migrate(mode string, flags ...string) *common.Response {

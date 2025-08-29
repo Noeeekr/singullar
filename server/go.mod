@@ -1,8 +1,6 @@
 module github.com/Noeeekr/singullar/server
 
-go 1.23
-
-toolchain go1.23.1
+go 1.24.3
 
 require (
 	github.com/caarlos0/env v3.5.0+incompatible
@@ -20,6 +18,7 @@ require (
 )
 
 require (
+	github.com/Noeeekr/borm v0.0.0-20250822171322-acc2032def4c
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect

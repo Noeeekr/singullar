@@ -1,15 +1,18 @@
 import { useState } from 'react'
 
-import { IDefaultRequest } from '../types/server'
+import { DefaultResponse } from '../types/server'
 
 import { updateUser } from '../slices/userSlice'
 import { AppDispatch } from '../slices/store'
 import { useDispatch } from 'react-redux'
 
+import { SERVER_ADDR } from '../configs'
+import type { User } from '../types/server'
+
 const useSignIn = (): {
     signin: typeof signin, 
     isLoading: boolean, 
-    signinError: string |null
+    signinError: string | null
 } => {
     const [signinError, setSigninError] = useState<null | string>(null)
     const [isLoading, setIsLoading] = useState(false);
@@ -19,9 +22,9 @@ const useSignIn = (): {
     const signin = async (email: string, password: string) => {
         setIsLoading(true)
         setSigninError(null)
-        
+
         try {
-            const response = await fetch("http://localhost:8000/api/auth/",{
+            const response = await fetch(`${SERVER_ADDR}/api/auth/`,{
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -31,7 +34,7 @@ const useSignIn = (): {
                 })
             })
 
-            const res: IDefaultRequest = await response.json()
+            const res: DefaultResponse<User> = await response.json()
 
             if (response.ok) {
                 dispatch(updateUser(res.data))

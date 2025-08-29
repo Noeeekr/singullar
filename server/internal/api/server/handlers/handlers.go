@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
@@ -87,26 +89,29 @@ func (h *Handlers) Authenticate(ctx *gin.Context) {
 }
 */
 
-func (h *Handlers) checkUserPassword(email string, password string) (*models.Users, *common.Response) {
-	user, res := h.operations.SelectUserByEmail(email)
-	if res != nil {
-		return nil, res
+// Errors
+//
+//	borm.ErrNotFound
+//	bcrypt.ErrMismatchedPasswords
+func (h *Handlers) checkUserPassword(email string, password string) (*models.Users, common.ResponseStatus, error) {
+	user, err := h.operations.SelectUserByEmail(email)
+	if err != nil {
+		if errors.Is(err, borm.ErrNotFound) {
+			return nil, common.StatusNotFound, err
+		}
+		return nil, common.StatusInternalError, err
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return nil, common.NewResponse().
-				WithDescription(err.Error()).
-				WithStatus(common.StatusNotEqual)
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return nil, common.StatusNotEqual, err
 		}
-		return nil, common.NewResponse().
-			WithDescription("Failed to validate users").
-			WithStatus(common.StatusFailedTransaction)
+		return nil, common.StatusInternalError, err
 	}
 
 	user.Password = ""
-	return user, nil
+	return user, common.StatusEmpty, nil
 }
 
 // SingInHandler gets a SignInRequest, check the user email and password agaisnt database.
@@ -118,21 +123,22 @@ func (h *Handlers) SignIn(ctx *gin.Context) {
 		return
 	}
 
-	user, res := h.checkUserPassword(request.Email, request.Password)
-	if res != nil {
-		switch res.Status {
+	user, status, err := h.checkUserPassword(request.Email, request.Password)
+	if err != nil {
+		switch status {
+		default:
+			h.internalError(ctx, "Falha ao checar se o usuario existe. ", err)
+			return
 		case common.StatusNotFound:
 			h.clientError(ctx, "Usuario não existe")
 			return
 		case common.StatusNotEqual:
-			h.internalError(ctx, "Senha incorreta.", res.ParseToError())
-			return
-		default:
-			h.internalError(ctx, "Falha ao checar se o usuario existe. ", res.ParseToError())
+			h.internalError(ctx, "Senha incorreta.", err)
 			return
 		}
 	}
 
+	fmt.Println(status, err)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, types.AuthClaims{
 		User: *user,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -146,20 +152,12 @@ func (h *Handlers) SignIn(ctx *gin.Context) {
 		h.internalError(ctx, " Falha ao validar o usuario. ", err)
 	}
 
-	h.LogInfo.Println("_____________________")
-	h.LogInfo.Println(ctx.Request.RemoteAddr)
-	h.LogInfo.Println(ctx.Request.URL.Host)
-	h.LogInfo.Println(ctx.Request.URL.Hostname())
-	h.LogInfo.Println(ctx.Request.URL.Path)
-	h.LogInfo.Println(ctx.Request.URL.RawPath)
-	h.LogInfo.Println(ctx.Request.URL.String())
-	h.LogInfo.Println(ctx.Request.RequestURI)
 	ctx.SetCookie(
 		"auth",
 		stringifiedToken,
 		3600,
 		"/",
-		ctx.Request.URL.Host,
+		h.Environment.Domain,
 		false, // SHOULD BE TRUE IN HTTPS
 		true,
 	)
@@ -176,7 +174,7 @@ func (h *Handlers) SignOut(ctx *gin.Context) {
 		"",
 		-1,
 		"/",
-		h.AllowedOrigins,
+		h.Environment.Domain,
 		false,
 		true,
 	)
@@ -196,33 +194,27 @@ func (h *Handlers) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	_, res := h.operations.SelectUserByEmail(request.Email)
-	if res.Status != common.StatusNotFound {
-		if res != nil {
-			h.internalError(ctx, "Falha ao checar se o email já está em uso.", res.ParseToError())
+	_, err := h.operations.SelectUserByEmail(request.Email)
+	if errors.Is(err, borm.ErrNotFound) {
+		if err != nil {
+			h.internalError(ctx, "Falha ao checar se o email já está em uso.", err)
 			return
 		}
 		h.clientError(ctx, "O e-mail já está em uso.")
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), 10)
-	if err != nil {
-		h.internalError(ctx, "Falha ao gerar o usuario.", err)
-		return
-	}
-
 	userRequest := &models.CreateUsers{
 		Name:          request.Name,
 		Email:         request.Email,
-		Password:      string(hashedPassword),
+		Password:      request.Password,
 		Role:          request.Role,
 		InstitutionId: user.InstitutionId,
 	}
 
-	users, res := h.operations.InsertManyUsers(nil, userRequest)
-	if res != nil {
-		h.internalError(ctx, "Falha ao criar o usuario.", res.ParseToError())
+	users, err := h.operations.InsertManyUsers(nil, userRequest)
+	if err != nil {
+		h.internalError(ctx, "Falha ao criar o usuario.", err)
 		return
 	}
 
@@ -245,12 +237,12 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 		return
 	}
 
-	institution, res := h.operations.SelectInstitutionById(user.InstitutionId)
-	if res.Status == common.StatusNotFound {
+	institution, err := h.operations.SelectInstitutionById(user.InstitutionId)
+	if errors.Is(err, borm.ErrNotFound) {
 		h.clientError(ctx, "Nenhuma instituição encontrada")
 		return
-	} else if res != nil {
-		h.internalError(ctx, "Falha ao buscar as instituições", res.ParseToError())
+	} else if err != nil {
+		h.internalError(ctx, "Falha ao buscar as instituições", err)
 		return
 	}
 
@@ -261,33 +253,22 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 }
 
 func (h *Handlers) GetUsersByInstitutionId(ctx *gin.Context) {
-	var request SelectByInstitutionRequest
+	var request models.ID
 	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
 		return
 	}
 
-	users, tx := h.operations.SelectUsersByInstitutionId(request.InstitutionId)
-	if tx.Response.Status == common.StatusNotFound {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"data":  nil,
-			"error": "Nenhum usuário encontrado.",
-		})
-		return
-	} else if tx.Response != nil {
-		h.internalError(ctx, "Falha ao procurar usuários", tx.Response.ParseToError())
+	users, err := h.operations.SelectUsersByInstitutionId(request.Id)
+	if err != nil {
+		h.internalError(ctx, "Falha ao procurar usuários", err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"data":  users,
-		"error": nil,
-	})
-}
+	fmt.Println("dip", len(users))
+	for _, user := range users {
+		user.Password = ""
+	}
+	fmt.Println(len(users))
 
-/*
-	Refactor the whole cookie logic
-	The cookie store the institution of the user so I can use it later to check certain data
-	Create a cookie package that
-		-> stores cookie names for fast use with no name mismatch
-		-> handle basic cookie shit like auth and validations
-*/
+	ctx.JSON(http.StatusOK, types.NewServerResponse(users, ""))
+}

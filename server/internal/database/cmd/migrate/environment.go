@@ -1,12 +1,10 @@
 package migrate
 
 import (
-	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common/environment"
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/connections"
-	"github.com/Noeeekr/singullar/server/internal/database/migrations"
-	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/spf13/cobra"
 )
 
@@ -18,43 +16,70 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
 		if ignoreExisting {
+			borm.Settings().Migrations().IgnoreExisting()
 			logs.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
 		}
 
 		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
 		if recreateExisting {
+			borm.Settings().Migrations().RecreateExisting()
 			logs.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
 		}
 
 		path, _ := cmd.Flags().GetStringArray("environmentFiles")
 		if err := environment.Parse(path...); err != nil {
-			logs.Error.Fatal("[Invalid environment file]: ", err.ParseToString())
+			logs.Error.Fatal("[Invalid environment file]: ", err.String())
 		}
 
-		// PARSE POSTGRES CONNECTION REQUIRED FOR MIGRATION FROM ENVIRONMENT
-		pgConn, res := connections.ScanEnvironmentForConnection(connections.Postgres)
+		if args[0] == "production" {
+			environment.Settings().SetApplicationMode(environment.PRODUCTION)
+		} else {
+			environment.Settings().SetApplicationMode(environment.DEVELOPMENT)
+		}
+
+		// Get connection information
+		postgresConnection, res := connections.ScanEnvironmentForConnection(connections.POSTGRES)
 		if res != nil {
-			logs.Error.Fatal(res.ParseToString())
+			logs.Error.Fatal(res.String())
 		}
 
-		db, res := connections.Connect(connections.ParseConnectionString(pgConn))
+		environmentConnection, res := connections.ScanEnvironmentForConnection(environment.Settings().ApplicationMode())
 		if res != nil {
-			logs.Error.Fatal(res.ParseToString())
+			logs.Error.Fatal(res.String())
 		}
-		defer db.Close()
 
-		utils := Utils{migrations: migrations.New(db)}
+		// Register databases
+		postgresUser := borm.RegisterUser(postgresConnection.User(), postgresConnection.Password())
+		postgresDatabase := borm.RegisterDatabase(postgresConnection.Database(), postgresConnection.Host(), postgresUser)
 
-		res = utils.MigrateEnvironment(
-			connections.ConnectionEnvironment(args[0]),
-			&migrations.Configuration{
-				IgnoreExisting:   ignoreExisting,
-				RecreateExisting: recreateExisting,
-			},
-		)
-		if res != nil {
-			logs.Error.Fatal(res.ParseToString())
+		database, err := borm.Connect(postgresDatabase)
+		if err != nil {
+			logs.Error.Fatal(err)
 		}
+		if err := database.DB().Ping(); err != nil {
+			logs.Error.Fatal("Failed to ping database:", err.Error())
+		}
+		defer database.DB().Close()
+
+		environmentUser := borm.RegisterUser(environmentConnection.User(), environmentConnection.Password())
+		environmentDatabase := borm.RegisterDatabase(environmentConnection.Database(), environmentConnection.Host(), environmentUser)
+
+		borm.Settings().Migrations().Enable()
+
+		err = database.MigrateUsers(environmentUser)
+		if err != nil {
+			logs.Error.Fatal(err)
+		}
+
+		createdDatabase, err := database.MigrateDatabase(environmentDatabase)
+		if err != nil {
+			logs.Error.Fatal(err)
+		}
+		if err := createdDatabase.DB().Ping(); err != nil {
+			logs.Error.Fatal("Failed to ping database:", err.Error())
+		}
+		defer createdDatabase.DB().Close()
+
 		logs.Info.Println("[Environment migrated successfully]")
 	},
 }
@@ -65,47 +90,4 @@ func init() {
 	// Not implemented
 	EnvironmentCmd.Flags().BoolP("recreate-existing", "r", false, "Drop and recreate the relation if already exists.")
 	EnvironmentCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
-}
-
-func (u *Utils) MigrateEnvironment(environment connections.ConnectionEnvironment, configuration *migrations.Configuration) *common.Response {
-	// PARSE DESIRED ENVIRONMENT SETTINGS FROM ENVIRONMENT
-	conn, res := connections.ScanEnvironmentForConnection(connections.ConnectionEnvironment(environment))
-	if res != nil {
-		return res
-	}
-
-	var databaseUsers []*models.CreateDatabaseUser = make([]*models.CreateDatabaseUser, 1)
-	databaseUsers[0] = models.NewDatabaseUser(conn.User(), conn.Password(), conn.Database())
-	if res := u.migrations.CreateDatabaseUsers(databaseUsers, configuration); res != nil {
-		return res
-	}
-
-	// CREATE DESIRED ENVIRONMENT ON POSTGRES
-	res = u.migrations.CreateDatabase(
-		&migrations.RequestCreateDatabase{User: conn.User(), Database: conn.Database()},
-		configuration,
-	)
-	if res != nil {
-		logs.Error.Println(res.ParseToString())
-		return u.migrations.DropDatabaseUsers(conn.User())
-	}
-
-	res = u.migrations.GrantAllPrivilegesOnDatabase(
-		[]*models.CreateDatabaseUser{
-			{Name: conn.User(), Password: conn.Password(), Database: conn.Database()},
-		},
-	)
-	if res != nil {
-		res = u.migrations.DropDatabases(conn.Database())
-		if res != nil {
-			return res
-		}
-
-		res = u.migrations.DropDatabaseUsers(conn.User())
-		if res != nil {
-			return res
-		}
-		return res
-	}
-	return nil
 }

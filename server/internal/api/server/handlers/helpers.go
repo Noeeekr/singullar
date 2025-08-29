@@ -12,7 +12,10 @@ import (
 // It accepts a main "errType" and insert the error object inside it to be parsed into JSON for frontend.
 // It also accepts an err for debug porpuses.
 func (h *Handlers) internalError(ctx *gin.Context, message string, err error) {
-	trace := fmt.Sprintf("%s : %s\n", message, err.Error())
+	trace := fmt.Sprintf("%s : ", message)
+	if err != nil {
+		trace += err.Error() + "\n"
+	}
 
 	h.LogErr.Output(2, trace)
 
@@ -33,6 +36,7 @@ func (h *Handlers) clientError(ctx *gin.Context, message string) {
 // Handles the client message and returns true if error happens is in incorrect format.
 func (h *Handlers) BadJsonRequest(ctx *gin.Context, err error) bool {
 	if err != nil {
+		h.LogErr.Println(err.Error())
 		h.clientError(ctx, "Dados em formato incorreto")
 		return true
 	}

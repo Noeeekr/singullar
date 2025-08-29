@@ -1,7 +1,10 @@
 # Todo list (In order)
 
+### Important
+* Create a type *ServiceName*Application that starts the application and gets the necessary values (for example Mode) 
 * Implement tools to check test coverage.
 
+### Objective specific
 * Database
     * `DONE` Cobra command line interface.
     * `DONE` `UPGRADABLE` Implement local containers for testing. 

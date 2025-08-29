@@ -2,303 +2,308 @@
 package operations
 
 import (
-	"database/sql"
+	"errors"
+	"sort"
+	"strings"
 	"time"
 
-	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/scan"
-	"github.com/Noeeekr/singullar/server/internal/database/transactions"
+	"golang.org/x/crypto/bcrypt"
 )
 
+// Operations organizes and separates database operation logic. For asyncronous implementations a new instance of Operations must be created for each goroutine.
 type Operations struct {
-	*transactions.Manager
+	currentTransction *borm.Transaction
+	*borm.Commiter
 }
 
-// Returns an instance of Operations. Operations contains methods that to make the most used transactions instantly.
-func New(db *sql.DB) *Operations {
+// Returns an instance of Operations. It is recommended to check [type Operations] for further instructions on how to use it.
+func New(commiter *borm.Commiter) *Operations {
 	return &Operations{
-		Manager: transactions.NewManager(db),
+		currentTransction: nil,
+		Commiter:          commiter,
 	}
 }
 
-func (ops *Operations) SelectNotificationsByTargetId(id int) (*[]*models.DetailedNotifications, *common.Response) {
-	transaction := ops.Start()
-
-	var notifications []*models.DetailedNotifications
-	transaction.Query(models.NotificationsTable.Requests.SelectByTargetId.
-		WithArgs(id).
-		WithRowsScanner(scan.DetailedNotifications(&notifications)),
-	)
-
-	return &notifications, transaction.Response
+// StartTransaction starts a new transaction that lasts until the next CommitTransaction()
+func (ops *Operations) StartTransaction() error {
+	tx, err := ops.Commiter.StartTx()
+	ops.currentTransction = tx
+	return err
 }
-func (ops *Operations) SelectUserByEmail(email string) (user *models.Users, res *common.Response) {
+
+// Commits any ongoing transaction
+func (ops *Operations) CommitTransaction() error {
+	return ops.currentTransction.Commit()
+}
+
+func (ops *Operations) SelectNotificationsByTargetId(id int) (*[]*models.Notifications, error) {
+	var notifications []*models.Notifications
+	err := ops.Commiter.Do(models.TableNotificationContents.
+		Select("n.created_at", "n.updated_at", "n.deleted_at", "u.id", "u.name", "n.id", "n.title", "n.description").As("n").
+		InnerJoin(models.TableUsersNotifications, "un").On("un.notification_id", "n.id").
+		InnerJoin(models.TableUsers, "u").On("u.id", "un.user_id").
+		Where("u.id", id).Scanner(scan.Notifications(&notifications)),
+	)
+	return &notifications, err
+}
+
+// Returns ErrNotFound, ErrSyntax, ErrFailedTransaction
+func (ops *Operations) SelectUserByEmail(email string) (*models.Users, error) {
+	var users []*models.Users
+	err := ops.Commiter.Do(
+		models.TableUsers.
+			Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
+			Where("u.email", email).
+			Scanner(scan.Users(&users)),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return users[0], nil
+}
+
+func (ops *Operations) SelectUserById(id int) (*models.Users, error) {
 	var users []*models.Users
 
-	res = ops.Query(
-		models.UsersTable.Requests.SelectOneByEmail.
-			WithArgs(email).
-			WithRowsScanner(scan.Users(&users)),
+	err := ops.Do(
+		models.TableUsers.
+			Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
+			Where("u.id", id).
+			Scanner(scan.Users(&users)),
 	)
-	if res != nil {
-		return user, res
-	}
-
-	if len(users) > 1 {
-		return nil, common.NewResponse().
-			WithDescription("Unexpected return").
-			WithStatus(common.StatusInvalidResponse)
-	}
-	if len(users) == 0 {
-		return nil, common.NewResponse().
-			WithDescription("Not found").
-			WithStatus(common.StatusNotFound)
+	if err != nil {
+		return nil, err
 	}
 
 	return users[0], nil
 }
-func (ops *Operations) SelectUserById(id int) (user *models.Users, res *common.Response) {
-	var users []*models.Users
 
-	res = ops.Query(
-		models.UsersTable.Requests.SelectOneById.
-			WithArgs(id).
-			WithRowsScanner(scan.Users(&users)),
-	)
-	if res != nil {
-		return user, res
-	}
-	if len(users) > 1 {
-		return user, common.NewResponse().
-			WithDescription("Unexpected return").
-			WithStatus(common.StatusInvalidResponse)
-	}
-	if len(users) == 0 {
-		return user, common.NewResponse().
-			WithDescription("Not found").
-			WithStatus(common.StatusNotFound)
-	}
-
-	return users[0], nil
-}
-func (ops *Operations) SelectUsersByInstitutionId(id int) ([]*models.Users, *transactions.Transaction) {
-	tx := transactions.NewTransaction(nil)
-	tx.Response = common.NewResponse().
-		WithStatus(common.StatusUnregisteredMethod).
-		WithDescription("Not implemented")
-	return nil, tx
-}
-func (ops *Operations) SelectInstitutionByName(name string) (inst *models.Institutions, res *common.Response) {
+func (ops *Operations) SelectInstitutionByName(name string) (*models.Institutions, error) {
 	var insts []*models.Institutions
-
-	res = ops.Query(
-		models.InstitutionsTable.Requests.SelectOneByName.
-			WithArgs(name).
-			WithRowsScanner(scan.Institutions(&insts)),
+	err := ops.Do(
+		models.TableInstitutions.
+			Select("i.created_at", "i.updated_at", "i.deleted_at", "i.name", "i.id").As("i").
+			Where("name", name).
+			Scanner(scan.Institutions(&insts)),
 	)
-	if res != nil {
-		return inst, res
+	if err != nil {
+		return nil, err
 	}
-
-	if len(insts) > 1 {
-		return inst, common.NewResponse().
-			WithDescription("Unexpected return").
-			WithStatus(common.StatusInvalidResponse)
-	}
-	if len(insts) == 0 {
-		return inst, common.NewResponse().
-			WithDescription("Not found").
-			WithStatus(common.StatusNotFound)
-	}
-
 	return insts[0], nil
 }
-func (ops *Operations) SelectInstitutionById(id int) (inst *models.Institutions, res *common.Response) {
+func (ops *Operations) SelectInstitutionById(id int) (*models.Institutions, error) {
 	var insts []*models.Institutions = []*models.Institutions{}
-	res = ops.Query(
-		models.InstitutionsTable.Requests.SelectOneById.
-			WithArgs(id).
-			WithRowsScanner(scan.Institutions(&insts)),
+	err := ops.Do(
+		models.TableInstitutions.
+			Select("i.created_at", "i.updated_at", "i.deleted_at", "i.name", "i.id").As("i").
+			Where("id", id).
+			Scanner(scan.Institutions(&insts)),
 	)
-
-	if res != nil {
-		return nil, res
-	}
-	if len(insts) != 1 {
-		return nil, common.NewResponse().
-			WithDescription("Unexpected return").
-			WithStatus(common.StatusInvalidResponse)
+	if err != nil {
+		return nil, err
 	}
 	return insts[0], nil
 }
-func (ops *Operations) InsertManyUsers(requests ...*models.CreateUsers) ([]*models.Users, *common.Response) {
-	transaction := ops.Start()
-	if transaction.Response != nil {
-		return nil, transaction.Response
-	}
 
+// Returns an empty array if no users were found. Hashed Password is returned and must be removed
+func (ops *Operations) SelectUsersByInstitutionId(id int) ([]*models.Users, error) {
+	users := []*models.Users{}
+	err := ops.Do(models.TableUsers.
+		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
+		InnerJoin(models.TableInstitutions, "i").On("i.id", "u.institution_id").
+		Scanner(scan.Users(&users)),
+	)
+	if err != nil && !errors.Is(err, borm.ErrNotFound) {
+		return nil, err
+	}
+	return users, nil
+}
+
+// Hash the password
+func (ops *Operations) InsertManyUsers(requests ...*models.CreateUsers) ([]*models.Users, error) {
 	var args []any = []any{}
 	for _, request := range requests {
-		args = append(args, time.Now(), time.Now(), request.Name, request.Email, request.Password, request.InstitutionId, request.Role)
+		password, err := bcrypt.GenerateFromPassword([]byte(request.Password), 10)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, time.Now(), time.Now(), request.Name, request.Email, string(password), request.InstitutionId, request.Role, request.Segment)
 	}
 
+	// InsertMany: transactions.NewRequest(fmt.Sprintf(`
+	// 		INSERT INTO %s (created_at, updated_at, name, email, password, institution_id, role, segment)
+	// 		VALUES %s
+	// 		RETURNING created_at, updated_at, deleted_at, name, email, password, institution_id, role, id, profile_picture, segment;
+	// 	`, usersTableName, placeholder)).AllowValueRepeat(placeholder, 8),
 	var users []*models.Users
-	transaction = transaction.Query(models.UsersTable.Requests.InsertMany.
-		WithArgs(args...).
-		WithRowsScanner(scan.Users(&users)),
+	err := ops.currentTransction.Do(models.TableUsers.
+		Insert("created_at", "updated_at", "name", "email", "password", "institution_id", "role", "segment").
+		Values(args...).
+		Returning("created_at", "updated_at", "deleted_at", "name", "email", "password", "institution_id", "role", "id", "profile_picture", "segment").
+		Scanner(scan.Users(&users)),
 	)
-	return users, transaction.Response
-}
-func (ops *Operations) InsertInstitutions(requests ...*InstitutionRequest) ([]*models.Users, *common.Response) {
-	transaction := ops.Start()
-	if transaction.Response != nil {
-		return nil, transaction.Response
+	if err != nil {
+		return nil, err
 	}
+	return users, nil
+}
 
+// Creates the institutions and returns the administrator users
+func (ops *Operations) InsertInstitutions(requests ...*models.CreateInstitutions) ([]*models.Users, error) {
 	var args []any
 	for _, request := range requests {
 		args = append(args, time.Now(), time.Now(), request.Name)
 	}
 
 	var ids []int
-	transaction.Query(models.InstitutionsTable.Requests.InsertMany.
-		WithArgs(args...).
-		WithRowsScanner(scan.InstitutionsIds(&ids)),
+	err := ops.currentTransction.Do(models.TableInstitutions.
+		Insert("created_at", "updated_at", "name").
+		Values(args...).
+		Returning("id").
+		Scanner(scan.InstitutionsIds(&ids)),
 	)
-	if transaction.Response != nil {
-		return nil, transaction.Response
+	if err != nil {
+		return nil, err
 	}
 
-	args = []any{}
-	for _, request := range requests {
-		args = append(args, time.Now(), time.Now(), "Administrator", request.Email, request.Password, ids[0], models.Admin)
+	createUserRequests := make([]*models.CreateUsers, len(requests))
+	for i, request := range requests {
+		createUserRequests[i] = models.CreateUser("Administrator", request.Email, request.Password, ids[0], models.ADMIN, nil)
 	}
 
-	var users []*models.Users
-	transaction.Query(models.UsersTable.Requests.InsertMany.
-		WithArgs(args...).
-		WithRowsScanner(scan.Users(&users)),
+	return ops.InsertManyUsers(createUserRequests...)
+}
+
+// Requests are ordered ascending by issuerId and then title
+func (ops *Operations) InsertNotifications(requests ...*NotificationRequest) ([]*models.NotificationContents, error) {
+	sort.Slice(requests, func(i, j int) bool {
+		leftIssuerID := requests[i].Content.IssuerId
+		rightIssuerID := requests[j].Content.IssuerId
+
+		// Sort by the smallest ID
+		if leftIssuerID < rightIssuerID {
+			return true
+		}
+		if leftIssuerID > rightIssuerID {
+			return false
+		}
+
+		// Sort by the smallest title if they have the same ID
+		result := strings.Compare(requests[j].Content.Title, requests[i].Content.Title)
+		if result >= 0 {
+			return false
+		}
+		return true
+	})
+
+	creationTime := time.Now()
+
+	var notificationContentArgs []any = make([]any, len(requests)*5)
+	for i, request := range requests {
+		offset := 5 * i
+		notificationContentArgs[offset] = creationTime
+		notificationContentArgs[offset+1] = creationTime
+		notificationContentArgs[offset+2] = request.Content.Title
+		notificationContentArgs[offset+3] = request.Content.Description
+		notificationContentArgs[offset+4] = request.Content.IssuerId
+	}
+
+	// Returns the notification in the same order that the requests are sorted
+	var notifications []*models.NotificationContents
+	err := ops.currentTransction.Do(
+		models.TableNotificationContents.
+			Insert("created_at", "updated_at", "title", "description", "issuer_id").
+			Values(notificationContentArgs...).
+			Returning("created_at", "updated_at", "deleted_at", "id", "issuer_id", "title", "description").
+			Scanner(scan.NotificationContents(&notifications)),
 	)
-	return users, transaction.Response
-}
-func (ops *Operations) InsertNotifications(requests ...*models.CreateNotifications) ([]*models.Notifications, *common.Response) {
-	transaction := ops.Start()
-	if transaction.Response != nil {
-		return nil, transaction.Response
+	if err != nil {
+		return nil, err
 	}
 
-	// Insert notification record
-	var args []any = []any{}
-	for _, request := range requests {
-		args = append(args, time.Now(), time.Now(), request.Title, request.Description, request.IssuerId)
-	}
+	sort.Slice(notifications, func(i, j int) bool {
+		if notifications[i].IssuerId < notifications[j].IssuerId {
+			return true
+		}
+		if notifications[i].IssuerId > notifications[j].IssuerId {
+			return false
+		}
+		result := strings.Compare(notifications[i].Title, notifications[j].Title)
+		if result >= 0 {
+			return false
+		}
+		return true
+	})
 
-	var notifications []*models.Notifications
-	transaction.Query(
-		models.NotificationsTable.Requests.InsertMany.
-			WithArgs(args...).
-			WithRowsScanner(scan.Notifications(&notifications)),
-	)
-	if transaction.Response != nil {
-		return notifications, transaction.Response
-	}
-	return notifications, transaction.Response
-}
-
-func (ops *Operations) InsertUsersNotifications(requests ...*models.CreateUsersNotifications) *common.Response {
-	transaction := ops.Start()
-	if transaction.Response != nil {
-		return transaction.Response
-	}
-	// Insert notification recievers
-	args := []any{}
-	for _, request := range requests {
-		args = append(args, request.UserId, request.UserRole, request.NotificationId)
-	}
-
-	transaction.Query(
-		models.UsersNotificationsTable.Requests.InsertMany.
-			WithArgs(args...),
-	)
-	return transaction.Response
-}
-func (ops *Operations) DeleteUserById(id int) (tx *transactions.Transaction) {
-	tx = ops.Start()
-	if tx.Response != nil {
-		return tx
-	}
-
-	tx.Response = tx.Query(models.UsersTable.Requests.DeleteOneById.WithArgs(id)).Response
-	if tx.Response != nil {
-		return tx
-	}
-
-	return tx
-}
-func (ops *Operations) DeleteUserByEmail(email string) (tx *transactions.Transaction) {
-	tx = ops.Start()
-	if tx.Response != nil {
-		return tx
-	}
-
-	tx.Response = tx.Query(
-		models.UsersTable.Requests.DeleteOneByEmail.
-			WithArgs(email),
-	).Response
-	if tx.Response != nil {
-		return tx
-	}
-
-	return tx
-}
-func (ops *Operations) DeleteInstitutionByName(transaction *transactions.Transaction, name string) (tx *transactions.Transaction) {
-	tx = ops.Start()
-	if tx.Response != nil {
-		return tx
-	}
-
-	tx.Response = tx.Query(
-		models.InstitutionsTable.Requests.DeleteOneByName.
-			WithArgs(name),
-	).Response
-	if tx.Response != nil {
-		return tx
-	}
-
-	return tx
-}
-func (ops *Operations) DeleteInstitutionById(transaction *transactions.Transaction, id int) (tx *transactions.Transaction) {
-	tx = ops.Start()
-	if tx.Response != nil {
-		return tx
-	}
-
-	tx.Response = tx.Query(
-		models.InstitutionsTable.Requests.DeleteOneById.
-			WithArgs(id),
-	).Response
-	if tx.Response != nil {
-		return tx
-	}
-
-	return tx
-}
-
-func (ops *Operations) DeleteNotificationsByIssuerId(ids ...int) *common.Response {
-	transaction := ops.Start()
-	if transaction.Response != nil {
-		return transaction.Response
-	}
-
-	for _, id := range ids {
-		transaction.Query(models.NotificationsTable.Requests.DeleteByIssuerId.
-			WithArgs(id),
-		)
-		if transaction.Response != nil {
-			return transaction.Response
+	userNotificationsArgs := []any{}
+	for i, request := range requests {
+		for _, user := range request.Users {
+			userNotificationsArgs = append(
+				userNotificationsArgs,
+				user.UserId,
+				user.UserRole,
+				notifications[i].Id,
+			)
 		}
 	}
 
+	err = ops.currentTransction.Do(
+		models.TableUsersNotifications.
+			Insert("user_id", "user_role", "notification_id").
+			Values(userNotificationsArgs...).
+			Returning("user_id", "user_role", "notification_id"),
+	)
+	return notifications, err
+}
+func (ops *Operations) DeleteUserById(id int) error {
+	err := ops.currentTransction.Do(
+		models.TableUsers.
+			Delete().
+			Where("id", id),
+	)
+	return err
+}
+func (ops *Operations) DeleteUserByEmail(email string) error {
+	err := ops.currentTransction.Do(
+		models.TableUsers.
+			Delete().
+			Where("email", email),
+	)
+	return err
+}
+func (ops *Operations) DeleteInstitutionByName(name string) error {
+	var ids []int
+	err := ops.currentTransction.Do(
+		models.TableInstitutions.
+			Delete().
+			Where("name", name).
+			Returning("id").
+			Scanner(scan.Integers(&ids)),
+	)
+
+	return err
+}
+func (ops *Operations) DeleteInstitutionById(id int) error {
+	err := ops.currentTransction.Do(
+		models.TableInstitutions.
+			Delete().
+			Where("id", id),
+	)
+	return err
+}
+
+func (ops *Operations) DeleteNotificationsByIssuerId(ids ...int) error {
+	for _, id := range ids {
+		err := ops.currentTransction.Do(models.TableNotificationContents.
+			Delete().
+			Where("id", id),
+		)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

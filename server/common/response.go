@@ -34,7 +34,7 @@ func NewResponse() *Response {
 		Description: "Empty response.",
 	}
 }
-func (r *Response) ParseToString() string {
+func (r *Response) String() string {
 	return fmt.Sprintf("[%s]: %s", r.Status, r.Description)
 }
 func (r *Response) ParseToError() error {

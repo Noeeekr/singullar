@@ -9,31 +9,28 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func ScanEnvironmentForConnection(connectionEnvironment ConnectionEnvironment) (connection Connection, res *common.Response) {
+func ScanEnvironmentForConnection(connectionEnvironment environment.EnvironmentMode) (connection Connection, res *common.Response) {
 	switch connectionEnvironment {
-	case Production:
+	case environment.PRODUCTION:
 		production := &PostgresProductionConnection{}
 		res = environment.Scan(production)
 		connection = production
-	case Development:
+	case environment.DEVELOPMENT:
 		development := &PostgresDevelopmentConnection{}
 		res = environment.Scan(development)
 		connection = development
-	case Postgres:
+	case POSTGRES:
+		// This is a special case for the Postgres connection, which is not tied to a specific environment.
 		postgres := &PostgresConnection{}
 		res = environment.Scan(postgres)
 		connection = postgres
 	default:
-		return nil, common.NewResponse().
+		return &PostgresDevelopmentConnection{}, common.NewResponse().
 			WithStatus(common.StatusNotFound).
 			WithDescription("Environment not defined: " + string(connectionEnvironment))
 	}
 
-	if res != nil {
-		return nil, res
-	}
-
-	return connection, nil
+	return connection, res
 }
 
 func ParseConnectionString(connection Connection) string {
@@ -51,7 +48,7 @@ func NewConnectionString(user, password, host, database string) string {
 
 // Scans the environment variables, uses them to parse the connection string to connect to Postgres.
 // Check the package for more info about the required environment variables.
-func ConnectWithEnvironment(environment ConnectionEnvironment) (db *sql.DB, err *common.Response) {
+func ConnectWithEnvironment(environment environment.EnvironmentMode) (db *sql.DB, err *common.Response) {
 	connection, err := ScanEnvironmentForConnection(environment)
 	if err != nil {
 		return nil, err

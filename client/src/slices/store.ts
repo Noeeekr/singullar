@@ -20,11 +20,11 @@ const persistConfig = {
 // REDUCERS
 
 import userReducer from "./userSlice";
-import institutionsReducer from "./institutionsSlice";
+import institutionReducer from "./institutionsSlice";
 
 const reducers = combineReducers({
     user: userReducer,
-    institutions: institutionsReducer,
+    institution: institutionReducer,
 });
 
 const persistedReducers = persistReducer(persistConfig, reducers);

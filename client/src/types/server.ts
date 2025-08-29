@@ -1,8 +1,24 @@
-export interface IUser {
-    "id": number
-    "created_at": Date,
-    "updated_at": Date,
-    "deleted_at": Date | null,
+// Server Response Objects
+export interface DefaultResponse<ResponseData> {
+    data: ResponseData,
+    error: string,
+}
+
+// Default models 
+type ID = number
+export interface IDField {
+    "id": ID
+}
+export interface DefaultFields extends IDField {
+    created_at: Date,
+    deleted_at: Date | null,
+    updated_at: Date,
+}
+
+export interface Institution extends DefaultFields {
+    name: string,
+}
+export interface User extends DefaultFields {
     "email": string,
     "role": IUserRoles,
     "name": string,
@@ -12,17 +28,3 @@ export interface IUser {
 
 export type IUserRoles = "admin" | "student" | "teacher" | "supervisor";
 
-export interface IDefaultRequest {
-    data: null | IUser,
-    error: null | string,
-}
-
-export interface IInstitutions {
-    id: number,
-    
-    name: string,
-    
-    created_at: Date,
-    deleted_at: Date | null,
-    updated_at: Date,
-}

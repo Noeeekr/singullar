@@ -16,6 +16,7 @@ const UserProfile = (props: IUserProfileProps): JSX.Element => {
 
     const { structure } = props;
 
+    console.log(user)
     return (
         <Stack 
             direction={structure === "center" ? 'column' : 'row'}

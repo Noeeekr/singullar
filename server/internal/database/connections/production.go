@@ -1,7 +1,5 @@
 package connections
 
-var Production ConnectionEnvironment = "production"
-
 type PostgresProductionConnection struct {
 	HOST     string `env:"POSTGRES_HOST,required"`
 	USER     string `env:"SINGULLAR_USER,required"`

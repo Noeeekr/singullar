@@ -1,29 +1,28 @@
 package server
 
 import (
-	"database/sql"
 	"strings"
 
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server/handlers"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
-	"github.com/Noeeekr/singullar/server/internal/database/operations"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func PrepareRouter(db *sql.DB, env *types.Environment) (*gin.Engine, error) {
-	handlers := handlers.New(operations.New(db), env)
-
+func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.Engine, error) {
 	middlewares := RouterMiddlewares{
 		Environment: env,
 	}
 
 	r := gin.Default()
+	if env.Environment != "production" {
+		gin.SetMode(gin.DebugMode)
+	}
 
-	logs.Info.Println("Allowing access origin: ", strings.ReplaceAll(env.AllowedOrigins, ",", " "))
+	logs.Info.Printf("Allowed Origins:\n\t%s", strings.ReplaceAll(env.AllowedOrigins, ",", "\n\t"))
 	// User auth session and store for authentication
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     strings.Split(env.AllowedOrigins, ","),
@@ -42,11 +41,11 @@ func PrepareRouter(db *sql.DB, env *types.Environment) (*gin.Engine, error) {
 	// r.GET("/api/user/auth", handlers.Authenticate) // For users and institutions
 
 	// SELECT
-	r.GET("/api/institution/", middlewares.Authenticate(models.Student, models.Admin, models.Teacher, models.Supervisor), handlers.GetInstitution)
-	r.GET("/api/user/", middlewares.Authenticate(models.Admin, models.Supervisor), handlers.GetUsersByInstitutionId)
+	r.GET("/api/institution/", middlewares.Authenticate(models.STUDENT, models.ADMIN, models.TEACHER, models.SUPERVISOR), handlers.GetInstitution)
 
 	// CREATE
-	r.POST("/api/user/create/", middlewares.Authenticate(models.Admin, models.Supervisor), handlers.CreateUser) // Institution admin creates users
+	r.POST("/api/user/create/", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateUser) // Institution admin creates users
+	r.POST("/api/institution/users", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetUsersByInstitutionId)
 
 	// r.POST("/api/class/create", middlewares.Authenticate, handlers.CreateClass)
 

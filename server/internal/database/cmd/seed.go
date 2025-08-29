@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common/environment"
-	"github.com/Noeeekr/singullar/server/internal/database/connections"
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/Noeeekr/singullar/server/internal/database/seeder"
@@ -12,97 +11,119 @@ import (
 )
 
 var seedCmd *cobra.Command = &cobra.Command{
-	Use:   "seed [ -f ENVIRONMENT_FILES... ] [ -n QUANTITY ] [ -i ID ] { production | development }",
-	Args:  cobra.MinimumNArgs(1),
-	Short: "Seeds all tables with objects related to a specific institution defined by the id flag..",
+	Use:   "seed [ -f ENVIRONMENT_FILES... ] [ -e EMAIL ] [ -p PASSWORD ]",
+	Short: "Creates and seeds a single institution with the given name into the development environment",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		quantity, _ := cmd.Flags().GetInt("quantity")
-		institutionId, _ := cmd.Flags().GetInt("id")
-		mode := args[0]
+		environment.
+			Settings().
+			SetApplicationMode(environment.DEVELOPMENT)
+		borm.
+			Settings().
+			Migrations().
+			Enable().RecreateExisting().UndoOnError()
+
+		psswd, _ := cmd.Flags().GetString("password")
+		email, _ := cmd.Flags().GetString("email")
 
 		files, _ := cmd.Flags().GetStringArray("environmentFiles")
-		if res := environment.Parse(files...); res != nil {
-			fmt.Println(res.ParseToString())
-			return
+		if err := environment.Parse(files...); err != nil {
+			logs.Error.Fatal(err.String())
 		}
 
-		db, res := connections.ConnectWithEnvironment(connections.ConnectionEnvironment(mode))
-		if res != nil {
-			fmt.Println(res.ParseToString())
-			return
+		if err := seedInstitution(email, psswd); err != nil {
+			logs.Error.Fatal(err)
 		}
-		defer db.Close()
-
-		// To make everything in a single transaction
-		ops := operations.New(db)
-
-		createdUsers := seeder.CreateUserRequests(quantity, institutionId)
-		users, res := ops.InsertManyUsers(createdUsers...)
-		if res != nil {
-			fmt.Println(res.ParseToString())
-			return
-		}
-
-		var teachers []*models.Users
-		for _, user := range users {
-			if user.Role == models.Teacher {
-				teachers = append(teachers, user)
-			}
-		}
-		var students []*models.Users
-		for _, user := range users {
-			if user.Role == models.Student {
-				students = append(students, user)
-			}
-		}
-
-		var notifications []*models.Notifications
-		for _, teacher := range teachers {
-			notificationsRequests := seeder.CreateNotificationRequests(10, teacher.Id)
-			_, res := ops.InsertNotifications(notificationsRequests...)
-			if res != nil {
-				fmt.Println(res.ParseToString())
-				return
-			}
-		}
-
-		var students_ids []int = make([]int, len(students))
-		for i, student := range students {
-			students_ids[i] = student.Id
-		}
-
-		for _, notification := range notifications {
-			notificationUsersRequests := seeder.CreatedNotificationUserRequest(notification.Id, models.Student, students_ids...)
-			res = ops.InsertUsersNotifications(notificationUsersRequests...)
-			if res != nil {
-				fmt.Println(res.ParseToString())
-				return
-			}
-		}
-
-		res = ops.Commit()
-		if res != nil {
-			fmt.Println(res.ParseToString())
-			return
-		}
-		// Create users
-		//   -> If teacher
-		//       -> Create more ten users
-		//			-> Create notifications for them
-		//	 -> If student nothing
-		//
-		//
+		logs.Info.Println("[Finished seeding]")
 	},
 }
 
+func seedInstitution(email, password string) error {
+	institutionRequest := seeder.CreateInstitutionRequest(1)[0]
+	institutionRequest.Name = "SeededInstitution"
+	institutionRequest.Email = email
+	institutionRequest.Password = password
+
+	commiter, err := borm.Connect(models.EnvironmentDatabase)
+	if err != nil {
+		return err
+	}
+
+	ops := operations.New(commiter)
+	if err := ops.StartTransaction(); err != nil {
+		return err
+	}
+
+	admin, err := InsertInstitution(ops, institutionRequest)
+	if err != nil {
+		logs.Error.Fatal(err)
+	}
+
+	teachers, studentIds, err := InsertUsers(ops, admin.InstitutionId)
+	if err != nil {
+		logs.Error.Fatal(err)
+	}
+
+	err = InsertNotifications(ops, teachers, studentIds)
+	if err != nil {
+		logs.Error.Fatal(err)
+	}
+	return ops.CommitTransaction()
+}
+func InsertInstitution(ops *operations.Operations, r *models.CreateInstitutions) (*models.Users, error) {
+	// Create institution
+	admins, err := ops.InsertInstitutions(r)
+	if err != nil {
+		return nil, err
+	}
+	return admins[0], nil
+}
+func InsertUsers(ops *operations.Operations, institutionId int) (teachers []*models.Users, studentIds []int, err error) {
+	// Create students, teachers and supervisors
+	createdUsers := seeder.CreateUserRequests(10, institutionId)
+
+	users, err := ops.InsertManyUsers(createdUsers...)
+	if err != nil {
+		return teachers, studentIds, err
+	}
+
+	for _, user := range users {
+		switch user.Role {
+		case models.TEACHER:
+			teachers = append(teachers, user)
+		case models.STUDENT:
+			studentIds = append(studentIds, user.Id)
+		}
+	}
+
+	return teachers, studentIds, err
+}
+func InsertNotifications(ops *operations.Operations, teachers []*models.Users, studentIds []int) error {
+	notificationRequests := []*operations.NotificationRequest{}
+	// Iterate over the teachers creations 10 notifications for each
+	for _, teacher := range teachers {
+		// Iterate over all notifications appending them to all users
+		notificationContentRequests := seeder.CreateNotificationContentRequests(10, teacher.Id)
+		for _, notificationContentRequest := range notificationContentRequests {
+			usersNotificationsRequests := seeder.CreateUsersNotificationsRequests(models.STUDENT, studentIds...)
+			notificationRequest := operations.CreateNotificationRequest(notificationContentRequest, usersNotificationsRequests)
+			notificationRequests = append(notificationRequests, notificationRequest)
+		}
+	}
+	_, err := ops.InsertNotifications(notificationRequests...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 func init() {
 	seedCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "Defines environment files to parse the required environment variables.")
 
-	seedCmd.Flags().IntP("quantity", "n", 50, "The amount of times to seed the table. Defaults to 50")
+	seedCmd.Flags().StringP("email", "e", "", "The email of the institution administrator to sign-in")
+	seedCmd.MarkFlagRequired("email")
 
-	seedCmd.Flags().IntP("id", "i", 0, "The id of the institution to seed")
-	seedCmd.MarkFlagRequired("id")
+	seedCmd.Flags().StringP("password", "p", "12345", "The password of the institution administrator to sign-in")
+	seedCmd.MarkFlagRequired("password")
 
 	rootCmd.AddCommand(seedCmd)
 }

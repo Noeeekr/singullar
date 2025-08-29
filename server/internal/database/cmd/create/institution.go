@@ -1,72 +1,75 @@
 package create
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common/environment"
-	"github.com/Noeeekr/singullar/server/internal/database/connections"
+	"github.com/Noeeekr/singullar/server/common/logs"
+	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var InstitutionCmd *cobra.Command = &cobra.Command{
-	Use:   "institution [ --email EMAIL ] [ --password PASSWORD ] [ -f ENVIRONMENT_FILES... ] { development | production }",
+	Use:   "institution --email [EMAIL] --password [PASSWORD] --name [NAME] [ -f ENVIRONMENT_FILES... ] { development | production }",
 	Short: "Create a institution and an administrator user",
 	Args:  cobra.MinimumNArgs(1),
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Required creation flags
+		// Required information for creating an institution
 		name, _ := cmd.Flags().GetString("name")
 		email, _ := cmd.Flags().GetString("email")
 		password, _ := cmd.Flags().GetString("password")
 
-		// Required connection flags
+		// Required configuration flags
+		if args[0] == "production" {
+			environment.Settings().SetApplicationMode(environment.PRODUCTION)
+		} else {
+			environment.Settings().SetApplicationMode(environment.DEVELOPMENT)
+		}
+
 		files, _ := cmd.Flags().GetStringArray("environmentFiles")
-		mode := args[0]
-
-		if res := environment.Parse(files...); res != nil {
-			fmt.Println(res.ParseToString())
-			return
-		}
-
-		db, res := connections.ConnectWithEnvironment(connections.ConnectionEnvironment(mode))
-		if res != nil {
-			fmt.Println(res.ParseToString())
-			return
-		}
-		defer db.Close()
-
-		err := db.Ping()
-		if err != nil {
-			fmt.Println(err.Error())
+		if err := environment.Parse(files...); err != nil {
+			logs.Error.Fatal(err)
 			return
 		}
 
 		// HASH PASSWORD
-		pwd, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-		if err != nil {
-			fmt.Println(err.Error())
+		psswd, err2 := bcrypt.GenerateFromPassword([]byte(password), 10)
+		if err2 != nil {
+			fmt.Println(err2.Error())
 			return
 		}
 
-		ops := operations.New(db)
+		commiter, err := borm.Connect(models.EnvironmentDatabase)
+		if err != nil {
+			logs.Error.Fatal(err)
+		}
+		ops := operations.New(commiter)
 
 		// CHECK IF USER EXISTS
-		if _, res := ops.SelectUserByEmail(email); res == nil {
+		if _, err := ops.SelectUserByEmail(email); err == nil {
 			fmt.Println("User with specified email already exists, please choose other.")
 			return
-		} else if res.Status != common.StatusNotFound {
-			fmt.Println(res.Description)
+		} else if !errors.Is(err, borm.ErrNotFound) {
+			logs.Error.Fatal(err)
 			return
 		}
 
 		// CREATE INSTITUTION
-		institution := operations.CreateInstitutionRequest(name, email, string(pwd))
-		users, res := ops.InsertInstitutions(institution)
-		if res != nil {
-			fmt.Println(res.ParseToString())
+		institution := operations.CreateInstitutionRequest(name, string(psswd), email)
+
+		err = ops.StartTransaction()
+		if err != nil {
+			logs.Error.Fatal(err)
+		}
+
+		users, err := ops.InsertInstitutions(institution)
+		if err != nil {
+			fmt.Println(err.Error())
 			return
 		} else {
 			for _, user := range users {
@@ -77,6 +80,12 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 				fmt.Println("Email: ", user.Email)
 				fmt.Println("Password: ", password)
 			}
+		}
+
+		err = ops.CommitTransaction()
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
 	},
 }

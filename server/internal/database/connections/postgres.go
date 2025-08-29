@@ -1,6 +1,8 @@
 package connections
 
-var Postgres ConnectionEnvironment = "postgres"
+import "github.com/Noeeekr/singullar/server/common/environment"
+
+var POSTGRES environment.EnvironmentMode = "postgres"
 
 type PostgresConnection struct {
 	HOST     string `env:"POSTGRES_HOST,required"`
