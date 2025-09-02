@@ -109,11 +109,21 @@ func (ops *Operations) SelectInstitutionById(id int) (*models.Institutions, erro
 }
 
 // Returns an empty array if no users were found. Hashed Password is returned and must be removed
-func (ops *Operations) SelectUsersByInstitutionId(id int) ([]*models.Users, error) {
+func (ops *Operations) SelectUsers(institutionId int, roles ...models.UserRole) ([]*models.Users, error) {
+	if len(roles) == 0 {
+		roles = []models.UserRole{models.STUDENT}
+	}
+
+	var targetRoles = make([]any, len(roles))
+	for i, role := range roles {
+		targetRoles[i] = role
+	}
+
 	users := []*models.Users{}
 	err := ops.Do(models.TableUsers.
 		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
 		InnerJoin(models.TableInstitutions, "i").On("i.id", "u.institution_id").
+		Where("u.institution_id", institutionId).Where("u.role", targetRoles...).
 		Scanner(scan.Users(&users)),
 	)
 	if err != nil && !errors.Is(err, borm.ErrNotFound) {

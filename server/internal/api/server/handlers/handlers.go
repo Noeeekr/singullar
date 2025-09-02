@@ -138,7 +138,6 @@ func (h *Handlers) SignIn(ctx *gin.Context) {
 		}
 	}
 
-	fmt.Println(status, err)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, types.AuthClaims{
 		User: *user,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -227,7 +226,7 @@ func (h *Handlers) CreateUser(ctx *gin.Context) {
 func (h *Handlers) GetInstitution(ctx *gin.Context) {
 	unsignedUser, ok := ctx.Get("user")
 	if !ok {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"data": nil, "error": "No authentication data  found for the user"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"data": nil, "error": "No authentication data found for the user"})
 		return
 	}
 
@@ -252,23 +251,32 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 	})
 }
 
-func (h *Handlers) GetUsersByInstitutionId(ctx *gin.Context) {
-	var request models.ID
+type GetUsersRequest struct {
+	TargetRoles []models.UserRole `json:"target_roles" binding:"required"`
+}
+
+func (h *Handlers) GetUsers(ctx *gin.Context) {
+	var request GetUsersRequest
 	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
 		return
 	}
 
-	users, err := h.operations.SelectUsersByInstitutionId(request.Id)
+	unsignedUser, ok := ctx.Get("user")
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, types.NewServerResponse(nil, "Usuário não autorizado"))
+		return
+	}
+	user := unsignedUser.(models.Users)
+
+	users, err := h.operations.SelectUsers(user.Id, request.TargetRoles...)
 	if err != nil {
 		h.internalError(ctx, "Falha ao procurar usuários", err)
 		return
 	}
 
-	fmt.Println("dip", len(users))
 	for _, user := range users {
 		user.Password = ""
 	}
-	fmt.Println(len(users))
 
 	ctx.JSON(http.StatusOK, types.NewServerResponse(users, ""))
 }

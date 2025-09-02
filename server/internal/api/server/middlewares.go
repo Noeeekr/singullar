@@ -67,7 +67,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 				true,
 			)
 
-			ctx.Set("User", claims.User)
+			ctx.Set("user", claims.User)
 			ctx.Next()
 		} else {
 			ctx.JSON(http.StatusUnauthorized, types.NewServerResponse("", "Falha ao authenticar o usuário"))
