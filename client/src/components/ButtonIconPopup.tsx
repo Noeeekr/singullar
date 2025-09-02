@@ -30,12 +30,11 @@ interface INavbarItemGroupProps {
     structure?: "side" | "bubble"
 }
 
-const PopupIconLabelBox = styled(({ children, isCorner, ...props }: { isCorner?: boolean, children: JSX.Element }) => (
+const PopupIconLabelBox = styled(({ children, ...props }: { isCorner?: boolean, children: JSX.Element }) => (
     <Box {...props}>{children}</Box>
-))<{ isCorner?: boolean }>(({ isCorner }) => ({
+))<{ isCorner?: boolean }>(() => ({
     position: "absolute",
     top: 55,
-    right: isCorner ? 0 : 'auto',
 
     display: "flex",
     alignItems: 'center',
@@ -56,7 +55,6 @@ const PopupIconLabelBox = styled(({ children, isCorner, ...props }: { isCorner?:
     '&:before': {
         position: 'absolute',
         top: '-12px',
-        right: isCorner ? '12px' : 'auto',
 
         width: '0px',
         height: '5px',
@@ -140,7 +138,7 @@ const SidePopupWithIcon = (props: INavbarItemGroupProps) => {
                 title={title}
                 popupIsOpen={isOpen}
                 hasNotifications={hasNotifications}
-                onClickCb={() => (onClickCb(id)) as MouseEventHandler<HTMLDivElement>}
+                onClickCb={() => (onClickCb(id))}
             >
                 {icon}
             </PopupIconButton>
@@ -163,7 +161,7 @@ const BubblePopupWithIcon = (props: INavbarItemGroupProps) => {
                 isCorner={isCorner}
 
                 sx={sx ? { ...sx } : {}}
-                onClickCb={() => (onClickCb(id)) as MouseEventHandler<HTMLDivElement>}
+                onClickCb={() => (onClickCb(id))}
             >
                 {icon}
             </PopupIconButton>

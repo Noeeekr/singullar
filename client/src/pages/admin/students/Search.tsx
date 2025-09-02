@@ -13,35 +13,33 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography"
 
 import { useEffect, useState } from "react";
-import useFetchUsersByInstitutionID from "@hooks/useFetchUsersByInstitutionID";
+import useFetchUsers from "@hooks/useFetchUsers";
 
-import { useAppSelector } from "@slices/store";
+import { ROLE_STUDENT, UserRoles } from "../../../types/server"
+
+const roles: UserRoles[] = [ROLE_STUDENT]
 
 const CreatePage = (): JSX.Element => {
     const [filterForm, setFilterForm] = useState<{
-        name: string | -1;
+        name: string;
         segment: number;
         id: number;
     }>({
-        name: -1,
-        segment: -1,
-        id: -1,
+        name: "",
+        segment: 0,
+        id: 0,
     });
 
-    const institution = useAppSelector(state => state.institution)
-    let institutionID: number = 0;
-    if (institution != null) {
-        institutionID = institution.id
-    }
-    const [users, isLoading, error, fetchUsers] = useFetchUsersByInstitutionID(institutionID)
+    const [users, isLoading, error, fetchUsers] = useFetchUsers(roles)
 
     useEffect(() => {
-        console.log("Child called from func")
         fetchUsers()
     }, [fetchUsers])
 
     return (
         <div>
+            { /* Action Buttons */}
+
             <SectionHeader title="Selecione um estudante">
                 <>
                     <Button sx={{ margin: "0 0 0 auto" }}>Filtrar</Button>
@@ -55,6 +53,9 @@ const CreatePage = (): JSX.Element => {
                     </ButtonLink>
                 </>
             </SectionHeader>
+
+            { /* Filter Student Form */}
+
             <Box display="flex" flexDirection="column" gap={3}>
                 <Stack direction="row" gap={2}>
                     <Grid container spacing={{ mobile: 0, xss: 4 }} sx={{ flex: 1 }}>
@@ -127,17 +128,44 @@ const CreatePage = (): JSX.Element => {
                         </Grid>
                     </Grid>
                 </Stack>
+
+                { /* Fetched Student List */}
+
                 <Grid container paddingY={2} spacing={2}>
                     {
-                        isLoading
+                        users.length == 0
                             ?
-                            <Box>
-                                <p>Um momento.. carregando usuários</p>
+                            <Box sx={{
+                                borderRadius: 2,
+                                padding: 2,
+                                margin: "auto",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 2,
+                                textAlign: "center",
+                            }}>
+                                {
+                                    isLoading ?
+                                        <Typography variant="subtitle1">
+                                            Um momento.. carregando usuários
+                                        </Typography>
+                                        : <></>
+                                }
+                                {
+                                    users.length == 0 ?
+                                        <>
+                                            <Typography variant="subtitle1">
+                                                Nenhum usuário encontrado
+                                            </Typography>
+                                            <Button onClick={() => { fetchUsers() }}>Recarregar</Button>
+                                        </>
+                                        : <></>
+                                }
                             </Box>
-                            : users.length == 0 && <p>Nenhum usuário encontrado</p>
+                            : <></>
                     }
                     {
-                        error != null && <p>{error}</p>
+                        error ? <p>{error}</p> : <></>
                     }
                     {
                         users.sort((usr1, usr2) => {

@@ -21,10 +21,10 @@ import {
 } from '@mui/material'
 
 // DATA
-import { admin_navbar_popup_data, AdminNavbarPopupId } from '../pages/admin/data'
-import { supervisor_navbar_popup_data, SupervisorNavbarPopupId } from '../pages/supervisor/data'
-import { teacher_navbar_popup_data, TeacherNavbarPopupId } from '../pages/teacher/data'
-import { students_navbar_popup_data, StudentNavbarPopupId } from '../pages/student/data'
+import { admin_navbar_popup_data } from '../pages/admin/data'
+import { supervisor_navbar_popup_data } from '../pages/supervisor/data'
+import { teacher_navbar_popup_data } from '../pages/teacher/data'
+import { students_navbar_popup_data } from '../pages/student/data'
 
 interface IAppNavBarProps {
     menuButtonCallback: () => void,
@@ -74,20 +74,13 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
         }
     }, [role])
 
-    type PopupKeys =
-        typeof role extends "student" ? StudentNavbarPopupId
-        : typeof role extends "admin" ? AdminNavbarPopupId
-        : typeof role extends "teacher" ? TeacherNavbarPopupId
-        : typeof role extends "supervisor" ? SupervisorNavbarPopupId
-        : string;
-
-    const [isOpen, setIsOpen] = useState<PopupKeys>("")
+    const [isOpen, setIsOpen] = useState<string>("")
 
     // could become a switch
     /**
     *   Closes other popups when opening a new one
     */
-    const toggleIsOpen = useCallback((key: PopupKeys) => {
+    const toggleIsOpen = useCallback((key: string) => {
         setIsOpen((isOpen) => key === isOpen ? "" : key)
     }, [])
 
@@ -104,9 +97,9 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                 left="0"
                 width="100vw"
                 sx={{
+                    overflowX: isMobile ? "hidden" : "initial",
                     height: showMenu && isMobile ? '100vh' : 'auto',
-                    overflowX: "hidden",
-                    overflowY: isMobile && showMenu ? 'scroll' : 'hidden',
+                    overflowY: isMobile && showMenu ? 'scroll' : 'visible',
                     backgroundColor: 'white',
                 }}
             >
@@ -118,8 +111,8 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                         gap={1}
                         height={55}
                         width="100%"
-                        position="fixed"
                         sx={{
+                            zIndex: 3,
                             backgroundColor: (theme) => theme.palette.primary.purpleLight
                         }}
                     >
@@ -166,7 +159,6 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                                                 {data.content}
                                             </NavbarItemPopup>
                                         )
-
                                     }
                                     return (
                                         <NavbarItemPopup
@@ -188,7 +180,7 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
 
                     { /* Mobile */}
 
-                    <Box>
+                    <Box sx={{ zIndex: 1 }}>
                         {
                             isMobile && showMenu && (
                                 children.map((child) => {

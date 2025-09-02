@@ -10,7 +10,7 @@ import { styled } from '@mui/material';
 // Types
 import type { BoxProps } from '@mui/material/Box';
 
-const CircularButton = styled(({ children, onClickCb, ...props }: BoxProps & { onClickCb: Function }) => <>
+const CircularButton = styled(({ children, onClickCb, ...props }: BoxProps & { onClickCb: () => void }) => <>
     {
         children 
         ? <Box {...props} onClick={() => { onClickCb() }}>
@@ -37,7 +37,7 @@ const CircularButton = styled(({ children, onClickCb, ...props }: BoxProps & { o
         backgroundColor: 'rgba(235,235,235)',
     },
     transition: 'border 130ms linear, background 130ms linear',
-    
+
     flexShrink: '0',
 
     cursor: 'pointer',

@@ -20,11 +20,15 @@ export interface Institution extends DefaultFields {
 }
 export interface User extends DefaultFields {
     "email": string,
-    "role": IUserRoles,
+    "role": UserRoles,
     "name": string,
     "profile_picture": string,
     "institution_id"?: number,
 }
 
-export type IUserRoles = "admin" | "student" | "teacher" | "supervisor";
+export const ROLE_ADMIN = "admin"
+export const ROLE_STUDENT = "student"
+export const ROLE_TEACHER = "teacher"
+export const ROLE_SUPERVISOR = "supervisor"
+export type UserRoles = typeof ROLE_ADMIN | typeof ROLE_STUDENT | typeof ROLE_TEACHER | typeof ROLE_SUPERVISOR;
 

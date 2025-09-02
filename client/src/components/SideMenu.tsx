@@ -7,17 +7,15 @@ import {
 } from 'react'
 
 // Types
-
 import type { BoxProps } from '@mui/material'
-// components
 
+// Components
 import { Stack } from '@mui/material'
 import Divider from './Divider'
 import MenuItems from './SideMenuButtons'
 import SectionTitle from './SectionTitle'
 
-// data 
-
+// Data 
 import { admin_sidemenu_data } from '../pages/admin/data'
 import { supervisor_sidemenu_data } from '../pages/supervisor/data'
 import { teacher_sidemenu_data } from '../pages/teacher/data'
@@ -68,6 +66,30 @@ const SideMenu = (
                 return []
         }
     }, [user?.role])
+
+/*
+    *Memoize???
+    
+    const roles = useAppSelector(() => user.roles)
+
+    const TeacherOnlyMenus = lazy(...)
+    const StudentOnlyMenus = lazy(...)
+
+    // All the components that should be loaded
+    const LinkButtonArray = []
+
+    for role in roles {
+        switch(role) {
+        case Student:
+            LinkButtonArray.append(a, b, c, d, e, f, g, h)
+        case Teacher:
+            LinkButtonArray.append(a, b, e, f, i, j, k)
+        ...
+        }
+    }
+
+    return LinkButtonArray
+*/
 
     return (
         <SideMenuLayout isOpen={isOpen} isMobile={isMobile}>
