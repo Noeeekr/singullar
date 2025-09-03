@@ -1,4 +1,4 @@
-import { IUserRoles } from './types/server';
+import { UserRoles } from './types/server';
 
 const studentRoutes = [
     "/home"
@@ -20,7 +20,7 @@ const supervisorRoutes = [
 */
 
 type Routes = {
-    role: IUserRoles | null
+    role: UserRoles | null
     routes: string[]
 }
 

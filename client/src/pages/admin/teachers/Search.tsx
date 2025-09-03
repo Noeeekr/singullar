@@ -1,8 +1,6 @@
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import SectionHeader from "@components/SectionHeader";
 import SectionTitle from "@components/SectionTitle";
 import Grid from "@mui/material/Grid2";
@@ -12,56 +10,50 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography"
 
+import { useForm, type SubmitHandler } from "react-hook-form"
 import { useCallback, useEffect, useState } from "react";
 import useFetchUsers from "@hooks/useFetchUsers";
 
-import { EF1, EF2, EM, ROLE_STUDENT, User, UserRoles } from "../../../types/server"
+import { ROLE_TEACHER, UserRoles } from "../../../types/server"
 import ErrorBubble from "@components/ErrorBubble";
-import { SubmitHandler, useForm } from "react-hook-form";
 
-const roles: UserRoles[] = [ROLE_STUDENT]
+const roles: UserRoles[] = [ROLE_TEACHER]
 
-type Inputs = Pick<User, "segment" | "name" | "id">
+type Inputs = {
+    name: string | null;
+    id: number | null;
+}
 
 const CreatePage = (): JSX.Element => {
     const { register, handleSubmit, getValues } = useForm<Inputs>({
         defaultValues: {
-            name: "",
-            segment: null,
-            id: 0,
+            name: null,
+            id: null,
         }
     });
-    console.log("A")
+
     const [users, isLoading, error, fetchUsers] = useFetchUsers(roles)
     const [filteredUsers, setFilteredUsers] = useState(users)
-
-    const filter: SubmitHandler<Inputs> = useCallback((form) => {
-        setFilteredUsers(users.filter((user) => {   
-            if (form.name && user.name.search(form.name)) {
-                console.log(form.name, user.name)
-                return false
-            }
-            if (form.id && user.id != form.id) {
-                console.log(form.id, user.id)
-                return false
-            }
-            if (form.segment && user.segment != form.segment) {
-                console.log(form.segment, user.segment)
-                return false
-            }
-            return true
-        }))
-    },[users]) 
 
     useEffect(() => {
         fetchUsers()
     }, [fetchUsers])
 
+    const filter: SubmitHandler<Inputs> = useCallback((form) => {
+        setFilteredUsers(users.filter((user) => {   
+            if (form.name && user.name.search(form.name)) {
+                return false
+            }
+            if (form.id && user.id != form.id) {
+                return false
+            }
+            return true
+        }))
+    },[users])
+
     useEffect(() => {
         filter(getValues())
     }, [filter, getValues])
-
-
     return (
         <div>
             { /* Action Buttons */}
@@ -75,7 +67,7 @@ const CreatePage = (): JSX.Element => {
                         title="doesnt-matter"
                         href="/admin/students/create"
                     >
-                        Criar estudante
+                        Criar professor
                     </ButtonLink>
                 </>
             </SectionHeader>
@@ -85,7 +77,7 @@ const CreatePage = (): JSX.Element => {
             <Box display="flex" flexDirection="column" gap={3}>
                 <Stack direction="row" gap={2}>
                     <Grid container spacing={{ mobile: 0, xss: 4 }} sx={{ flex: 1 }}>
-                        <Grid size={{ mobile: 12, xss: 4 }}>
+                        <Grid size={{ mobile: 12, xss: 5 }}>
                             <SectionTitle
                                 sx={{
                                     margin: "30px 0px 10px 0px",
@@ -94,41 +86,17 @@ const CreatePage = (): JSX.Element => {
                                 Filtrar por nome
                             </SectionTitle>
                             <FormControl>
-                                <InputLabel htmlFor="student-search-filter-name-input">
-                                    Digite o nome do estudante
+                                <InputLabel htmlFor="teacher-search-filter-name-input">
+                                    Digite o nome do professor
                                 </InputLabel>
                                 <OutlinedInput
-                                    label="digite-o-nome-do-estudante"
-                                    id="student-search-filter-name-input"
                                     {...register("name")}
+                                    label="digite-o-nome-do-professor"
+                                    id="teacher-search-filter-name-input"
                                 />
                             </FormControl>
                         </Grid>
-                        <Grid size={{ mobile: 12, xss: 4 }}>
-                            <SectionTitle
-                                sx={{
-                                    margin: "30px 0px 10px 0px",
-                                }}
-                            >
-                                Filtrar por segmento
-                            </SectionTitle>
-                            <FormControl>
-                                <InputLabel id="segment">
-                                    Digite o segmento do estudante
-                                </InputLabel>
-                                <Select
-                                    labelId="student-search-filter-segment-label"
-                                    label="digite-o-segmento-do-estudante"
-                                    {...register("segment")}
-                                >
-                                    <MenuItem value={""}>Escolha uma opção</MenuItem>
-                                    <MenuItem value={EF1}>Ensino Fundamental 1</MenuItem>
-                                    <MenuItem value={EF2}>Ensino Fundamental 2</MenuItem>
-                                    <MenuItem value={EM}>Ensino Médio</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid size={{ mobile: 12, xss: 4 }}>
+                        <Grid size={{ mobile: 12, xss: 5 }}>
                             <SectionTitle
                                 sx={{
                                     margin: "30px 0px 10px 0px",
@@ -137,16 +105,16 @@ const CreatePage = (): JSX.Element => {
                                 Filtrar por matricula/ID
                             </SectionTitle>
                             <FormControl>
-                                <InputLabel htmlFor="student-search-filter-id-input">
-                                    Digite o ID do estudante
+                                <InputLabel htmlFor="teacher-search-filter-id-input">
+                                    Digite o ID do professor
                                 </InputLabel>
                                 <OutlinedInput
                                     type="number"
-                                    label="digite-o-ID-do-estudante"
-                                    id="student-search-filter-id-input"
                                     {...register("id", {
                                         valueAsNumber: true,
                                     })}
+                                    label="digite-o-ID-do-professor"
+                                    id="teacher-search-filter-id-input"
                                 />
                             </FormControl>
                         </Grid>

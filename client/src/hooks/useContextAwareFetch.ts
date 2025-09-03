@@ -32,6 +32,7 @@ function useContextAwareFetch<ServerResponseDataType>(
 
     const fetchAndValidate = useCallback(async () => {
         setIsLoading(true)
+        setError("")
         try {
             const response = await fetch(input, init)
             if (response.status == 401) {

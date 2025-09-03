@@ -10,18 +10,17 @@ import { lightTheme } from "./themes";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import PgAuthentication from "./pages/auth/Auth";
-
-import Layout from "./components/Layout";
-import Root from "./components/DefaultRoot";
-import ProtectedRoutes from "@components/ProtectedRoutes";
-
 import { lazy, Suspense } from "react";
 
+const Layout = lazy(() => import("./components/Layout")) 
+const Root = lazy(() => import("./components/DefaultRoot")) 
+const ProtectedRoutes = lazy(() => import("./components/ProtectedRoutes"))
 const PgStudentsSearch = lazy(() => import("./pages/admin/students/Search")) 
 const PgStudentsCreate = lazy(() => import("./pages/admin/students/pages/Create")) 
 const PgMyClasses = lazy(() => import("./pages/admin/classes/pages/Create")) 
 const PgClassesCreate = lazy(() => import("./pages/admin/classes/pages/MyClasses")) 
+const PgTeachersSearch = lazy(() => import("./pages/admin/teachers/Search"))
+const PgAuthentication = lazy(() => import("./pages/auth/Auth"))
 
 const r2 = createBrowserRouter([
   {
@@ -91,6 +90,10 @@ const r2 = createBrowserRouter([
                 element: <Suspense fallback={<div>Loading...</div>}><PgMyClasses /></Suspense>,
               },
               {
+                path: "teachers/search",
+                element: <Suspense fallback={<div>Loading...</div>}><PgTeachersSearch /></Suspense>,
+              },
+              {
                 path: "*",
                 element: <div>Any path admin page</div>,
               },
@@ -117,7 +120,9 @@ createRoot(document.getElementById("root")!).render(
         <ThemeProvider theme={lightTheme}>
           <CssBaseline />
           <GlobalStyles styles={{ ul: { padding: 0, margin: 0 } }} />
-          <RouterProvider router={r2} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <RouterProvider router={r2} />
+          </Suspense>
         </ThemeProvider>
       </PersistGate>
     </Provider>

@@ -48,8 +48,8 @@ const parseFileData = (rawData: string) => {
     const rows = [...rawData.matchAll(rowDividerRegExp)];
 
     const data = []
-    for (let row of rows) {
-        let [
+    for (const row of rows) {
+        const [
             name,
             id,
             email,
@@ -203,7 +203,7 @@ const StudentTable = (): JSX.Element => {
     const [error, setError] = useState("");
     const [isOpen, setIsOpen] = useState(false);
 
-    const inst = useAppSelector(store => store.institutions)
+    const institution = useAppSelector(store => store.institution)
 
     // Send CSV file to server
     useEffect(() => {
@@ -222,7 +222,7 @@ const StudentTable = (): JSX.Element => {
             cache: 'no-cache',
             body: JSON.stringify({
                 students: data,
-                institutionId: inst.current?.id,
+                institutionId: institution?.id,
             })
 
         })
@@ -250,17 +250,17 @@ const StudentTable = (): JSX.Element => {
         .finally(() => {
             setIsFetching(false)
         })
-    },[JSON.stringify(data)]);
+    }, [data, institution?.id]);
 
     // Process the file
     const handleFileInput = async (e: ChangeEvent<HTMLInputElement>) => {
-        let files = e.target.files;
+        const files = e.target.files;
         
         if (!files) return;
 
-        let text = await files[0].text();
+        const text = await files[0].text();
 
-        let data = parseFileData(text);
+        const data = parseFileData(text);
 
         setData(data);
         // TODO: Turn file data into sheet

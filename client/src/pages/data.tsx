@@ -1,15 +1,19 @@
-import BorderIcon  from '@components/BorderIcon.tsx'
+import BorderIcon from '@components/BorderIcon.tsx'
 
-// Icons
-import { GrBook } from "react-icons/gr";
-import { FiPaperclip } from "react-icons/fi";
-import { LuPartyPopper } from "react-icons/lu";
-import { FaRegPenToSquare } from "react-icons/fa6";
-import { IoNewspaperOutline } from "react-icons/io5";
-import { BiMessageSquareDetail } from "react-icons/bi";
-import { AiOutlineQuestionCircle } from "react-icons/ai";
-import { IoMdHelpCircle, IoIosBarcode } from "react-icons/io";
-import { FaGithub, FaShareAlt, FaChalkboardTeacher } from "react-icons/fa";
+import { 
+    FaChalkboardTeacher,
+    FaGithub,   
+    LuPartyPopper,
+    FaShareAlt,
+    GrBook,
+    FaRegPenToSquare,
+    IoNewspaperOutline,
+    BiMessageSquareDetail,
+    AiOutlineQuestionCircle,
+    IoMdHelpCircle,
+    FiPaperclip,
+    IoIosBarcode,
+} from "./icons"
 
 // Types
 import type {
@@ -115,13 +119,13 @@ export const sidemenu_data_utilities: { title: string, items: ISideMenuLinkButto
             title: "Mensagens",
             type: "link",
             href: "/admin/students",
-            icon: <BiMessageSquareDetail/>,
+            icon: <BiMessageSquareDetail />,
         },
         {
             title: "Tutoriais",
             type: "link",
             href: "/admin/students",
-            icon: <IoMdHelpCircle/>,
+            icon: <IoMdHelpCircle />,
         },
         {
             title: "Dúvidas e materiais",

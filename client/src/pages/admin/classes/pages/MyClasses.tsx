@@ -13,13 +13,13 @@ import Button from '@components/ButtonSolid';
 import { useAppSelector } from '@slices/store';
 
 const PageClasses = (): JSX.Element => {
-    const insts = useAppSelector((store) => store.institutions)
+    const institution = useAppSelector((store) => store.institution)
 
     return (
         <div>
             <SectionHeader
                 title="Turmas"
-                subtitle={insts.institutions.find(i => i.id == insts.current?.id)?.name || "Nome desconhecido"}
+                subtitle={institution?.name || "Nome desconhecido"}
             >
                 <div style={{ margin: '0px 0px 0px auto' }}>
                     <LinkButton
