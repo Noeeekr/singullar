@@ -1,12 +1,12 @@
-// Icons
-import { LuScanFace } from "react-icons/lu";
-import { VscAccount } from "react-icons/vsc";
-import { BiDirections } from "react-icons/bi";
-import { MdOutlineNotificationsNone } from "react-icons/md";
-import { GoPerson, GoLock } from "react-icons/go";
-import { TbSmartHome,  TbSpeakerphone, TbGridDots } from "react-icons/tb";
-import { IoIosHelpCircleOutline, IoIosNotificationsOutline } from "react-icons/io";
-import { IoPeopleOutline, IoExitOutline, IoBarcodeOutline } from "react-icons/io5";
+// Icons;
+import { BiDirections } from 'react-icons/bi';
+import { LuScanFace } from 'react-icons/lu';
+import { MdOutlineNotificationsNone } from 'react-icons/md';
+import { IoExitOutline, IoPeopleOutline, IoBarcodeOutline } from 'react-icons/io5';
+import { GoPerson, GoLock } from 'react-icons/go';
+import { TbSmartHome, TbSpeakerphone, TbGridDots } from 'react-icons/tb';
+import { IoIosHelpCircleOutline, IoIosNotificationsOutline } from 'react-icons/io';
+import { VscAccount } from 'react-icons/vsc';
 
 // components;
 import NotificationPopupContent from '../../components/NotificationPopupContent'

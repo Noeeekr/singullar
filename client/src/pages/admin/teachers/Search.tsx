@@ -10,8 +10,8 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography"
 
-import { useForm, type SubmitHandler } from "react-hook-form"
-import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form"
+import { useEffect } from "react";
 import useFetchUsers from "@hooks/useFetchUsers";
 
 import { ROLE_TEACHER, UserRoles } from "../../../types/server"
@@ -25,42 +25,29 @@ type Inputs = {
 }
 
 const CreatePage = (): JSX.Element => {
-    const { register, handleSubmit, getValues } = useForm<Inputs>({
+    const { register, watch } = useForm<Inputs>({
         defaultValues: {
             name: null,
             id: null,
         }
     });
 
+    const name = watch("name")
+    const id = watch("id")
+
     const [users, isLoading, error, fetchUsers] = useFetchUsers(roles)
-    const [filteredUsers, setFilteredUsers] = useState(users)
 
     useEffect(() => {
         fetchUsers()
     }, [fetchUsers])
 
-    const filter: SubmitHandler<Inputs> = useCallback((form) => {
-        setFilteredUsers(users.filter((user) => {   
-            if (form.name && user.name.search(form.name)) {
-                return false
-            }
-            if (form.id && user.id != form.id) {
-                return false
-            }
-            return true
-        }))
-    },[users])
-
-    useEffect(() => {
-        filter(getValues())
-    }, [filter, getValues])
     return (
         <div>
             { /* Action Buttons */}
 
             <SectionHeader title="Selecione um estudante">
                 <>
-                    <Button sx={{ margin: "0 0 0 auto" }} onClick={handleSubmit(filter)}>Filtrar</Button>
+                    <Button sx={{ margin: "0 0 0 auto" }}>Filtrar</Button>
                     <ButtonLink
                         icon={<></>}
                         type="link"
@@ -125,7 +112,7 @@ const CreatePage = (): JSX.Element => {
 
                 <Grid container paddingY={2} spacing={2}>
                     {
-                        filteredUsers.length == 0
+                        users.length == 0
                             ?
                             <Box sx={{
                                 borderRadius: 2,
@@ -149,7 +136,7 @@ const CreatePage = (): JSX.Element => {
                                         : <></>
                                 }
                                 {
-                                    filteredUsers.length == 0 && !isLoading ?
+                                    users.length == 0 && !isLoading ?
                                         <>
                                             <Typography variant="subtitle1">
                                                 Nenhum usuário encontrado
@@ -162,7 +149,7 @@ const CreatePage = (): JSX.Element => {
                             : <></>
                     }
                     {
-                        filteredUsers.sort((usr1, usr2) => {
+                        users.sort((usr1, usr2) => {
                             const name1 = usr1.name.toLowerCase()
                             const name2 = usr2.name.toLowerCase()
 
@@ -173,7 +160,15 @@ const CreatePage = (): JSX.Element => {
                             } else {
                                 return -1
                             }
-                        }).map((user, i) => {
+                        }).filter((user) => {
+                            if (name && user.name.toLowerCase().search(name.toLowerCase())) {
+                                return false
+                            }
+                            if (id && user.id != id) {
+                                return false
+                            }
+                            return true
+                        } ).map((user, i) => {
                             return <Grid size={6} key={i}>
                                 <Box sx={{
                                     flex: 1,

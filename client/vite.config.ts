@@ -1,14 +1,29 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
+import compression from "vite-plugin-compression"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  build: {
+    outDir: 'dist',
+    minify: 'esbuild',
+  },
   server: {
     port: 5173,
     host: "0.0.0.0",
   },
-  plugins: [react()],
+  plugins: [
+      //Gzip plugin with some defaults.
+      compression({
+        verbose: true, // Optional: logs the compression results
+        disable: false, // Optional: set to true to disable compression
+        threshold: 10240, // Optional: only compress files larger than 10kb
+        algorithm: 'gzip', // Optional: set to 'brotliCompress' for Brotli
+        ext: '.gz', // Optional: adds .gz to the file extension
+      }),
+    react(), 
+  ],
   resolve: {
     alias: {
       '@hooks': path.resolve(__dirname, 'src/hooks'), 

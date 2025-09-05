@@ -1,11 +1,11 @@
 // Icons;
-import { BiDirections } from "react-icons/bi";
-import { LuScanFace, LuAtom } from 'react-icons/lu'
-import { MdOutlineNotificationsNone } from "react-icons/md";
-import { FaChalkboardTeacher, FaEdit } from "react-icons/fa";
+import { BiDirections } from 'react-icons/bi';
+import { LuScanFace, LuAtom } from 'react-icons/lu';
+import { MdOutlineNotificationsNone } from 'react-icons/md';
+import { FaChalkboardTeacher, FaEdit } from 'react-icons/fa';
 import { IoSchool, IoPeopleSharp, IoExitOutline } from 'react-icons/io5';
-import { GoPerson, GoLock, GoDiscussionDuplicate } from "react-icons/go";
-import { TbSmartHome,  TbSpeakerphone, TbGridDots } from "react-icons/tb";
+import { GoPerson, GoLock, GoDiscussionDuplicate } from 'react-icons/go';
+import { TbSmartHome, TbSpeakerphone, TbGridDots } from 'react-icons/tb';
 
 // components;
 import NotificationPopupContent from '../../components/NotificationPopupContent'

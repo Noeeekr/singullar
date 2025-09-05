@@ -25,16 +25,16 @@ const PgAuthentication = lazy(() => import("./pages/auth/Auth"))
 const r2 = createBrowserRouter([
   {
     path: "/",
-    element: <ProtectedRoutes />,
+    element: <Suspense fallback={<div>Loading Route Guard</div>}><ProtectedRoutes /></Suspense>,
     children: [
       {
         path: "/auth",
-        element: <PgAuthentication />,
+        element: <Suspense fallback={<div>Loading Authentication Page</div>}><PgAuthentication /></Suspense>,
         errorElement: <div>Error element auth</div>,
       },
       {
         path: "/",
-        element: <Layout />,
+        element: <Suspense fallback={<div>Loading Layout Page</div>}><Layout /></Suspense>,
         children: [
           {
             index: true,
@@ -75,23 +75,23 @@ const r2 = createBrowserRouter([
               },
               {
                 path: "students",
-                element: <Suspense fallback={<div>Loading...</div>}><PgStudentsSearch /></Suspense>,
+                element: <Suspense fallback={<div>Loading Students</div>}><PgStudentsSearch /></Suspense>,
               },
               {
                 path: "students/create",
-                element: <Suspense fallback={<div>Loading...</div>}><PgStudentsCreate /></Suspense>,
+                element: <Suspense fallback={<div>Loading Student Create</div>}><PgStudentsCreate /></Suspense>,
               },
               {
                 path: "classes/create",
-                element: <Suspense fallback={<div>Loading...</div>}><PgClassesCreate /></Suspense>,
+                element: <Suspense fallback={<div>Loading Classes Create</div>}><PgClassesCreate /></Suspense>,
               },
               {
                 path: "classes",
-                element: <Suspense fallback={<div>Loading...</div>}><PgMyClasses /></Suspense>,
+                element: <Suspense fallback={<div>Loading Classes</div>}><PgMyClasses /></Suspense>,
               },
               {
                 path: "teachers/search",
-                element: <Suspense fallback={<div>Loading...</div>}><PgTeachersSearch /></Suspense>,
+                element: <Suspense fallback={<div>Loading Teachers</div>}><PgTeachersSearch /></Suspense>,
               },
               {
                 path: "*",
@@ -120,9 +120,7 @@ createRoot(document.getElementById("root")!).render(
         <ThemeProvider theme={lightTheme}>
           <CssBaseline />
           <GlobalStyles styles={{ ul: { padding: 0, margin: 0 } }} />
-          <Suspense fallback={<div>Loading...</div>}>
             <RouterProvider router={r2} />
-          </Suspense>
         </ThemeProvider>
       </PersistGate>
     </Provider>

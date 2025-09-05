@@ -12,63 +12,42 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography"
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 import useFetchUsers from "@hooks/useFetchUsers";
 
 import { EF1, EF2, EM, ROLE_STUDENT, User, UserRoles } from "../../../types/server"
 import ErrorBubble from "@components/ErrorBubble";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 const roles: UserRoles[] = [ROLE_STUDENT]
 
 type Inputs = Pick<User, "segment" | "name" | "id">
 
 const CreatePage = (): JSX.Element => {
-    const { register, handleSubmit, getValues } = useForm<Inputs>({
+    const { register, watch } = useForm<Inputs>({
         defaultValues: {
             name: "",
             segment: null,
             id: 0,
         }
     });
-    console.log("A")
-    const [users, isLoading, error, fetchUsers] = useFetchUsers(roles)
-    const [filteredUsers, setFilteredUsers] = useState(users)
 
-    const filter: SubmitHandler<Inputs> = useCallback((form) => {
-        setFilteredUsers(users.filter((user) => {   
-            if (form.name && user.name.search(form.name)) {
-                console.log(form.name, user.name)
-                return false
-            }
-            if (form.id && user.id != form.id) {
-                console.log(form.id, user.id)
-                return false
-            }
-            if (form.segment && user.segment != form.segment) {
-                console.log(form.segment, user.segment)
-                return false
-            }
-            return true
-        }))
-    },[users]) 
+    const name = watch("name")
+    const segment = watch("segment")
+    const id = watch("id")
+
+    const [users, isLoading, error, fetchUsers] = useFetchUsers(roles)
 
     useEffect(() => {
         fetchUsers()
     }, [fetchUsers])
-
-    useEffect(() => {
-        filter(getValues())
-    }, [filter, getValues])
-
 
     return (
         <div>
             { /* Action Buttons */}
 
             <SectionHeader title="Selecione um estudante">
-                <>
-                    <Button sx={{ margin: "0 0 0 auto" }} onClick={handleSubmit(filter)}>Filtrar</Button>
+                <Box sx={{ margin: "0 0 0 auto" }}>
                     <ButtonLink
                         icon={<></>}
                         type="link"
@@ -77,7 +56,7 @@ const CreatePage = (): JSX.Element => {
                     >
                         Criar estudante
                     </ButtonLink>
-                </>
+                </Box>
             </SectionHeader>
 
             { /* Filter Student Form */}
@@ -152,12 +131,11 @@ const CreatePage = (): JSX.Element => {
                         </Grid>
                     </Grid>
                 </Stack>
-
                 { /* Fetched Student List */}
 
                 <Grid container paddingY={2} spacing={2}>
                     {
-                        filteredUsers.length == 0
+                        users.length == 0
                             ?
                             <Box sx={{
                                 borderRadius: 2,
@@ -181,7 +159,7 @@ const CreatePage = (): JSX.Element => {
                                         : <></>
                                 }
                                 {
-                                    filteredUsers.length == 0 && !isLoading ?
+                                    users.length == 0 && !isLoading ?
                                         <>
                                             <Typography variant="subtitle1">
                                                 Nenhum usuário encontrado
@@ -194,7 +172,18 @@ const CreatePage = (): JSX.Element => {
                             : <></>
                     }
                     {
-                        filteredUsers.sort((usr1, usr2) => {
+                        users.filter((user) => {
+                            if (name && user.name.toLowerCase().search(name.toLowerCase())) {
+                                return false
+                            }
+                            if (id && user.id != id) {
+                                return false
+                            }
+                            if (segment && user.segment != segment) {
+                                return false
+                            }
+                            return true
+                        }).sort((usr1, usr2) => {
                             const name1 = usr1.name.toLowerCase()
                             const name2 = usr2.name.toLowerCase()
 

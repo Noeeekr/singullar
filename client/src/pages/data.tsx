@@ -1,21 +1,15 @@
 import BorderIcon from '@components/BorderIcon.tsx'
 
-import { 
-    FaChalkboardTeacher,
-    FaGithub,   
-    LuPartyPopper,
-    FaShareAlt,
-    GrBook,
-    FaRegPenToSquare,
-    IoNewspaperOutline,
-    BiMessageSquareDetail,
-    AiOutlineQuestionCircle,
-    IoMdHelpCircle,
-    FiPaperclip,
-    IoIosBarcode,
-} from "./icons"
+import { BiMessageSquareDetail } from 'react-icons/bi';
+import { LuPartyPopper } from 'react-icons/lu';
+import { FaChalkboardTeacher, FaGithub, FaShareAlt } from 'react-icons/fa';
+import { IoNewspaperOutline } from 'react-icons/io5';
+import { GrBook } from 'react-icons/gr';
+import { FiPaperclip } from 'react-icons/fi';
+import { FaRegPenToSquare } from 'react-icons/fa6';
+import { AiOutlineQuestionCircle } from 'react-icons/ai';
+import { IoMdHelpCircle, IoIosBarcode } from 'react-icons/io';
 
-// Types
 import type {
     ISideMenuLinkButton,
     ISideMenuItems

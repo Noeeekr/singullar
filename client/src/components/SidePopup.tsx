@@ -4,14 +4,16 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import CircularButton from './ButtonCircular'
 
-// Icons
-import { CloseRounded } from '@mui/icons-material'
 
 // Features
 import { styled } from '@mui/material'
 
 // Types
 import type { BoxProps } from '@mui/material'
+import { lazy, Suspense } from 'react'
+
+// Icons
+const CloseRounded = lazy(() => import("@mui/icons-material/CloseRounded"))
 
 const ShadowBackground = styled(Box)(({ isOpen }: { isOpen: boolean }) => ({
     position: 'absolute',
@@ -91,7 +93,9 @@ const SidePopup = (props: INavbarItemGroupProps) => {
                     <CircularButton
                         onClickCb={togglePopup}
                     >
-                        <CloseRounded style={{ fontSize: 21 }} />
+                        <Suspense fallback={<></>}>
+                            <CloseRounded style={{ fontSize: 21 }} />
+                        </Suspense>
                     </CircularButton>
                 </Stack>
                 {children}

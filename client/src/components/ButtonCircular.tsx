@@ -2,7 +2,7 @@
 import Box from '@mui/material/Box'
 
 // Icons 
-import { FaChevronLeft } from '../pages/icons'
+import { FaChevronLeft } from 'react-icons/fa'
 
 // Features
 import { styled } from '@mui/material';

@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useTheme } from '@mui/material/styles'
-import { CloseRounded } from '@mui/icons-material'
+
+import { Suspense, lazy } from 'react'
+
+const CloseRounded = lazy(() => import('@mui/icons-material/CloseRounded'))
 
 /**
  * 
@@ -51,12 +54,14 @@ const IconButton = (
         >
             {   // Hand made Icons 
                 isOpen
-                    ? <CloseRounded 
-                        sx={{
-                            fontSize: 21,
-                            color: 'white'
-                        }}
-                    />
+                    ? <Suspense fallback={<></>}>
+                        <CloseRounded 
+                            sx={{
+                                fontSize: 21,
+                                color: 'white'
+                            }}
+                        />
+                    </Suspense>
                     : (
                         <>
                         <div style={{
