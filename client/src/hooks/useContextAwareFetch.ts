@@ -17,20 +17,27 @@ import {
     useAppDispatch
 } from "@slices/store"
 
+type Response<ResponseData> = [
+    DefaultResponse: DefaultResponse<ResponseData> | null,
+    isLoading: boolean,
+    error: string,
+    doFetch: () => void,
+]
+
 // useContextAwareFetch is a wrapper around fetch that checks the responses from server for specific events in each call. It returns a JSON
 // useContextAwareFetch will cause unecessary rerenders if its arguments are non-memoized objects
-function useContextAwareFetch<ServerResponseDataType>(
+function useContextAwareFetch<ResponseData = unknown>(
     input: string | URL | globalThis.Request,
     init?: RequestInit,
-): [DefaultResponse<ServerResponseDataType> | null, boolean, string, () => void] {
-    const [response, setResponse] = useState<DefaultResponse<ServerResponseDataType> | null>(null)
+): Response<ResponseData> {
+    const [response, setResponse] = useState<DefaultResponse<ResponseData> | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string>("");
 
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
 
-    const fetchAndValidate = useCallback(async () => {
+    const doFetch = useCallback(async () => {
         setIsLoading(true)
         setError("")
         try {
@@ -40,18 +47,16 @@ function useContextAwareFetch<ServerResponseDataType>(
                 navigate("/auth")
                 return
             }
-            const responseBody: DefaultResponse<ServerResponseDataType> = await response.json()
+            const responseBody: DefaultResponse<ResponseData> = await response.json()
             setResponse(responseBody)
-        } catch(e: unknown) {
-            if (e instanceof Error) {
-                setError(e.message)
-            }
+        } catch {
+            setError("Falha ao processar a requisição")
         } finally {
             setIsLoading(false)
         }
     }, [init, input, navigate, dispatch]); 
 
-    return [response, isLoading, error, fetchAndValidate]
+    return [response, isLoading, error, doFetch]
 }
 
 export default useContextAwareFetch;

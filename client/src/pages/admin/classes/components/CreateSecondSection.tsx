@@ -19,7 +19,6 @@ export interface ISecondSectionData {
  * Meant to be used under a CreateFormContext. 
  */
 const SecondFormSection = (): JSX.Element => {
-
     return (
         <FormControl sx={{ padding: '10px 0px 10px 10px' }}>
             <StudentTable />

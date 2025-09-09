@@ -14,7 +14,6 @@ import { parseNumIntoText } from './StudentTable';
 
 // Types
 interface IClassConfig {
-  currentYear: number,
   segment: number,
   series: number,
 }
@@ -36,7 +35,7 @@ export const ButtonAddClass = (): JSX.Element => {
   const [disabled, setDisabled] = useState(true);
 
   useEffect(() => {
-    if (formState.series != -1 && formState.segment != -1 && formState.currentYear != -1) {
+    if (formState.series != -1 && formState.segment != -1) {
       setDisabled(false)
     } else {
       setDisabled(true)
@@ -49,15 +48,13 @@ export const ButtonAddClass = (): JSX.Element => {
         disabled={disabled}
         onClick={() => {
           setFormValue("class",{ 
-              name: parseNumIntoText(1,formState.segment) + " " + parseNumIntoText(2, formState.series) + " " + formState.currentYear + " A",
+              name: parseNumIntoText(1,formState.segment) + " " + parseNumIntoText(2, formState.series),
               students: [],
               segment: formState.segment, 
               series: formState.series, 
-              currentYear: formState.currentYear,
           });
           setFormValue("segment", -1)
           setFormValue("series", -1)
-          setFormValue("currentYear", -1)
           setSectionStatus(2)
         }}
       >
@@ -70,38 +67,9 @@ export const ButtonAddClass = (): JSX.Element => {
 const FirstSectionInputs = (): JSX.Element => {
   const { formState, setFormValue } = useContext(CreateFormContext);
 
-  // Handle year value for first input
-  const time = new Date().getFullYear();
-
-  const years: number[] = [];
-  for (let i = 2024; i <= time; i++) {
-    years.push(i);
-  }
-    
   return (
     <Stack direction="column" gap={1}>
       <Stack direction="row" gap={2} padding={4}>
-        <FormControl>
-          <div style={{ position: "relative", width: "100%" }}>
-            <InputLabel id="class-creation-year-input-label">
-              Ano letivo
-            </InputLabel>
-
-            {/* React form hook controller */}
-                <Select
-                  labelId="class-creation-year-input-label"
-                  label="Ano letivo"
-                  aria-label="Ano letivo"
-                  value={formState.currentYear}
-                  onChange={(e) => (setFormValue("currentYear",Number(e.target.value)))}
-                >
-                  <MenuItem value={-1}>Escolha uma opção</MenuItem>
-                  {years.map((year) => {
-                    return <MenuItem key={year} value={year}>{year}</MenuItem>;
-                  })}
-                </Select>
-          </div>
-        </FormControl>
         <FormControl>
           <div style={{ position: "relative", width: "100%" }}>
             <InputLabel id="class-creation-segment-input-label">
@@ -112,7 +80,6 @@ const FirstSectionInputs = (): JSX.Element => {
                       onChange={(e) => (setFormValue("segment",Number(e.target.value)))}
                       labelId="class-creation-segment-input-label"
                       label="Segmento"
-                      disabled={formState.currentYear === -1}
                       aria-label="Segmento"
                     >
                       <MenuItem value={-1}>Escolha uma opção</MenuItem>

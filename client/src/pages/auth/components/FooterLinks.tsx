@@ -64,7 +64,7 @@ const FooterLinks = (): JSX.Element => {
                             key={link.label}
                             style={{
                                 fontSize: 15,
-                                color: 'white',
+                                color: 'black',
                                 paddingBottom: '3px',
                                 textDecoration: 'underline',
                                 borderBottom: isMobile ? 'none' : 'solid 1px white',

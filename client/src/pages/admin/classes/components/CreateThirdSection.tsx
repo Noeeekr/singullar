@@ -1,6 +1,3 @@
-export interface IThirdSectionData {
-
-}
 
 /**
  * A input wrapped in a FormControl. Display years as selectable options

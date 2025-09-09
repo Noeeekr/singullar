@@ -19,17 +19,17 @@ const useSignOut = () => {
                 credentials: "include"
             })
 
+            console.log(response.ok)
             if (response.ok) {
                 dispatch(updateUser(null))
             } else {
-                const res = await response.json()
-                setError(res.Error)
+                throw new Error("Falha ao deslogar usuário")
             }
         } catch {
             setError("Falha ao requisitar deslogamento do usuário")
         }
     }
-
+    
     return { signout, isSigningOut, error } 
 }
 export default useSignOut

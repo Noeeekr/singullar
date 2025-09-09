@@ -6,13 +6,11 @@ import InputLabel from '@mui/material/InputLabel'
 import Grid from '@mui/material/Grid2'
 import LinkButton from '@components/ButtonLink'
 import SectionHeader from '@components/SectionHeader';
-import ButtonBase from '@mui/material/ButtonBase';
-import Button from '@components/ButtonSolid';
 
 // Features
 import { useAppSelector } from '@slices/store';
 
-const PageClasses = (): JSX.Element => {
+const Search = (): JSX.Element => {
     const institution = useAppSelector((store) => store.institution)
 
     return (
@@ -88,12 +86,9 @@ const PageClasses = (): JSX.Element => {
                         </FormControl>
                     </Grid>
                 </Grid>
-                <ButtonBase type="submit" disableRipple={true}>
-                    <Button>Title</Button>
-                </ButtonBase>
             </form>
         </div>
     )
 }
 
-export default PageClasses;
+export default Search;

@@ -5,13 +5,14 @@ import type { BoxProps }  from '@mui/material'
 
 const SolidButton = styled(({ children, disabled, onClick, ...props }: BoxProps & { disabled?: boolean }) => (
     <Box {...props} onClick={disabled ? () => {}: onClick}>
-        <Typography variant="subtitle2" component="p" color="white" sx={{ margin: 0, padding: 0}}>
+        <Typography variant="subtitle2" component="p" color={props.color ? String(props.color) : "white"} sx={{ margin: 0, padding: 0}}>
             { children }
         </Typography>
     </Box>  
 ))(({ theme, disabled }) => ({
     display: 'flex',
     justifyContent: "center",
+    alignItems: "center",
     textWrap: "nowrap",
 
     backgroundColor: disabled === true ? 'rgb(220,220,220)' : theme.palette.primary.purpleLight,

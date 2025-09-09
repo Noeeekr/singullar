@@ -7,9 +7,26 @@ import SecondSectionInputs from '../components/CreateSecondSection';
 import ThirdSectionInputs from '../components/CreateThirdSection';
 import CreateForm, { ButtonRedoLastSection } from '../components/CreateForm';
 
-// Features
-import { useMemo } from 'react';
-
+const form = [
+    {
+        title: "1. Dados gerais",
+        subtitle: "Defina as informações básicas da turma",
+        content: <FirstSectionInputs />,
+        button: <ButtonAddClass />
+    },
+    {
+        title: "2. Adição de estudantes",
+        subtitle: "Preencha as informações dos alunos",
+        content: <SecondSectionInputs />,
+        button: <ButtonRedoLastSection />,
+    },
+    {
+        title: "3. Seleção de materiais",
+        subtitle: "",
+        content: <ThirdSectionInputs />,
+        button: <ButtonRedoLastSection />,
+    }
+]
 
 /**
  * 
@@ -19,28 +36,6 @@ import { useMemo } from 'react';
  * 
  */
 const Create = (): JSX.Element => {
-
-    const form = useMemo(() => ([
-        {
-            title: "1. Dados gerais",
-            subtitle: "Defina as Turmas que serão criadas",
-            content: <FirstSectionInputs />,
-            button: <ButtonAddClass />
-        },
-        {
-            title: "2. Adição de estudantes",
-            subtitle: "Preencha a planilha de informações",
-            content: <SecondSectionInputs />,
-            button: <ButtonRedoLastSection />,
-        },
-        {
-            title: "3. Seleção de materiais",
-            subtitle: "",
-            content: <ThirdSectionInputs />,
-            button: <ButtonRedoLastSection />,
-        }
-    ]), []);
-
     return (
         <Stack gap={5}>
             <SectionHeader

@@ -17,8 +17,8 @@ const Root = lazy(() => import("./components/DefaultRoot"))
 const ProtectedRoutes = lazy(() => import("./components/ProtectedRoutes"))
 const PgStudentsSearch = lazy(() => import("./pages/admin/students/Search")) 
 const PgStudentsCreate = lazy(() => import("./pages/admin/students/pages/Create")) 
-const PgMyClasses = lazy(() => import("./pages/admin/classes/pages/Create")) 
-const PgClassesCreate = lazy(() => import("./pages/admin/classes/pages/MyClasses")) 
+const PgClassesSearch = lazy(() => import("./pages/admin/classes/Page")) 
+const PgClassesCreate = lazy(() => import("./pages/admin/classes/create/Page")) 
 const PgTeachersSearch = lazy(() => import("./pages/admin/teachers/Search"))
 const PgAuthentication = lazy(() => import("./pages/auth/Auth"))
 
@@ -27,7 +27,7 @@ const r2 = createBrowserRouter([
     path: "/",
     element: <Suspense fallback={<div>Loading Route Guard</div>}><ProtectedRoutes /></Suspense>,
     children: [
-      {
+      { 
         path: "/auth",
         element: <Suspense fallback={<div>Loading Authentication Page</div>}><PgAuthentication /></Suspense>,
         errorElement: <div>Error element auth</div>,
@@ -82,15 +82,15 @@ const r2 = createBrowserRouter([
                 element: <Suspense fallback={<div>Loading Student Create</div>}><PgStudentsCreate /></Suspense>,
               },
               {
+                path: "classes",
+                element: <Suspense fallback={<div>Loading Classes</div>}><PgClassesSearch /></Suspense>,
+              },
+              {
                 path: "classes/create",
                 element: <Suspense fallback={<div>Loading Classes Create</div>}><PgClassesCreate /></Suspense>,
               },
               {
-                path: "classes",
-                element: <Suspense fallback={<div>Loading Classes</div>}><PgMyClasses /></Suspense>,
-              },
-              {
-                path: "teachers/search",
+                path: "teachers",
                 element: <Suspense fallback={<div>Loading Teachers</div>}><PgTeachersSearch /></Suspense>,
               },
               {
