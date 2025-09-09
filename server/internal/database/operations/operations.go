@@ -45,7 +45,7 @@ func (ops *Operations) SelectNotificationsByTargetId(id int) (*[]*models.Notific
 		Select("n.created_at", "n.updated_at", "n.deleted_at", "u.id", "u.name", "n.id", "n.title", "n.description").As("n").
 		InnerJoin(models.TableUsersNotifications, "un").On("un.notification_id", "n.id").
 		InnerJoin(models.TableUsers, "u").On("u.id", "un.user_id").
-		Where("u.id", id).Scanner(scan.Notifications(&notifications)),
+		Where("u.id").Equals(id).Scanner(scan.Notifications(&notifications)),
 	)
 	return &notifications, err
 }
@@ -56,7 +56,7 @@ func (ops *Operations) SelectUserByEmail(email string) (*models.Users, error) {
 	err := ops.Commiter.Do(
 		models.TableUsers.
 			Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
-			Where("u.email", email).
+			Where("u.email").Equals(email).
 			Scanner(scan.Users(&users)),
 	)
 	if err != nil {
@@ -71,7 +71,7 @@ func (ops *Operations) SelectUserById(id int) (*models.Users, error) {
 	err := ops.Do(
 		models.TableUsers.
 			Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
-			Where("u.id", id).
+			Where("u.id").Equals(id).
 			Scanner(scan.Users(&users)),
 	)
 	if err != nil {
@@ -86,7 +86,7 @@ func (ops *Operations) SelectInstitutionByName(name string) (*models.Institution
 	err := ops.Do(
 		models.TableInstitutions.
 			Select("i.created_at", "i.updated_at", "i.deleted_at", "i.name", "i.id").As("i").
-			Where("name", name).
+			Where("name").Equals(name).
 			Scanner(scan.Institutions(&insts)),
 	)
 	if err != nil {
@@ -99,7 +99,7 @@ func (ops *Operations) SelectInstitutionById(id int) (*models.Institutions, erro
 	err := ops.Do(
 		models.TableInstitutions.
 			Select("i.created_at", "i.updated_at", "i.deleted_at", "i.name", "i.id").As("i").
-			Where("id", id).
+			Where("id").Equals(id).
 			Scanner(scan.Institutions(&insts)),
 	)
 	if err != nil {
@@ -123,7 +123,8 @@ func (ops *Operations) SelectUsers(institutionId int, roles ...models.UserRole) 
 	err := ops.Do(models.TableUsers.
 		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
 		InnerJoin(models.TableInstitutions, "i").On("i.id", "u.institution_id").
-		Where("u.institution_id", institutionId).Where("u.role", targetRoles...).
+		Where("u.institution_id").Equals(institutionId).
+		Where("u.role").In(targetRoles...).
 		Scanner(scan.Users(&users)),
 	)
 	if err != nil && !errors.Is(err, borm.ErrNotFound) {
@@ -131,6 +132,51 @@ func (ops *Operations) SelectUsers(institutionId int, roles ...models.UserRole) 
 	}
 	return users, nil
 }
+
+type SelectStudentsOptions struct {
+	Email   string               `json:"email" binding:"omitempty,email"`
+	Name    string               `json:"name" binding:"omitempty,min=1"`
+	Segment *models.UserSegments `json:"segment" binding:"omitempty"`
+	ID      *int                 `json:"id" binding:"omitempty"`
+}
+
+// Returns an empty array if no users were found. Hashed Password is returned and must be removed. Default values will be ignored in search, expect for segment.
+func (ops *Operations) SelectStudents(institutionId int, options *SelectStudentsOptions) ([]*models.Users, error) {
+	users := []*models.Users{}
+	query := models.TableUsers.
+		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
+		InnerJoin(models.TableInstitutions, "i").On("i.id", "u.institution_id").
+		Scanner(scan.Users(&users)).
+		Where("u.institution_id").Equals(institutionId).
+		Where("u.role").Equals(models.STUDENT)
+	if options != nil {
+		if options.Segment != nil {
+			query.Where("u.segment").Equals(nil)
+		}
+		if options.Email != "" {
+			query.Where("u.email").Equals(options.Email)
+		}
+		if options.Name != "" {
+			query.Where("u.name").Like("%"+strings.ToLower(options.Name)+"%", false)
+		}
+		if options.ID != nil {
+			query.Where("u.id").Equals(*options.ID)
+		}
+	}
+
+	err := ops.Do(query)
+	if err != nil && !errors.Is(err, borm.ErrNotFound) {
+		return nil, err
+	}
+	return users, nil
+}
+
+/*er
+student by name
+student by segment - or without
+student by email
+student by id
+*/
 
 // Hash the password
 func (ops *Operations) InsertManyUsers(requests ...*models.CreateUsers) ([]*models.Users, error) {
@@ -272,7 +318,7 @@ func (ops *Operations) DeleteUserById(id int) error {
 	err := ops.currentTransction.Do(
 		models.TableUsers.
 			Delete().
-			Where("id", id),
+			Where("id").Equals(id),
 	)
 	return err
 }
@@ -280,7 +326,7 @@ func (ops *Operations) DeleteUserByEmail(email string) error {
 	err := ops.currentTransction.Do(
 		models.TableUsers.
 			Delete().
-			Where("email", email),
+			Where("email").Equals(email),
 	)
 	return err
 }
@@ -289,7 +335,7 @@ func (ops *Operations) DeleteInstitutionByName(name string) error {
 	err := ops.currentTransction.Do(
 		models.TableInstitutions.
 			Delete().
-			Where("name", name).
+			Where("name").Equals(name).
 			Returning("id").
 			Scanner(scan.Integers(&ids)),
 	)
@@ -300,7 +346,7 @@ func (ops *Operations) DeleteInstitutionById(id int) error {
 	err := ops.currentTransction.Do(
 		models.TableInstitutions.
 			Delete().
-			Where("id", id),
+			Where("id").Equals(id),
 	)
 	return err
 }
@@ -309,7 +355,7 @@ func (ops *Operations) DeleteNotificationsByIssuerId(ids ...int) error {
 	for _, id := range ids {
 		err := ops.currentTransction.Do(models.TableNotificationContents.
 			Delete().
-			Where("id", id),
+			Where("id").Equals(id),
 		)
 		if err != nil {
 			return err

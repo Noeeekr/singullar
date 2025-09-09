@@ -42,10 +42,11 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 
 	// SELECT
 	r.GET("/api/institution/", middlewares.Authenticate(models.STUDENT, models.ADMIN, models.TEACHER, models.SUPERVISOR), handlers.GetInstitution)
+	r.GET("/api/institution/students", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetStudents)
+	r.POST("/api/institution/users", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetUsers)
 
 	// CREATE
 	r.POST("/api/user/create/", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateUser) // Institution admin creates users
-	r.POST("/api/institution/users", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetUsers)
 
 	// r.POST("/api/class/create", middlewares.Authenticate, handlers.CreateClass)
 

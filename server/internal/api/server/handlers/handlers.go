@@ -166,7 +166,6 @@ func (h *Handlers) SignIn(ctx *gin.Context) {
 		"data":  user,
 	})
 }
-
 func (h *Handlers) SignOut(ctx *gin.Context) {
 	ctx.SetCookie(
 		"auth",
@@ -177,6 +176,7 @@ func (h *Handlers) SignOut(ctx *gin.Context) {
 		false,
 		true,
 	)
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"data":  nil,
 		"error": nil,
@@ -224,7 +224,7 @@ func (h *Handlers) CreateUser(ctx *gin.Context) {
 }
 
 func (h *Handlers) GetInstitution(ctx *gin.Context) {
-	unsignedUser, ok := ctx.Get("user")
+	unsignedUser, ok := ctx.Get(types.USER_COOKIE_ID)
 	if !ok {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"data": nil, "error": "No authentication data found for the user"})
 		return
@@ -245,23 +245,41 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"data":  institution,
-		"error": nil,
-	})
+	ctx.JSON(http.StatusOK, types.NewServerResponse(institution, ""))
 }
 
-type GetUsersRequest struct {
-	TargetRoles []models.UserRole `json:"target_roles" binding:"required"`
-}
-
-func (h *Handlers) GetUsers(ctx *gin.Context) {
-	var request GetUsersRequest
+func (h *Handlers) GetStudents(ctx *gin.Context) {
+	var request operations.SelectStudentsOptions
 	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
 		return
 	}
 
-	unsignedUser, ok := ctx.Get("user")
+	unsignedUser, exists := ctx.Get("user")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, types.NewServerResponse(nil, "Usuário não autorizado"))
+	}
+
+	user := unsignedUser.(models.Users)
+	unsignedStudents, err := h.operations.SelectStudents(user.InstitutionId, &request)
+	if err != nil {
+		h.internalError(ctx, "Falha ao buscar estudantes sem turmas", err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, types.NewServerResponse(unsignedStudents, ""))
+}
+
+type UsersRequest struct {
+	TargetRoles []models.UserRole `json:"target_roles" binding:"required"`
+}
+
+func (h *Handlers) GetUsers(ctx *gin.Context) {
+	var request UsersRequest
+	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
+		return
+	}
+
+	unsignedUser, ok := ctx.Get(types.USER_COOKIE_ID)
 	if !ok {
 		ctx.JSON(http.StatusUnauthorized, types.NewServerResponse(nil, "Usuário não autorizado"))
 		return

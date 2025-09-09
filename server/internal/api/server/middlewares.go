@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/Noeeekr/singullar/server/internal/api/types"
@@ -67,6 +68,7 @@ func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin
 				true,
 			)
 
+			fmt.Println("cookie renewed")
 			ctx.Set("user", claims.User)
 			ctx.Next()
 		} else {
