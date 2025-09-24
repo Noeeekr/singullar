@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/Noeeekr/borm"
-	"github.com/Noeeekr/singullar/server/common/environment"
 	"github.com/Noeeekr/singullar/server/internal/database/connections"
+	"github.com/Noeeekr/singullar/server/util/environment"
 )
 
 type ID struct {

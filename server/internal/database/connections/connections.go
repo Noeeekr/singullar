@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Noeeekr/singullar/server/common"
-	"github.com/Noeeekr/singullar/server/common/environment"
+	"github.com/Noeeekr/singullar/server/util"
+	"github.com/Noeeekr/singullar/server/util/environment"
 	_ "github.com/lib/pq"
 )
 
-func ScanEnvironmentForConnection(connectionEnvironment environment.EnvironmentMode) (connection Connection, res *common.Response) {
+func ScanEnvironmentForConnection(connectionEnvironment environment.EnvironmentMode) (connection Connection, res *util.Response) {
 	switch connectionEnvironment {
 	case environment.PRODUCTION:
 		production := &PostgresProductionConnection{}
@@ -25,8 +25,8 @@ func ScanEnvironmentForConnection(connectionEnvironment environment.EnvironmentM
 		res = environment.Scan(postgres)
 		connection = postgres
 	default:
-		return &PostgresDevelopmentConnection{}, common.NewResponse().
-			WithStatus(common.StatusNotFound).
+		return &PostgresDevelopmentConnection{}, util.NewResponse().
+			WithStatus(util.StatusNotFound).
 			WithDescription("Environment not defined: " + string(connectionEnvironment))
 	}
 
@@ -48,7 +48,7 @@ func NewConnectionString(user, password, host, database string) string {
 
 // Scans the environment variables, uses them to parse the connection string to connect to Postgres.
 // Check the package for more info about the required environment variables.
-func ConnectWithEnvironment(environment environment.EnvironmentMode) (db *sql.DB, err *common.Response) {
+func ConnectWithEnvironment(environment environment.EnvironmentMode) (db *sql.DB, err *util.Response) {
 	connection, err := ScanEnvironmentForConnection(environment)
 	if err != nil {
 		return nil, err
@@ -56,18 +56,18 @@ func ConnectWithEnvironment(environment environment.EnvironmentMode) (db *sql.DB
 	return Connect(ParseConnectionString(connection))
 }
 
-func Connect(connString string) (*sql.DB, *common.Response) {
+func Connect(connString string) (*sql.DB, *util.Response) {
 	db, err := sql.Open("postgres", connString)
 	if err != nil {
-		return db, common.NewResponse().
-			WithStatus(common.StatusInternalError).
+		return db, util.NewResponse().
+			WithStatus(util.StatusInternalError).
 			WithDescription("Unable to connect to postgres: " + err.Error())
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return db, common.NewResponse().
-			WithStatus(common.StatusInternalError).
+		return db, util.NewResponse().
+			WithStatus(util.StatusInternalError).
 			WithDescription("Unable to ping postgres. " + err.Error())
 	}
 

@@ -6,12 +6,11 @@ import (
 	"testing"
 
 	"github.com/Noeeekr/borm"
-	"github.com/Noeeekr/singullar/server/common"
-	"github.com/Noeeekr/singullar/server/common/environment"
-	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/Noeeekr/singullar/server/internal/database/seeder"
+	"github.com/Noeeekr/singullar/server/util"
+	"github.com/Noeeekr/singullar/server/util/environment"
 )
 
 type InstitutionData struct {
@@ -34,11 +33,11 @@ type Utils struct {
 
 // Test Utility Functions
 
-func (m *Utils) ClearEnvironment() *common.Response {
+func (m *Utils) ClearEnvironment() *util.Response {
 	m.MainTest.Log("Finished operations, dropping tables")
 	err := m.Commiter.DropRelations()
 	if err != nil {
-		logs.Error.Fatal(err)
+		util.Error.Fatal(err)
 	}
 	return nil
 }
@@ -57,7 +56,7 @@ func (m *Utils) PrepareEnvironment() error {
 	return nil
 }
 func (m *Utils) ConnectToDevelopmentDatabase() string {
-	var res *common.Response
+	var res *util.Response
 	m.MainTest.Run("PARSE ENVIRONMENT", func(t *testing.T) {
 		res = environment.Parse(databaseSecretsFilepath)
 		if res != nil {
@@ -127,12 +126,6 @@ func NewUtil(test *testing.T) *Utils {
 // Test Configuration
 
 var databaseSecretsFilepath = "../../../secrets/postgres.env"
-var databaseRequiredTables = []*borm.TableRegistry{
-	models.TableUsers,
-	models.TableInstitutions,
-	models.TableUsersNotifications,
-	models.TableNotificationContents,
-}
 
 // Test Data
 var institutions = InstitutionNameToData{}

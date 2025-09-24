@@ -3,10 +3,10 @@ package server
 import (
 	"strings"
 
-	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server/handlers"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
+	"github.com/Noeeekr/singullar/server/util"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -22,7 +22,7 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 		gin.SetMode(gin.DebugMode)
 	}
 
-	logs.Info.Printf("Allowed Origins:\n\t%s", strings.ReplaceAll(env.AllowedOrigins, ",", "\n\t"))
+	util.Info.Printf("Allowed Origins:\n\t%s", strings.ReplaceAll(env.AllowedOrigins, ",", "\n\t"))
 	// User auth session and store for authentication
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     strings.Split(env.AllowedOrigins, ","),

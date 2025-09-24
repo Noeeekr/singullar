@@ -2,9 +2,9 @@ package migrate
 
 import (
 	"github.com/Noeeekr/borm"
-	"github.com/Noeeekr/singullar/server/common/environment"
-	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
+	"github.com/Noeeekr/singullar/server/util"
+	"github.com/Noeeekr/singullar/server/util/environment"
 	"github.com/spf13/cobra"
 )
 
@@ -18,12 +18,12 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
 		if ignoreExisting {
 			borm.Settings().Migrations().IgnoreExisting()
-			logs.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
+			util.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
 		}
 		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
 		if recreateExisting {
 			borm.Settings().Migrations().RecreateExisting()
-			logs.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
+			util.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
 		}
 
 		// Configure environment
@@ -35,24 +35,24 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 
 		path, _ := cmd.Flags().GetStringArray("environmentFiles")
 		if res := environment.Parse(path...); res != nil {
-			logs.Error.Fatal("[Invalid environment file]:", res.String())
+			util.Error.Fatal("[Invalid environment file]:", res.String())
 			return
 		}
 
 		// Connect to environment database
 		database, err := borm.Connect(models.EnvironmentDatabase)
 		if err != nil {
-			logs.Error.Fatal(err)
+			util.Error.Fatal(err)
 		}
 		defer database.DB().Close()
 
 		// Migrate environment database relations
 		if err := database.MigrateRelations(); err != nil {
-			logs.Error.Fatal(err)
+			util.Error.Fatal(err)
 		}
 		defer database.DB().Close()
 
-		logs.Info.Println("[Migration finished]")
+		util.Info.Println("[Migration finished]")
 	},
 }
 

@@ -2,9 +2,9 @@ package migrate
 
 import (
 	"github.com/Noeeekr/borm"
-	"github.com/Noeeekr/singullar/server/common/environment"
-	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/connections"
+	"github.com/Noeeekr/singullar/server/util"
+	"github.com/Noeeekr/singullar/server/util/environment"
 	"github.com/spf13/cobra"
 )
 
@@ -17,18 +17,18 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
 		if ignoreExisting {
 			borm.Settings().Migrations().IgnoreExisting()
-			logs.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
+			util.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
 		}
 
 		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
 		if recreateExisting {
 			borm.Settings().Migrations().RecreateExisting()
-			logs.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
+			util.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
 		}
 
 		path, _ := cmd.Flags().GetStringArray("environmentFiles")
 		if err := environment.Parse(path...); err != nil {
-			logs.Error.Fatal("[Invalid environment file]: ", err.String())
+			util.Error.Fatal("[Invalid environment file]: ", err.String())
 		}
 
 		if args[0] == "production" {
@@ -40,12 +40,12 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 		// Get connection information
 		postgresConnection, res := connections.ScanEnvironmentForConnection(connections.POSTGRES)
 		if res != nil {
-			logs.Error.Fatal(res.String())
+			util.Error.Fatal(res.String())
 		}
 
 		environmentConnection, res := connections.ScanEnvironmentForConnection(environment.Settings().ApplicationMode())
 		if res != nil {
-			logs.Error.Fatal(res.String())
+			util.Error.Fatal(res.String())
 		}
 
 		// Register databases
@@ -54,10 +54,10 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 
 		database, err := borm.Connect(postgresDatabase)
 		if err != nil {
-			logs.Error.Fatal(err)
+			util.Error.Fatal(err)
 		}
 		if err := database.DB().Ping(); err != nil {
-			logs.Error.Fatal("Failed to ping database:", err.Error())
+			util.Error.Fatal("Failed to ping database:", err.Error())
 		}
 		defer database.DB().Close()
 
@@ -68,19 +68,19 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 
 		err = database.MigrateUsers(environmentUser)
 		if err != nil {
-			logs.Error.Fatal(err)
+			util.Error.Fatal(err)
 		}
 
 		createdDatabase, err := database.MigrateDatabase(environmentDatabase)
 		if err != nil {
-			logs.Error.Fatal(err)
+			util.Error.Fatal(err)
 		}
 		if err := createdDatabase.DB().Ping(); err != nil {
-			logs.Error.Fatal("Failed to ping database:", err.Error())
+			util.Error.Fatal("Failed to ping database:", err.Error())
 		}
 		defer createdDatabase.DB().Close()
 
-		logs.Info.Println("[Environment migrated successfully]")
+		util.Info.Println("[Environment migrated successfully]")
 	},
 }
 

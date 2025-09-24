@@ -5,14 +5,13 @@ import (
 	"os"
 
 	"github.com/Noeeekr/borm"
-	"github.com/Noeeekr/singullar/server/common"
-	"github.com/Noeeekr/singullar/server/common/environment"
-	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server"
 	"github.com/Noeeekr/singullar/server/internal/api/server/handlers"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
+	"github.com/Noeeekr/singullar/server/util"
+	"github.com/Noeeekr/singullar/server/util/environment"
 	"github.com/gin-gonic/gin"
 
 	"github.com/Noeeekr/singullar/server/internal/database/cmd/migrate"
@@ -52,12 +51,12 @@ var startCmd *cobra.Command = &cobra.Command{
 				flags = append(flags, "--recreate-existing")
 			}
 			if res := Migrate(mode, flags...); res != nil {
-				logs.Info.Fatal(res.String())
+				util.Info.Fatal(res.String())
 			}
 		}
 
 		if err := StartApi(domain, port, mode); err != nil {
-			logs.Info.Fatal(err.Error())
+			util.Error.Fatal(err.Error())
 		}
 	},
 }
@@ -97,16 +96,16 @@ func StartApi(domain, port, mode string) error {
 
 	addr := fmt.Sprintf("%s:%s", domain, port)
 	server := server.New(router, addr).
-		WithErrLogger(logs.Error)
+		WithErrLogger(util.Error)
 
-	logs.Info.Printf("Mode: %s", mode)
-	logs.Info.Printf("Domain: %s", domain)
-	logs.Info.Printf("Database: %s", commiter.Name)
-	logs.Info.Printf("Address: %s\n", addr)
+	util.Info.Printf("Mode: %s", mode)
+	util.Info.Printf("Domain: %s", domain)
+	util.Info.Printf("Database: %s", commiter.Name)
+	util.Info.Printf("Address: %s\n", addr)
 	return server.ListenAndServe()
 }
 
-func Migrate(mode string, flags ...string) *common.Response {
+func Migrate(mode string, flags ...string) *util.Response {
 	args := []string{"./api", mode}
 	args = append(args, flags...)
 
@@ -114,14 +113,14 @@ func Migrate(mode string, flags ...string) *common.Response {
 
 	err := migrate.EnvironmentCmd.Execute()
 	if err != nil {
-		return common.NewResponse().WithDescription(err.Error()).WithStatus(common.StatusInternalError)
+		return util.NewResponse().WithDescription(err.Error()).WithStatus(util.StatusInternalError)
 	}
 
 	os.Args = args
 
 	err = migrate.RelationsCmd.Execute()
 	if err != nil {
-		return common.NewResponse().WithDescription(err.Error()).WithStatus(common.StatusInternalError)
+		return util.NewResponse().WithDescription(err.Error()).WithStatus(util.StatusInternalError)
 	}
 
 	return nil

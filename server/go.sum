@@ -1,9 +1,3 @@
-github.com/Noeeekr/borm v0.0.0-20250902185959-b8b97add9152 h1:sLqi/WYTH/itNB3xYkOJT215DNfrbo9R02poopcY/ho=
-github.com/Noeeekr/borm v0.0.0-20250902185959-b8b97add9152/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
-github.com/Noeeekr/borm v0.0.0-20250908191723-4f7f5a85e711 h1:JFCHeLBiSM+oWK1jPHK/iUrL5VpvO2n1kVSr/5p8158=
-github.com/Noeeekr/borm v0.0.0-20250908191723-4f7f5a85e711/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
-github.com/Noeeekr/borm v0.0.0-20250908215955-abe0a3aa5b93 h1:gvpag8BxoonY5alQO5B07WqFqdRQqHkgQ3fmaqAOpHc=
-github.com/Noeeekr/borm v0.0.0-20250908215955-abe0a3aa5b93/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
 github.com/Noeeekr/borm v0.0.0-20250909171215-0c7aa6129ebf h1:9K6LPM+rQFs1oU4HPXLOUkaRdQkjO9SZh85lrPPjBO4=
 github.com/Noeeekr/borm v0.0.0-20250909171215-0c7aa6129ebf/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
 github.com/bytedance/sonic v1.12.2 h1:oaMFuRTpMHYLpCntGca65YWt5ny+wAceDERTkT2L9lg=

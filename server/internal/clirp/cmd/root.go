@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/clirp/proxy"
+	"github.com/Noeeekr/singullar/server/util"
 	"github.com/spf13/cobra"
 )
 
@@ -22,15 +22,15 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		logs.Info.Println("Parsing json configuration file..")
+		util.Info.Println("Parsing json configuration file..")
 		ReverseProxyConfig, err := proxy.ParseReverseProxyConfig(args[0])
 		if err != nil {
-			logs.Info.Println("Failed to parse json configuration file.")
-			logs.Error.Println(err.Error())
+			util.Info.Println("Failed to parse json configuration file.")
+			util.Error.Println(err.Error())
 			return
 		}
-		logs.Info.Println("Json configuration file parsed successfully.")
-		logs.Info.Println("Starting reverse proxy.")
+		util.Info.Println("Json configuration file parsed successfully.")
+		util.Info.Println("Starting reverse proxy.")
 
 		ReverseProxy := proxy.NewReverseProxy()
 		ReverseProxy.StartWith(ReverseProxyConfig)

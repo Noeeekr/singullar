@@ -1,6 +1,6 @@
 package connections
 
-import "github.com/Noeeekr/singullar/server/common/environment"
+import "github.com/Noeeekr/singullar/server/util/environment"
 
 var POSTGRES environment.EnvironmentMode = "postgres"
 

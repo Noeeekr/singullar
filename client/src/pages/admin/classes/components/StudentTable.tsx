@@ -23,6 +23,7 @@ import type { ChangeEvent, SyntheticEvent, Dispatch, SetStateAction } from 'reac
 import useContextAwareFetch from '@hooks/useContextAwareFetch';
 import SectionTitle from '@components/SectionTitle';
 import { EF1, EF2, EM } from '@types/server';
+import { SERVER_ADDR } from '../../../../configs';
 
 export type TableData = TableRow[];
 interface TableRow {
@@ -230,7 +231,7 @@ const TableOptions = (): JSX.Element => {
     ), [tableRequest])
 
     const [response, isProcessingFile, fetchError, send] = useContextAwareFetch<TableData>(
-        'http://localhost:8000/api/institution/students/tools/sheet',
+        `${SERVER_ADDR}/api/institution/students`,
         requestBody,
     )
 
@@ -262,7 +263,9 @@ const TableOptions = (): JSX.Element => {
     }, [tableRequest, send])
 
     if (isManualSetup) {
-        return <TableForm />
+        return <TableForm 
+            returnButtonCallback={() => {setIsManualSetup(false)}}
+        />
     }
     if (isProcessingFile) {
         return <Typography variant="subtitle2" component="p" sx={{ marginTop: 2, marginX: "auto" }}>
@@ -334,13 +337,17 @@ const TableOptions = (): JSX.Element => {
         }
     </Stack>
 }
-const TableForm = (): JSX.Element => {
+const TableForm = ({ returnButtonCallback }: { returnButtonCallback: () => void }): JSX.Element => {
     const [id, setId] = useState<number | null>(null)
 
     return <Box>
         <Stack flexDirection="row" flexWrap="wrap" alignItems="center" gap={2}>
             <Stack gap={1}>
-                <ButtonSolid sx={{ backgroundColor: "white", boxShadow: "0px 0px 2px 3px rgb(0,0,0,0.01)"}} color="primary.purpleDark">
+                <ButtonSolid 
+                    sx={{ backgroundColor: "white", boxShadow: "0px 0px 2px 3px rgb(0,0,0,0.01)"}} 
+                    color="primary.purpleDark"
+                    onClick={returnButtonCallback}    
+                >
                     Voltar
                 </ButtonSolid>
                 <ButtonSolid>
