@@ -248,24 +248,24 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 }
 
 func (h *Handlers) GetStudents(ctx *gin.Context) {
-	var request operations.SelectStudentsOptions
+	var request []operations.FilterStudentOptions
 	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
 		return
 	}
 
-	unsignedUser, exists := ctx.Get("user")
+	unsignedRequestUser, exists := ctx.Get("user")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, types.NewServerResponse(nil, "Usuário não autorizado"))
 	}
 
-	user := unsignedUser.(models.Users)
-	unsignedStudents, err := h.operations.SelectStudents(user.InstitutionId, &request)
+	requestUser := unsignedRequestUser.(models.Users)
+	students, err := h.operations.SelectStudents(requestUser.InstitutionId, &request, false)
 	if err != nil {
 		h.internalError(ctx, "Falha ao buscar estudantes sem turmas", err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, types.NewServerResponse(unsignedStudents, ""))
+	ctx.JSON(http.StatusOK, types.NewServerResponse(students, ""))
 }
 
 type UsersRequest struct {

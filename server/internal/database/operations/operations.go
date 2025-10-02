@@ -3,6 +3,7 @@ package operations
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -133,42 +134,70 @@ func (ops *Operations) SelectUsers(institutionId int, roles ...models.UserRole) 
 	return users, nil
 }
 
-type SelectStudentsOptions struct {
+type FilterStudentOptions struct {
 	Email   string               `json:"email" binding:"omitempty,email"`
 	Name    string               `json:"name" binding:"omitempty,min=1"`
 	Segment *models.UserSegments `json:"segment" binding:"omitempty"`
-	ID      *int                 `json:"id" binding:"omitempty"`
+	ID      string               `json:"id" binding:"omitempty"`
 }
 
 // Returns an empty array if no users were found. Hashed Password is returned and must be removed. Default values will be ignored in search, expect for segment.
-func (ops *Operations) SelectStudents(institutionId int, options *SelectStudentsOptions) ([]*models.Users, error) {
+func (ops *Operations) SelectStudents(institutionId int, options *[]FilterStudentOptions, includePassword bool) ([]*models.Users, error) {
 	users := []*models.Users{}
 	query := models.TableUsers.
 		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
 		InnerJoin(models.TableInstitutions, "i").On("i.id", "u.institution_id").
 		Scanner(scan.Users(&users)).
 		Where("u.institution_id").Equals(institutionId).
-		Where("u.role").Equals(models.STUDENT)
-	if options != nil {
-		if options.Segment != nil {
-			query.Where("u.segment").Equals(nil)
-		}
-		if options.Email != "" {
-			query.Where("u.email").Equals(options.Email)
-		}
-		if options.Name != "" {
-			query.Where("u.name").Like("%"+strings.ToLower(options.Name)+"%", false)
-		}
-		if options.ID != nil {
-			query.Where("u.id").Equals(*options.ID)
-		}
-	}
+		And("u.role").Equals(models.STUDENT)
 
-	err := ops.Do(query)
+	addFilters(query, options)
+
+	blocks := make([]string, len(query.Blocks))
+	fmt.Println(len(*options))
+	for i := range query.Blocks {
+		blocks[i] = query.Blocks[i].Block
+	}
+	fmt.Printf("[%s]\n", strings.Join(blocks, "]\n["))
+	err := ops.Do(query.Query)
 	if err != nil && !errors.Is(err, borm.ErrNotFound) {
 		return nil, err
 	}
+
+	if !includePassword {
+		for i := range users {
+			fmt.Println(users[i].Name, users[i].Segment, users[i].Id)
+			users[i].Password = ""
+		}
+	}
 	return users, nil
+}
+
+func addFilters(query *borm.AditionalWhereQuery, filters *[]FilterStudentOptions) {
+	for i, filter := range *filters {
+		if filter.Segment == nil {
+			query.Where("u.segment").IsNull()
+		} else {
+			query.Where("u.segment").Equals(filter.Segment)
+		}
+		if filter.Email != "" {
+			query.And("u.email").Equals(filter.Email)
+		}
+		if filter.Name != "" {
+			query.And("u.name").Like("%"+strings.ToLower(filter.Name)+"%", false)
+		}
+		if filter.ID != "" {
+			query.And("u.id").Equals(filter.ID)
+		}
+		if i == 0 {
+			query.AndComposed()
+		} else {
+			query.OrComposed()
+		}
+	}
+	if len(*filters) > 1 {
+		query.Compose(make([]any, len(*filters))...)
+	}
 }
 
 /*er
@@ -249,10 +278,7 @@ func (ops *Operations) InsertNotifications(requests ...*NotificationRequest) ([]
 
 		// Sort by the smallest title if they have the same ID
 		result := strings.Compare(requests[j].Content.Title, requests[i].Content.Title)
-		if result >= 0 {
-			return false
-		}
-		return true
+		return result < 0
 	})
 
 	creationTime := time.Now()
@@ -288,10 +314,7 @@ func (ops *Operations) InsertNotifications(requests ...*NotificationRequest) ([]
 			return false
 		}
 		result := strings.Compare(notifications[i].Title, notifications[j].Title)
-		if result >= 0 {
-			return false
-		}
-		return true
+		return result < 0
 	})
 
 	userNotificationsArgs := []any{}
@@ -318,7 +341,7 @@ func (ops *Operations) DeleteUserById(id int) error {
 	err := ops.currentTransction.Do(
 		models.TableUsers.
 			Delete().
-			Where("id").Equals(id),
+			Where("id").Equals(id).Query,
 	)
 	return err
 }
@@ -326,7 +349,7 @@ func (ops *Operations) DeleteUserByEmail(email string) error {
 	err := ops.currentTransction.Do(
 		models.TableUsers.
 			Delete().
-			Where("email").Equals(email),
+			Where("email").Equals(email).Query,
 	)
 	return err
 }
@@ -346,7 +369,7 @@ func (ops *Operations) DeleteInstitutionById(id int) error {
 	err := ops.currentTransction.Do(
 		models.TableInstitutions.
 			Delete().
-			Where("id").Equals(id),
+			Where("id").Equals(id).Query,
 	)
 	return err
 }
@@ -355,7 +378,7 @@ func (ops *Operations) DeleteNotificationsByIssuerId(ids ...int) error {
 	for _, id := range ids {
 		err := ops.currentTransction.Do(models.TableNotificationContents.
 			Delete().
-			Where("id").Equals(id),
+			Where("id").Equals(id).Query,
 		)
 		if err != nil {
 			return err

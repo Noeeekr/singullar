@@ -18,7 +18,7 @@ require (
 )
 
 require (
-	github.com/Noeeekr/borm v0.0.0-20250909171215-0c7aa6129ebf
+	github.com/Noeeekr/borm v0.0.0-20251001202321-099ac4fe02de
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect

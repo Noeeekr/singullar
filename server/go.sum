@@ -1,5 +1,9 @@
 github.com/Noeeekr/borm v0.0.0-20250909171215-0c7aa6129ebf h1:9K6LPM+rQFs1oU4HPXLOUkaRdQkjO9SZh85lrPPjBO4=
 github.com/Noeeekr/borm v0.0.0-20250909171215-0c7aa6129ebf/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
+github.com/Noeeekr/borm v0.0.0-20250924185747-3cbe98b20ed1 h1:iiND4BkNQlEDHjk5L5dux+mDSKxEV94wEPExx2Xw8NI=
+github.com/Noeeekr/borm v0.0.0-20250924185747-3cbe98b20ed1/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
+github.com/Noeeekr/borm v0.0.0-20251001202321-099ac4fe02de h1:wAosnrPfmVOsxRkju8uFglC18hLke8II3wW3cW1t3Wo=
+github.com/Noeeekr/borm v0.0.0-20251001202321-099ac4fe02de/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
 github.com/bytedance/sonic v1.12.2 h1:oaMFuRTpMHYLpCntGca65YWt5ny+wAceDERTkT2L9lg=
 github.com/bytedance/sonic v1.12.2/go.mod h1:B8Gt/XvtZ3Fqj+iSKMypzymZxw/FVwgIGKzMzT9r/rk=
 github.com/bytedance/sonic/loader v0.1.1/go.mod h1:ncP89zfokxS5LZrJxl5z0UJcsk4M4yY2JpfqGeCtNLU=
