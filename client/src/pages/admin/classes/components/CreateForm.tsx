@@ -136,9 +136,8 @@ const CreateClassForm = ({ form }: { form: ({ title: string, subtitle: string, c
                             </Stack>
                             { /* FORM SECTIONS GO HERE */}
                             <Box sx={{
-                                height: sectionsStatus === i + 1 ? "100%" : 0,
-
-                                overflow: "hidden",
+                                height: sectionsStatus == i + 1 ? "100%" : 0,
+                                display: sectionsStatus == i + 1 ? "initial" : "none",
 
                                 marginTop: 0.5,
                             }}>

@@ -16,20 +16,21 @@ import ButtonSolid from '@components/ButtonSolid';
 // Features
 import { InputLabel, MenuItem, OutlinedInput, Select, styled } from '@mui/material';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Types
 import type { ChangeEvent, SyntheticEvent, Dispatch, SetStateAction } from 'react';
 import useContextAwareFetch from '@hooks/useContextAwareFetch';
 import SectionTitle from '@components/SectionTitle';
-import { EF1, EF2, EM } from '@types/server';
+import { EF1, EF2, EM, User, UserSegments } from '../../../../types/server';
 import { SERVER_ADDR } from '../../../../configs';
+import { useForm } from 'react-hook-form';
 
-export type TableData = TableRow[];
-interface TableRow {
-    name: string | number,
-    id: string | number,
-    email: string | number,
+export interface TableRow {
+    name: string,
+    id: string,
+    email: string,
+    segment: UserSegments,
 }
 
 const TableCol = styled(Box)(() => ({
@@ -48,14 +49,14 @@ const TableCol = styled(Box)(() => ({
 const parseFileData = (
     formData: string
 ): {
-    tableData: TableData,
+    tableData: TableRow[],
     error: string,
 } => {
     const rowDividerRegExp = /[\u00C0-\u00FFa-zA-Z \d]+,\d{7,},[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)/g;
 
     const rows = [...formData.matchAll(rowDividerRegExp)];
 
-    const tableData: TableData = []
+    const tableData: TableRow[] = []
     for (const row of rows) {
         const [
             name,
@@ -65,8 +66,9 @@ const parseFileData = (
 
         tableData.push({
             name,
-            id: Number(id),
+            id,
             email,
+            segment: null,
         })
     }
 
@@ -211,12 +213,13 @@ const FileGuideDialog = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: Di
 }
 
 const TableOptions = (): JSX.Element => {
-    const [tableRequest, setTableRequest] = useState<TableData>([])
+    const [tableRequest, setTableRequest] = useState<TableRow[]>([])
     const [isOpen, setIsOpen] = useState(false);
     const [error, setError] = useState<string>("");
     const [isManualSetup, setIsManualSetup] = useState(false)
 
-    const requestBody: RequestInit = useMemo(() => (
+    const [response, isProcessingFile, fetchError, send] = useContextAwareFetch<User[], TableRow[]>(
+        `${SERVER_ADDR}/api/institution/students`,
         {
             method: 'POST',
             headers: {
@@ -224,15 +227,7 @@ const TableOptions = (): JSX.Element => {
             },
             credentials: 'include',
             cache: 'no-cache',
-            body: JSON.stringify({
-                students: tableRequest,
-            })
-        }
-    ), [tableRequest])
-
-    const [response, isProcessingFile, fetchError, send] = useContextAwareFetch<TableData>(
-        `${SERVER_ADDR}/api/institution/students`,
-        requestBody,
+        },
     )
 
     // Parses the file, sets the table request to trigger the fetch
@@ -259,12 +254,12 @@ const TableOptions = (): JSX.Element => {
             return
         }
 
-        send()
+        send(tableRequest)
     }, [tableRequest, send])
 
     if (isManualSetup) {
-        return <TableForm 
-            returnButtonCallback={() => {setIsManualSetup(false)}}
+        return <TableForm
+            returnButtonCallback={() => { setIsManualSetup(false) }}
         />
     }
     if (isProcessingFile) {
@@ -338,19 +333,46 @@ const TableOptions = (): JSX.Element => {
     </Stack>
 }
 const TableForm = ({ returnButtonCallback }: { returnButtonCallback: () => void }): JSX.Element => {
+    const { register, getValues } = useForm<TableRow>({
+        defaultValues: {
+            name: "",
+            email: "",
+            segment: null,
+            id: undefined,
+        }
+    });
+
+    const [students, isLoading, error, send] = useContextAwareFetch<User[], TableRow[]>(
+        `${SERVER_ADDR}/api/institution/students`,
+        {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: 'include',
+            cache: 'no-cache',
+        },
+    )
+
+    useEffect(() => {
+        send([getValues()]);
+    }, [])
+
     const [id, setId] = useState<number | null>(null)
 
     return <Box>
         <Stack flexDirection="row" flexWrap="wrap" alignItems="center" gap={2}>
             <Stack gap={1}>
-                <ButtonSolid 
-                    sx={{ backgroundColor: "white", boxShadow: "0px 0px 2px 3px rgb(0,0,0,0.01)"}} 
+                <ButtonSolid
+                    sx={{ backgroundColor: "white", boxShadow: "0px 0px 2px 3px rgb(0,0,0,0.01)" }}
                     color="primary.purpleDark"
-                    onClick={returnButtonCallback}    
+                    onClick={returnButtonCallback}
                 >
                     Voltar
                 </ButtonSolid>
-                <ButtonSolid>
+                <ButtonSolid
+                    onClick={() => { console.log("Delete later", [getValues()]); send([getValues()]) }}
+                >
                     Procurar
                 </ButtonSolid>
             </Stack>
@@ -367,6 +389,7 @@ const TableForm = ({ returnButtonCallback }: { returnButtonCallback: () => void 
                         Insira o segmento do estudante
                     </InputLabel>
                     <Select
+                        {...register("segment")}
                         labelId="student-search-filter-segment-label"
                         label="digite-o-segmento-do-estudante"
                     >
@@ -390,7 +413,8 @@ const TableForm = ({ returnButtonCallback }: { returnButtonCallback: () => void 
                         Insira o id
                     </InputLabel>
                     <OutlinedInput
-                        label="Insira o segmento (opcional)"
+                        {...register("id")}
+                        label="Insira o id (opcional)"
                         type="number"
                         id="outlined-input-form-sheet-id"
                         value={id}
@@ -406,17 +430,65 @@ const TableForm = ({ returnButtonCallback }: { returnButtonCallback: () => void 
                 >
                     Procurar com nome (opcional)
                 </SectionTitle>
-            <FormControl>
-                <InputLabel htmlFor="outlined-input-form-sheet-name">
-                    Insira o nome
-                </InputLabel>
-                <OutlinedInput label="Insira o nome (opcional)" id="outlined-input-form-sheet-name" />
-            </FormControl>
+                <FormControl>
+                    <InputLabel htmlFor="outlined-input-form-sheet-name">
+                        Insira o nome
+                    </InputLabel>
+                    <OutlinedInput
+                        {...register("name")}
+                        label="Insira o nome (opcional)"
+                        id="outlined-input-form-sheet-name" />
+                </FormControl>
             </Box>
+        </Stack>
+        <Stack flexDirection="column" alignItems="center" marginTop={2}>
+            {
+                isLoading
+                    ? <Typography variant="subtitle1">Procurando estudantes..</Typography>
+                    : <></>
+            }
+            {
+                error == ""
+                    ? <></>
+                    : <ErrorBubble err={error} />
+            }
+            {
+                students == null
+                    ? <></>
+                    : <Stack gap={1} width="100%">
+                        {
+                            students.map((student) => {
+                                return (
+                                    <Box
+                                        key={student.id}
+                                        sx={{
+                                            backgroundColor: "white",
+                                            width: "100%",
+                                            padding: "0.5rem 1rem",
+                                            borderRadius: "1rem",
+                                            boxShadow: "0px 0px 1px 4px rgb(150,150,150,0.05)",
+
+                                            flex: 1,
+                                        }}
+                                    >
+                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                            <Typography variant="body2" component="p">{student.name}</Typography>
+                                            <Typography variant="body1" component="p">PLATAFORMA ID {student.id}</Typography>
+                                        </Stack>
+                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                            <Typography variant="subtitle1" component="p">EMAIL: {student.email}</Typography>
+                                            <Typography variant="subtitle1" component="p">{student.segment}</Typography>
+                                        </Stack>
+                                    </Box>
+                                )
+                            })
+                        }
+                    </Stack>
+            }
         </Stack>
     </Box>
 }
-const StudentTable = ({ tableData }: { tableData: TableData }): JSX.Element => {
+export const StudentTable = ({ tableData }: { tableData: TableRow[] }): JSX.Element => {
     const ColsDescription = [
         "Segmento",
         "Série/Ano",

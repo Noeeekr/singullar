@@ -36,4 +36,4 @@ export type UserRoles = typeof ROLE_ADMIN | typeof ROLE_STUDENT | typeof ROLE_TE
 export const EF1 = "ensino fundamental 1"
 export const EF2 = "ensino fundamental 2"
 export const EM  = "ensino medio"
-export type UserSegments = typeof EF1 | typeof EF2 | typeof EM;
+export type UserSegments = typeof EF1 | typeof EF2 | typeof EM | null;

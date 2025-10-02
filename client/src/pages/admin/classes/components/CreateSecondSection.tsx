@@ -6,10 +6,10 @@ import FormControl from '@mui/material/FormControl';
 import StudentTable from '../components/StudentTable';
 
 // Types
-import type { TableData } from '../components/StudentTable'
+import type { TableRow } from '../components/StudentTable'
 
 export interface ISecondSectionData {
-    studentSheet: TableData[]
+    studentSheet: TableRow[];
 }
 
 /**
