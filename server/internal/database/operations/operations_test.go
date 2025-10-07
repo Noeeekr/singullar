@@ -212,7 +212,7 @@ func TestDatabaseOperations(test *testing.T) {
 	utils.MustPass("SELECT USERS BY ID", func(t *testing.T) {
 		for _, institution := range institutions {
 			for _, user := range institution.Users {
-				_, err := utils.operations.SelectUserById(user.Id)
+				_, err := utils.operations.SelectUsersById(user.Id)
 				if err != nil {
 					t.Fatal(err)
 				}

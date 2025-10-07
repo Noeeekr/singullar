@@ -101,7 +101,7 @@ func (h *Handlers) checkUserPassword(email string, password string) (*models.Use
 		return nil, util.StatusInternalError, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user[0].Password), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			return nil, util.StatusNotEqual, err
@@ -109,8 +109,8 @@ func (h *Handlers) checkUserPassword(email string, password string) (*models.Use
 		return nil, util.StatusInternalError, err
 	}
 
-	user.Password = ""
-	return user, util.StatusEmpty, nil
+	user[0].Password = ""
+	return user[0], util.StatusEmpty, nil
 }
 
 // SingInHandler gets a SignInRequest, check the user email and password agaisnt database.
@@ -182,6 +182,60 @@ func (h *Handlers) SignOut(ctx *gin.Context) {
 	})
 }
 
+func (h *Handlers) CreateClass(ctx *gin.Context) {
+	var request *models.CreateClassRequest = &models.CreateClassRequest{}
+
+	unsignedUser, _ := ctx.Get(types.USER_COOKIE_ID)
+	requestMaker := unsignedUser.(models.Users)
+
+	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(request)) {
+		return
+	}
+
+	if _, err := h.operations.SelectUsersById(requestMaker.Id, request.TeacherId); err != nil {
+		if errors.Is(err, borm.ErrNotFound) {
+			ctx.JSON(http.StatusBadRequest, types.NewServerResponse(nil, "Professor não encontrado"))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao encontrar o professor requisitado"))
+		return
+	}
+	if h.operations.StartTransaction() != nil {
+		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao iniciar criação da classe"))
+		return
+	}
+	class, err := h.operations.InsertClass(&models.CreateClasses{
+		Segment:       request.Segment,
+		Series:        request.Series,
+		Name:          request.Name,
+		InstitutionId: requestMaker.Id,
+		TeacherId:     request.TeacherId,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao criar a classe"))
+		return
+	}
+
+	if len(request.StudentsIds) == 0 {
+		err = h.operations.CommitTransaction()
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao salvar alterações"))
+			return
+		}
+		ctx.JSON(http.StatusCreated, types.NewServerResponse(class))
+		return
+	}
+
+	if err := h.operations.InsertClassStudents(class.Id, &request.StudentsIds); err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao adicionar estudantes. Por favor, tente novamente depois"))
+		return
+	}
+	if h.operations.CommitTransaction() != nil {
+		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao salvar mudanças"))
+		return
+	}
+	ctx.JSON(http.StatusCreated, types.NewServerResponse(class, ""))
+}
 func (h *Handlers) CreateUser(ctx *gin.Context) {
 	var user *models.Users = &models.Users{}
 
@@ -253,7 +307,7 @@ func (h *Handlers) GetStudents(ctx *gin.Context) {
 		return
 	}
 
-	unsignedRequestUser, exists := ctx.Get("user")
+	unsignedRequestUser, exists := ctx.Get(types.USER_COOKIE_ID)
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, types.NewServerResponse(nil, "Usuário não autorizado"))
 	}
@@ -268,13 +322,29 @@ func (h *Handlers) GetStudents(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, types.NewServerResponse(students, ""))
 }
 
-type UsersRequest struct {
-	TargetRoles []models.UserRole `json:"target_roles" binding:"required"`
-}
+func (h *Handlers) GetClasses(ctx *gin.Context) {
+	filters := []*operations.FilterClassOptions{}
+	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&filters)) {
+		ctx.JSON(http.StatusBadRequest, types.NewServerResponse(nil, "Dados em formato incorreto"))
+		return
+	}
+	unsignedUser, _ := ctx.Get(types.USER_COOKIE_ID)
+	user := unsignedUser.(models.Users)
 
+	classes, err := h.operations.SelectClasses(user.Id, filters...)
+	if err != nil {
+		if errors.Is(err, borm.ErrNotFound) {
+			ctx.JSON(http.StatusOK, types.NewServerResponse([]any{}))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao procurar as classes solicitadas"))
+		return
+	}
+	ctx.JSON(http.StatusOK, types.NewServerResponse(classes))
+}
 func (h *Handlers) GetUsers(ctx *gin.Context) {
-	var request UsersRequest
-	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
+	var roles []models.UserRole
+	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&roles)) {
 		return
 	}
 
@@ -285,7 +355,7 @@ func (h *Handlers) GetUsers(ctx *gin.Context) {
 	}
 	user := unsignedUser.(models.Users)
 
-	users, err := h.operations.SelectUsers(user.Id, request.TargetRoles...)
+	users, err := h.operations.SelectUsers(user.Id, roles...)
 	if err != nil {
 		h.internalError(ctx, "Falha ao procurar usuários", err)
 		return

@@ -41,12 +41,14 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 	// r.GET("/api/user/auth", handlers.Authenticate) // For users and institutions
 
 	// SELECT
-	r.GET("/api/institution/", middlewares.Authenticate(models.STUDENT, models.ADMIN, models.TEACHER, models.SUPERVISOR), handlers.GetInstitution)
-	r.POST("/api/institution/students", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetStudents)
-	r.POST("/api/institution/users", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetUsers)
+	r.GET("/api/institution", middlewares.Authenticate(models.STUDENT, models.ADMIN, models.TEACHER, models.SUPERVISOR), handlers.GetInstitution)
+	r.POST("/api/students", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetStudents)
+	r.POST("/api/users", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetUsers)
+	r.POST("/api/classes", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.ADMIN, models.SUPERVISOR), handlers.GetClasses)
 
 	// CREATE
-	r.POST("/api/user/create/", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateUser) // Institution admin creates users
+	r.POST("/api/user/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateUser) // Institution admin creates users
+	r.POST("/api/class/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateClass)
 
 	// r.POST("/api/class/create", middlewares.Authenticate, handlers.CreateClass)
 

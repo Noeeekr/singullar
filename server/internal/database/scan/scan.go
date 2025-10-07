@@ -325,10 +325,28 @@ func Institutions(institutions *[]*models.Institutions) borm.ReturnScanner {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
-		if len(*institutions) == 0 {
-			return false, nil
+		return len(*institutions) == 0, nil
+	}
+}
+func Classes(classes *[]*models.Classes) borm.ReturnScanner {
+	return func(rows *sql.Rows) (bool, error) {
+		if classes == nil {
+			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
 
-		return true, nil
+		for rows.Next() {
+			class := models.Classes{}
+			err := rows.Scan(&class.CreatedAt, &class.UpdatedAt, &class.DeletedAt, &class.Name, &class.Segment, &class.Series, &class.InstitutionId, &class.Id, &class.TeacherId)
+			if err != nil {
+				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
+			}
+			*classes = append(*classes, &class)
+		}
+
+		if err := rows.Err(); err != nil {
+			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
+		}
+
+		return len(*classes) != 0, nil
 	}
 }

@@ -1,6 +1,8 @@
 package types
 
 import (
+	"strings"
+
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -30,9 +32,9 @@ type ServerResponse map[string]any
 
 const USER_COOKIE_ID = "user"
 
-func NewServerResponse(data any, err string) *ServerResponse {
+func NewServerResponse(data any, err ...string) *ServerResponse {
 	return &ServerResponse{
 		"data":  data,
-		"error": err,
+		"error": strings.Join(err, ": "),
 	}
 }
