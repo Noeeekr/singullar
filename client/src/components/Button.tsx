@@ -15,7 +15,7 @@ import {
 import { MenuItemStack } from './SideMenuButtons'
 
 // Types
-import type { ISideMenuButton } from '../types/buttonProps';
+import type { ISideMenuButton } from '../models/buttonProps';
 
 export interface IButtonBaseProps {
     href?: string,

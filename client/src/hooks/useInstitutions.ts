@@ -11,7 +11,7 @@ import {
 } from '../slices/store';
 import { setInstitution as ActionSetInstitution } from '../slices/institutionsSlice'
 
-import type { Institution } from '../types/server';
+import type { Institution } from '../models/server';
 
 import { SERVER_ADDR } from '../configs'
 
@@ -22,7 +22,7 @@ const useInstitutions = (): [Institution | null, () => void] => {
     const dispatch = useAppDispatch();
 
     const getInstitution = useCallback(() => {
-        fetch(`${SERVER_ADDR}/api/user/institutions`,{
+        fetch(`${SERVER_ADDR}/api/institution`,{
             "headers": {
                 "Content-Type": "application/json"
             },

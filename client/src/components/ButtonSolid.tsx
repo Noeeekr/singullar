@@ -19,6 +19,7 @@ const SolidButton = styled(({ children, disabled, onClick, ...props }: BoxProps 
     border: disabled === true ? 'solid 1px rgb(180,180,180)' : 'none',
     borderRadius: '22px',
     padding: '8px 22px',
+    height: "min-content",
     
     fontSize: '14px',
     fontWeight: 'bold',

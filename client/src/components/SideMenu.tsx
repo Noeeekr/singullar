@@ -39,7 +39,7 @@ const SideMenuLayout = styled('nav')<ISideMenuLayout>(
             transition: isMobile ? 'none' : 'width 200ms ease-in-out',
 
             overflow: 'hidden',
-            zIndex: 6,
+            zIndex: 25,
         }
     )
 )

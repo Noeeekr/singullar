@@ -26,14 +26,20 @@ export interface User extends DefaultFields {
     "institution_id"?: number,
     "segment": UserSegments | null,
 }
-
+export interface Class extends DefaultFields {
+    "name": string,
+    "segment": UserSegments,
+    "series": string,
+    "institution_id": number
+    "teacher_id": number
+}
+export type UserRoles = typeof ROLE_ADMIN | typeof ROLE_STUDENT | typeof ROLE_TEACHER | typeof ROLE_SUPERVISOR;
 export const ROLE_ADMIN = "admin"
 export const ROLE_STUDENT = "student"
 export const ROLE_TEACHER = "teacher"
 export const ROLE_SUPERVISOR = "supervisor"
-export type UserRoles = typeof ROLE_ADMIN | typeof ROLE_STUDENT | typeof ROLE_TEACHER | typeof ROLE_SUPERVISOR;
 
-export const EF1 = "ensino fundamental 1"
-export const EF2 = "ensino fundamental 2"
-export const EM  = "ensino medio"
-export type UserSegments = typeof EF1 | typeof EF2 | typeof EM | null;
+export type UserSegments = typeof EF1 | typeof EF2 | typeof EM | "";
+export const EF1 = "ensino fundamental 1";
+export const EF2 = "ensino fundamental 2";
+export const EM = "ensino medio";

@@ -1,4 +1,4 @@
-import { UserRoles } from './types/server';
+import { UserRoles } from './models/server';
 
 const studentRoutes = [
     "/home"

@@ -18,7 +18,7 @@ import type {
     ISideMenuButton,
     ISideMenuLinkButton, 
     ISideMenuPopupButton,
-} from '../../types/buttonProps'
+} from '../../models/buttonProps'
 
 // Data
 import { 

@@ -15,7 +15,7 @@ import Typography from "@mui/material/Typography"
 import { useEffect } from "react";
 import useFetchUsers from "@hooks/useFetchUsers";
 
-import { EF1, EF2, EM, ROLE_STUDENT, User, UserRoles } from "../../../types/server"
+import { EF1, EF2, EM, ROLE_STUDENT, User, UserRoles } from "../../../models/server"
 import ErrorBubble from "@components/ErrorBubble";
 import { useForm } from "react-hook-form";
 
@@ -36,11 +36,11 @@ const CreatePage = (): JSX.Element => {
     const segment = watch("segment")
     const id = watch("id")
 
-    const [users, isLoading, error, fetchUsers] = useFetchUsers(roles)
+    const [users, isLoading, error, send] = useFetchUsers()
 
     useEffect(() => {
-        fetchUsers()
-    }, [fetchUsers])
+        send(roles)
+    }, [])
 
     return (
         <div>
@@ -135,7 +135,7 @@ const CreatePage = (): JSX.Element => {
 
                 <Grid container paddingY={2} spacing={2}>
                     {
-                        users.length == 0
+                        users != null && users.length == 0
                             ?
                             <Box sx={{
                                 borderRadius: 2,
@@ -159,12 +159,12 @@ const CreatePage = (): JSX.Element => {
                                         : <></>
                                 }
                                 {
-                                    users.length == 0 && !isLoading ?
+                                    users != null && users.length == 0 && !isLoading ?
                                         <>
                                             <Typography variant="subtitle1">
                                                 Nenhum usuário encontrado
                                             </Typography>
-                                            <Button onClick={() => { fetchUsers() }}>Recarregar</Button>
+                                            <Button onClick={() => { send(roles) }}>Recarregar</Button>
                                         </>
                                         : <></>
                                 }
@@ -172,7 +172,7 @@ const CreatePage = (): JSX.Element => {
                             : <></>
                     }
                     {
-                        users.filter((user) => {
+                        users?.filter((user) => {
                             if (name && user.name.toLowerCase().search(name.toLowerCase())) {
                                 return false
                             }

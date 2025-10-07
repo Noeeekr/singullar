@@ -21,7 +21,7 @@ import { students_sidemenu_data } from '../pages/student/data'
 import type { 
     ISideMenuItems,
     ISideMenuLinkButton,
-} from '../types/buttonProps';
+} from '../models/buttonProps';
 
 const Root = (): JSX.Element => {
     const { user, mostVisitedUrls } = useAppSelector((state) => state.user);

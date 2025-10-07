@@ -19,7 +19,7 @@ import { useTheme } from '@mui/material/styles'
 
 import { MenuItemStack } from './SideMenuButtons'
 
-import { ISideMenuPopupButton } from '../types/buttonProps';
+import { ISideMenuPopupButton } from '../models/buttonProps';
 import SidePopup from './SidePopup'
 
 interface IPopupButtonProps extends ISideMenuPopupButton {

@@ -1,20 +1,39 @@
-// COmponents
-import FormControl from '@mui/material/FormControl'
-import Select from '@mui/material/Select'
-import MenuItem from '@mui/material/MenuItem'
-import InputLabel from '@mui/material/InputLabel'
-import Grid from '@mui/material/Grid2'
-import LinkButton from '@components/ButtonLink'
-import SectionHeader from '@components/SectionHeader';
-
 // Features
+import useContextAwareFetch from '@hooks/useContextAwareFetch';
 import { useAppSelector } from '@slices/store';
+import { createContext } from "react"
 
-const Search = (): JSX.Element => {
+// Components
+import SearchFilters from "./components/SearchFilters"
+import ClassBubble from "./components/ClassBubble"
+import SectionHeader from "@components/SectionHeader"
+import LinkButton from "@components/ButtonLink"
+import Typography from '@mui/material/Typography';
+
+// Models
+import type { SearchClassFilters } from './components/SearchFilters';
+import type { Class } from '@models/server';
+import { SERVER_ADDR } from '../../../configs';
+import ErrorBubble from '@components/ErrorBubble';
+
+const FormContext = createContext<(body: SearchClassFilters[]) => void>((_) => { })
+
+export default function Search(): JSX.Element {
     const institution = useAppSelector((store) => store.institution)
 
+    const [classes, isLoading, error, send] = useContextAwareFetch<Class[], SearchClassFilters[]>(
+        `${SERVER_ADDR}/api/classes`,
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }
+    )
+
     return (
-        <div>
+        <FormContext.Provider value={send}>
             <SectionHeader
                 title="Turmas"
                 subtitle={institution?.name || "Nome desconhecido"}
@@ -30,65 +49,18 @@ const Search = (): JSX.Element => {
                     </LinkButton>
                 </div>
             </SectionHeader>
-            <form style={{ marginTop: '60px', display: "flex", gap: '10px', flexDirection: "row", minWidth: "100%" }}>
-                <Grid container spacing={2} sx={{ width: "100%"}}>
-                    <Grid size={4}>
-                        <FormControl
-                            aria-labelledby="school-select-label-id-ano-letivo"
-                        >
-                            <InputLabel id="school-select-label-id-ano-letivo">
-                                Ano letivo
-                            </InputLabel>
-                            <Select
-                                label="Ano letivo" 
-                                labelId="school-select-label-id-ano-letivo"
-                            >
-                                <MenuItem>
-
-                                </MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid size={4}>
-                        <FormControl
-                            aria-labelledby="school-select-label-id-segmento"
-                        >
-                            <InputLabel id="school-select-label-id-segmento">
-                                Segmento
-                            </InputLabel>
-                            <Select
-                                label="Segmento"
-                                labelId="school-select-label-id-segmento"
-                            >
-                                <MenuItem>
-
-                                </MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid size={4}>
-                        <FormControl
-                            aria-labelledby="school-select-label-id-serieano"
-                        >
-                            <InputLabel
-                                id="school-select-label-id-serieano"
-                            >
-                                Série/Ano
-                            </InputLabel>
-                            <Select
-                                label="Série/Ano"
-                                labelId="school-select-label-id-serieano"                            
-                            >
-                                <MenuItem>
-
-                                </MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                </Grid>
-            </form>
-        </div>
+            <SearchFilters send={send} />
+            {
+                error
+                    ? <ErrorBubble err={error} />
+                    : <></>
+            }
+            {
+                isLoading
+                    ? <Typography variant="body2" fontWeight="bold">Carregando turmas...</Typography>
+                    : <></>
+            }
+            <ClassBubble classes={classes} />
+        </FormContext.Provider>
     )
 }
-
-export default Search;

@@ -22,7 +22,7 @@ import {
 import {
     ISideMenuLinkButton,
     ISideMenuButton
-} from '../types/buttonProps'
+} from '../models/buttonProps'
 
 import MenuItems, { MenuItemStack } from './SideMenuButtons'
 

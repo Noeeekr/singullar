@@ -23,7 +23,7 @@ const ProtectedRoutes = () => {
 
     const navigate = useNavigate();
 
-    useEffect(() => {   
+    useEffect(() => {
         // if user == null || role not found || role == null
         if (!roleRoutes) {
             signout();

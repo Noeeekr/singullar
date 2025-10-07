@@ -171,20 +171,13 @@ const lightTheme = createTheme({
             }
         },
         MuiSelect: {
-            styleOverrides: {
-                root: {
-                    zIndex: 4,
-                }
-            },
             defaultProps: {
                 MenuProps: {
-                    disablePortal: true,
                     PaperProps: {
                         sx: {
                             minheight: '40px',
                             padding: 0.5,
                             borderRadius: 2,
-                            zIndex: 5,
                         }
                     },
                     MenuListProps: {
@@ -212,10 +205,16 @@ const lightTheme = createTheme({
                 }
             }
         },
+        MuiPopover: {
+            styleOverrides: {
+                root: {
+                    zIndex: 0,
+                }
+            }
+        },
         MuiOutlinedInput: { 
             styleOverrides: {
                 root: {
-                    zIndex: 2,
                     height: '43px', // applies for all themes
                     borderRadius: '10px', // applies for all themes
                     backgroundColor: 'rgb(250,250,255)',
@@ -257,7 +256,6 @@ const lightTheme = createTheme({
                 outlined: {
                     position: "absolute",
 
-                    zIndex: 5,
                     translate: '0px -6px',
                     color: 'rgb(120,120,120)',
                     transition: 'linear 150ms all',

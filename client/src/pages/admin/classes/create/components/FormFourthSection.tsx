@@ -1,4 +1,6 @@
-
+export type FormFourthSectionData = {
+    materials: number[] // id of book maybe?
+}
 /**
  * A input wrapped in a FormControl. Display years as selectable options
  * starting from 2024;

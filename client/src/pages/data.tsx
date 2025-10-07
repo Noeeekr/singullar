@@ -13,7 +13,7 @@ import { IoMdHelpCircle, IoIosBarcode } from 'react-icons/io';
 import type {
     ISideMenuLinkButton,
     ISideMenuItems
-} from '../types/buttonProps';
+} from '../models/buttonProps';
 
 export const sidemenu_data_quickaccess: { title: string, items: ISideMenuLinkButton[] } = {
     title: "Acesso Rápido",

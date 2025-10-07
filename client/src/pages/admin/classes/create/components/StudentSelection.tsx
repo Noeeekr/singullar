@@ -3,32 +3,30 @@ import Dialog from '@mui/material/Dialog';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-
 import Typography from '@mui/material/Typography';
 import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
+
 import ErrorBubble from '@components/ErrorBubble';
-import ButtonSolid from '@components/ButtonSolid';
+import StudentSelectionManual from './StudentSelectionManual';
 
 // Features
-import { InputLabel, MenuItem, OutlinedInput, Select, styled } from '@mui/material';
-
+import { styled } from '@mui/material';
 import { useEffect, useState } from 'react';
-
-// Types
-import type { ChangeEvent, SyntheticEvent, Dispatch, SetStateAction } from 'react';
 import useContextAwareFetch from '@hooks/useContextAwareFetch';
-import SectionTitle from '@components/SectionTitle';
-import { EF1, EF2, EM, User, UserSegments } from '../../../../types/server';
-import { SERVER_ADDR } from '../../../../configs';
-import { useForm } from 'react-hook-form';
+
+// Models
+import type { ChangeEvent, SyntheticEvent, Dispatch, SetStateAction } from 'react';
+import type { User, UserSegments } from '../../../../../models/server';
+import { SERVER_ADDR } from '../../../../../configs';
+
 
 export interface TableRow {
     name: string,
-    id: string,
+    id: number,
     email: string,
     segment: UserSegments,
 }
@@ -66,9 +64,9 @@ const parseFileData = (
 
         tableData.push({
             name,
-            id,
+            id: Number(id),
             email,
-            segment: null,
+            segment: "",
         })
     }
 
@@ -77,29 +75,6 @@ const parseFileData = (
         error = "Nenhuma linha válida encontrada"
     }
     return { tableData: tableData, error: error }
-}
-
-/**
-    * Turns a number into its text equivalent of school year;
-    * 
-    * @param Index The column where the text should be relative to.
-    * @param Num The number to parse.
-    */
-export const parseNumIntoText = (index: number, num: number | string): string => {
-    if (index == 1) {
-        switch (num) {
-            case 1:
-                return "Ensino Fundamental I";
-            case 2:
-                return "Ensino Fundamental II";
-            case 3:
-                return "Ensino Médio";
-            default:
-                return "Segmento não encontrado"
-        }
-    } else {
-        return num + "º Ano"
-    }
 }
 
 const FileGuideDialog = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>> }): JSX.Element => {
@@ -219,7 +194,7 @@ const TableOptions = (): JSX.Element => {
     const [isManualSetup, setIsManualSetup] = useState(false)
 
     const [response, isProcessingFile, fetchError, send] = useContextAwareFetch<User[], TableRow[]>(
-        `${SERVER_ADDR}/api/institution/students`,
+        `${SERVER_ADDR}/api/students`,
         {
             method: 'POST',
             headers: {
@@ -258,7 +233,7 @@ const TableOptions = (): JSX.Element => {
     }, [tableRequest, send])
 
     if (isManualSetup) {
-        return <TableForm
+        return <StudentSelectionManual
             returnButtonCallback={() => { setIsManualSetup(false) }}
         />
     }
@@ -331,162 +306,6 @@ const TableOptions = (): JSX.Element => {
             (error || fetchError) && <ErrorBubble err={fetchError || error || "Erro desconhecido"} />
         }
     </Stack>
-}
-const TableForm = ({ returnButtonCallback }: { returnButtonCallback: () => void }): JSX.Element => {
-    const { register, getValues } = useForm<TableRow>({
-        defaultValues: {
-            name: "",
-            email: "",
-            segment: null,
-            id: undefined,
-        }
-    });
-
-    const [students, isLoading, error, send] = useContextAwareFetch<User[], TableRow[]>(
-        `${SERVER_ADDR}/api/institution/students`,
-        {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: 'include',
-            cache: 'no-cache',
-        },
-    )
-
-    useEffect(() => {
-        send([getValues()]);
-    }, [])
-
-    const [id, setId] = useState<number | null>(null)
-
-    return <Box>
-        <Stack flexDirection="row" flexWrap="wrap" alignItems="center" gap={2}>
-            <Stack gap={1}>
-                <ButtonSolid
-                    sx={{ backgroundColor: "white", boxShadow: "0px 0px 2px 3px rgb(0,0,0,0.01)" }}
-                    color="primary.purpleDark"
-                    onClick={returnButtonCallback}
-                >
-                    Voltar
-                </ButtonSolid>
-                <ButtonSolid
-                    onClick={() => { console.log("Delete later", [getValues()]); send([getValues()]) }}
-                >
-                    Procurar
-                </ButtonSolid>
-            </Stack>
-            <Box flexGrow={1}>
-                <SectionTitle
-                    sx={{
-                        marginBottom: "10px",
-                    }}
-                >
-                    Procurar usando segmento
-                </SectionTitle>
-                <FormControl>
-                    <InputLabel id="segment">
-                        Insira o segmento do estudante
-                    </InputLabel>
-                    <Select
-                        {...register("segment")}
-                        labelId="student-search-filter-segment-label"
-                        label="digite-o-segmento-do-estudante"
-                    >
-                        <MenuItem value={""}>Nenhum</MenuItem>
-                        <MenuItem value={EF1}>Ensino Fundamental 1</MenuItem>
-                        <MenuItem value={EF2}>Ensino Fundamental 2</MenuItem>
-                        <MenuItem value={EM}>Ensino Médio</MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>
-            <Box flexGrow={1}>
-                <SectionTitle
-                    sx={{
-                        marginBottom: "10px",
-                    }}
-                >
-                    Procurar com Plataforma ID (opcional)
-                </SectionTitle>
-                <FormControl>
-                    <InputLabel htmlFor="outlined-input-form-sheet-id">
-                        Insira o id
-                    </InputLabel>
-                    <OutlinedInput
-                        {...register("id")}
-                        label="Insira o id (opcional)"
-                        type="number"
-                        id="outlined-input-form-sheet-id"
-                        value={id}
-                        onChange={(e) => { setId(Number(e.target.value) > -1 ? null : 0) }}
-                    />
-                </FormControl>
-            </Box>
-            <Box flexGrow={1}>
-                <SectionTitle
-                    sx={{
-                        marginBottom: "10px",
-                    }}
-                >
-                    Procurar com nome (opcional)
-                </SectionTitle>
-                <FormControl>
-                    <InputLabel htmlFor="outlined-input-form-sheet-name">
-                        Insira o nome
-                    </InputLabel>
-                    <OutlinedInput
-                        {...register("name")}
-                        label="Insira o nome (opcional)"
-                        id="outlined-input-form-sheet-name" />
-                </FormControl>
-            </Box>
-        </Stack>
-        <Stack flexDirection="column" alignItems="center" marginTop={2}>
-            {
-                isLoading
-                    ? <Typography variant="subtitle1">Procurando estudantes..</Typography>
-                    : <></>
-            }
-            {
-                error == ""
-                    ? <></>
-                    : <ErrorBubble err={error} />
-            }
-            {
-                students == null
-                    ? <></>
-                    : <Stack gap={1} width="100%">
-                        {
-                            students.map((student) => {
-                                return (
-                                    <Box
-                                        key={student.id}
-                                        sx={{
-                                            backgroundColor: "white",
-                                            width: "100%",
-                                            padding: "0.5rem 1rem",
-                                            borderRadius: "1rem",
-                                            boxShadow: "0px 0px 1px 4px rgb(150,150,150,0.05)",
-
-                                            flex: 1,
-                                        }}
-                                    >
-                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                            <Typography variant="body2" component="p">{student.name}</Typography>
-                                            <Typography variant="body1" component="p">PLATAFORMA ID {student.id}</Typography>
-                                        </Stack>
-                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                            <Typography variant="subtitle1" component="p">EMAIL: {student.email}</Typography>
-                                            <Typography variant="subtitle1" component="p">{student.segment}</Typography>
-                                        </Stack>
-                                    </Box>
-                                )
-                            })
-                        }
-                    </Stack>
-            }
-        </Stack>
-    </Box>
 }
 export const StudentTable = ({ tableData }: { tableData: TableRow[] }): JSX.Element => {
     const ColsDescription = [
@@ -572,7 +391,7 @@ export const StudentTable = ({ tableData }: { tableData: TableRow[] }): JSX.Elem
                                             {
                                                 i !== 1 && i !== 2
                                                     ? val
-                                                    : parseNumIntoText(i, val)
+                                                    : val + i + "º Ano"
                                             }
                                         </Typography>
                                     </TableCol>

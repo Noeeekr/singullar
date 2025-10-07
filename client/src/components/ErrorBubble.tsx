@@ -9,7 +9,6 @@ import {
 const ErrorBubble = (
     { err }: { err: string }
 ): JSX.Element => {
-
     return (
         <Box
             sx={{

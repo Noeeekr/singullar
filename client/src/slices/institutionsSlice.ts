@@ -1,11 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
-import type { Institution } from '../types/server';
+import type { Institution } from '../models/server';
 
 type InstitutionPayload = Institution | null
 
 const InstitutionsSlice = createSlice({
-    name: "institutions",
+    name: "institution",
     initialState: null as InstitutionPayload,
     reducers: {
         setInstitution: (_state, action: PayloadAction<InstitutionPayload>) => {

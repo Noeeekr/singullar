@@ -16,7 +16,7 @@ import type {
     ISideMenuButtonGroup,
     ISideMenuPopupButton,
     ISideMenuButton,
-} from '../types/buttonProps'
+} from '../models/buttonProps'
 import type {
     IButtonBaseProps
 } from './Button'

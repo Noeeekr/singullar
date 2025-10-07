@@ -4,7 +4,7 @@ import {
 } from "react"
 import { 
     DefaultResponse 
-} from "../types/server"
+} from "../models/server"
 
 import { 
     useNavigate 
@@ -17,7 +17,7 @@ import {
     useAppDispatch
 } from "@slices/store"
 
-type Response<ResponseData, RequestBody> = [
+export type Response<ResponseData, RequestBody> = [
     response: ResponseData | null,
     isLoading: boolean,
     error: string,
@@ -26,7 +26,7 @@ type Response<ResponseData, RequestBody> = [
 
 // useContextAwareFetch is a wrapper around fetch that checks the responses from server for specific events in each call. It returns a JSON
 // useContextAwareFetch will cause unecessary rerenders if its arguments are non-memoized objects
-function useContextAwareFetch<ResponseData = unknown, RequestBody = unknown>(
+function useContextAwareFetch<ResponseData, RequestBody>(
     input: string | URL | globalThis.Request,
     init?: RequestInit,
 ): Response<ResponseData, RequestBody> {
@@ -38,6 +38,7 @@ function useContextAwareFetch<ResponseData = unknown, RequestBody = unknown>(
     const dispatch = useAppDispatch()
 
     const send = useCallback(async (body: RequestBody) => {
+        setResponse(null)
         setIsLoading(true)
         setError("")
         try {
