@@ -1,9 +1,9 @@
 import type {
     AdminNavbarPopupId
-} from '../pages/admin/data';
+} from '@components/layout/sidemenu/data/admin_routes';
 import type {
     StudentNavbarPopupId
-} from '../pages/student/data';
+} from '@components/layout/sidemenu/data/student_routes';
 
 export interface ISideMenuButtonBase {
     title: string,

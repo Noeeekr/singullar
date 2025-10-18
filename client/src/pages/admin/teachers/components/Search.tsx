@@ -6,8 +6,8 @@ import FormControl from "@mui/material/FormControl"
 import Typography from "@mui/material/Typography"
 import Button from "@mui/material/Button"
 import InputLabel from "@mui/material/InputLabel"
-import SectionTitle from "@components/SectionTitle"
-import ErrorBubble from "@components/ErrorBubble"
+import SectionTitle from "@components/headers/sectionHeader/SectionTitle"
+import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble"
 
 import { useForm } from "react-hook-form"
 import { useCallback, useEffect, useState } from "react";
@@ -28,7 +28,7 @@ type Inputs = {
  * @param onSelect calls the functions with all selected teachers ids as an array on first argument
  */
 export default function Search(
-    { selectable = 0, onSelect = () => { } }:
+    { selectable = -1, onSelect = () => { } }:
         {
             selectable?: number,
             onSelect?: (ids: number[]) => void
@@ -45,7 +45,7 @@ export default function Search(
     const name = watch("name")
     const id = watch("id")
 
-    const [users, isLoading, error, send] = useFetchUsers()
+    const { response, isLoading, error, send } = useFetchUsers()
 
     const handleSelect = useCallback((id: number) => {
         if (!selectable) {
@@ -66,7 +66,7 @@ export default function Search(
     }, [selectedUsersIds, onSelect])
 
     useEffect(() => {
-        send(roles)
+        send({ "accepted_roles": roles })
     }, [])
 
     return (
@@ -121,7 +121,7 @@ export default function Search(
 
             <Grid container paddingY={2} spacing={2}>
                 {
-                    users != null && users.length == 0
+                    response != null && response.length == 0
                         ?
                         <Box sx={{
                             borderRadius: 2,
@@ -145,12 +145,12 @@ export default function Search(
                                     : <></>
                             }
                             {
-                                users.length == 0 && !isLoading ?
+                                response.length == 0 && !isLoading ?
                                     <>
                                         <Typography variant="subtitle1">
                                             Nenhum usuário encontrado
                                         </Typography>
-                                        <Button onClick={() => { send(roles) }}>Recarregar</Button>
+                                        <Button onClick={() => { send({"accepted_roles": roles })}}>Recarregar</Button>
                                     </>
                                     : <></>
                             }
@@ -158,7 +158,7 @@ export default function Search(
                         : <></>
                 }
                 {
-                    users != null && users.sort((usr1, usr2) => {
+                    response != null && response.sort((usr1, usr2) => {
                         const name1 = usr1.name.toLowerCase()
                         const name2 = usr2.name.toLowerCase()
 
@@ -185,7 +185,7 @@ export default function Search(
                                     cursor: selectable ? "pointer" : "initial",
                                     flex: 1,
                                     bgcolor: isSelected ? "primary.purpleLight" : selectable == selectedUsersIds.length ? "rgb(220,220,220)" : "white",
-                                    border: "solid 2px rgb(200,200,200)",
+                                    border: selectable <= selectedUsersIds.length ? "solid 1px rgb(230,230,230)": "solid 2px rgb(200,200,200)",
                                     transition: "all 150ms ease-in-out",
                                     padding: 2,
                                     borderRadius: 2,

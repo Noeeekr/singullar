@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 
-import ErrorBubble from '@components/ErrorBubble';
+import ErrorBubble from '@components/bubbles/ErrorBubble/ErrorBubble';
 import StudentSelectionManual from './StudentSelectionManual';
 
 // Features
@@ -20,16 +20,9 @@ import useContextAwareFetch from '@hooks/useContextAwareFetch';
 
 // Models
 import type { ChangeEvent, SyntheticEvent, Dispatch, SetStateAction } from 'react';
-import type { User, UserSegments } from '../../../../../models/server';
+import type { User } from '../../../../../models/server';
 import { SERVER_ADDR } from '../../../../../configs';
-
-
-export interface TableRow {
-    name: string,
-    id: number,
-    email: string,
-    segment: UserSegments,
-}
+import { StudentFilters } from '@hooks/useFetchStudents';
 
 const TableCol = styled(Box)(() => ({
     display: 'flex',
@@ -44,17 +37,17 @@ const TableCol = styled(Box)(() => ({
 /**
  * Parses the text of a .txt file in CSV format to an object 
  */
-const parseFileData = (
+const parseFilterFileData = (
     formData: string
 ): {
-    tableData: TableRow[],
+    studentFilters: StudentFilters[],
     error: string,
 } => {
     const rowDividerRegExp = /[\u00C0-\u00FFa-zA-Z \d]+,\d{7,},[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)/g;
 
     const rows = [...formData.matchAll(rowDividerRegExp)];
 
-    const tableData: TableRow[] = []
+    const studentFilters: StudentFilters[] = []
     for (const row of rows) {
         const [
             name,
@@ -62,7 +55,7 @@ const parseFileData = (
             email,
         ]: (number | string)[] = String(row).trim().split(",");
 
-        tableData.push({
+        studentFilters.push({
             name,
             id: Number(id),
             email,
@@ -71,10 +64,10 @@ const parseFileData = (
     }
 
     let error = ""
-    if (tableData.length == 0) {
+    if (studentFilters.length == 0) {
         error = "Nenhuma linha válida encontrada"
     }
-    return { tableData: tableData, error: error }
+    return { studentFilters: studentFilters, error: error }
 }
 
 const FileGuideDialog = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>> }): JSX.Element => {
@@ -188,12 +181,12 @@ const FileGuideDialog = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: Di
 }
 
 const TableOptions = (): JSX.Element => {
-    const [tableRequest, setTableRequest] = useState<TableRow[]>([])
+    const [tableRequest, setTableRequest] = useState<StudentFilters[]>([])
     const [isOpen, setIsOpen] = useState(false);
     const [error, setError] = useState<string>("");
     const [isManualSetup, setIsManualSetup] = useState(false)
 
-    const [response, isProcessingFile, fetchError, send] = useContextAwareFetch<User[], TableRow[]>(
+    const {response, isLoading, error: requestError, send} = useContextAwareFetch<User[], StudentFilters[]>(
         `${SERVER_ADDR}/api/students`,
         {
             method: 'POST',
@@ -214,13 +207,13 @@ const TableOptions = (): JSX.Element => {
         };
 
         const text = await files[0].text();
-        const { tableData, error } = parseFileData(text);
+        const { studentFilters, error } = parseFilterFileData(text);
         if (error) {
             setError(error)
             return
         }
 
-        setTableRequest(tableData);
+        setTableRequest(studentFilters);
     }
 
     // When triggered, checks if there is data to send and then sends to server
@@ -237,7 +230,7 @@ const TableOptions = (): JSX.Element => {
             returnButtonCallback={() => { setIsManualSetup(false) }}
         />
     }
-    if (isProcessingFile) {
+    if (isLoading) {
         return <Typography variant="subtitle2" component="p" sx={{ marginTop: 2, marginX: "auto" }}>
             Processando a planilha CSV. Isso pode demorar alguns instantes.
         </Typography>
@@ -303,11 +296,11 @@ const TableOptions = (): JSX.Element => {
             </Grid>
         </Grid>
         {
-            (error || fetchError) && <ErrorBubble err={fetchError || error || "Erro desconhecido"} />
+            (error || requestError) && <ErrorBubble err={requestError || error || "Erro desconhecido"} />
         }
     </Stack>
 }
-export const StudentTable = ({ tableData }: { tableData: TableRow[] }): JSX.Element => {
+export const StudentTable = ({ studentFilters }: { studentFilters: StudentFilters[] }): JSX.Element => {
     const ColsDescription = [
         "Segmento",
         "Série/Ano",
@@ -362,9 +355,9 @@ export const StudentTable = ({ tableData }: { tableData: TableRow[] }): JSX.Elem
                 {
                     // Data columns
 
-                    tableData.map((_d, i) => (
+                    studentFilters.map((_d, i) => (
                         <>
-                            {[i, ...Object.values(tableData[i])].map((val, i) => {
+                            {[i, ...Object.values(studentFilters[i])].map((val, i) => {
                                 if (!i) {
                                     return (
                                         <TableCol sx={{ flex: '0 0 50px', justifyContent: 'center' }}>
@@ -406,6 +399,6 @@ export const StudentTable = ({ tableData }: { tableData: TableRow[] }): JSX.Elem
     )
 }
 
-export { parseFileData };
+export { parseFilterFileData };
 
 export default TableOptions

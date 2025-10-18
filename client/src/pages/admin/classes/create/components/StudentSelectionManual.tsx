@@ -1,6 +1,6 @@
-import ErrorBubble from "@components/ErrorBubble";
-import SectionTitle from "@components/SectionTitle";
-import ButtonSolid from "@components/ButtonSolid";
+import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
+import SectionTitle from "@components/headers/sectionHeader/SectionTitle";
+import ButtonSolid from "@components/buttons/ButtonSolid";
 
 import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
@@ -20,20 +20,21 @@ import { SERVER_ADDR } from "../../../../../configs";
 import { FormContext } from "./Form";
 
 import type { User } from "@models/server";
-import type { TableRow } from "./StudentSelection";
+import type { StudentFilters } from "@hooks/useFetchStudents";
 
 const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback: () => void }): JSX.Element => {
     const { setFormData, formSections } = useContext(FormContext);
-    const { register, getValues, control } = useForm<TableRow>({
+    const { register, getValues, control } = useForm<StudentFilters>({
         defaultValues: {
             name: "",
             email: "",
-            segment: "",
+            segment: formSections.firstSection.segment,
             id: undefined,
+            class_id: undefined,
         }
     });
 
-    const [students, isLoading, error, send] = useContextAwareFetch<User[], TableRow[]>(
+    const { response, isLoading, error, send } = useContextAwareFetch<User[], StudentFilters[]>(
         `${SERVER_ADDR}/api/students`,
         {
             method: 'POST',
@@ -46,6 +47,7 @@ const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback
     )
 
     useEffect(() => {
+        console.log(getValues())
         send([getValues()]);
     }, [])
 
@@ -97,6 +99,8 @@ const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback
                                 {...register("segment")}
                                 labelId="student-search-filter-segment-label"
                                 label="digite-o-segmento-do-estudante"
+                                value={formSections.firstSection.segment}
+                                disabled={true}
                             >
                                 <MenuItem value={""}>Nenhum</MenuItem>
                                 <MenuItem value={EF1}>Ensino Fundamental 1</MenuItem>
@@ -120,7 +124,12 @@ const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback
                         Insira o id
                     </InputLabel>
                     <OutlinedInput
-                        {...register("id")}
+                        {...register("id", {
+                            setValueAs(value) {
+                                if (value == "") return null;
+                                return Number(value)
+                            },
+                        })}
                         label="Insira o id (opcional)"
                         type="number"
                         id="outlined-input-form-sheet-id"
@@ -178,11 +187,11 @@ const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback
                 </Typography>
             </Typography>
             {
-                students == null
+                response == null
                     ? <></>
                     : <Stack gap={1} width="100%">
                         {
-                            students.map((student) => {
+                            response.map((student) => {
                                 const selected = formSections?.secondSection.students?.find((sId) => sId == student.id)
                                 return (
                                     <Box

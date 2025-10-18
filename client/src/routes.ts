@@ -7,7 +7,8 @@ const teacherRoutes = [
     "/teacher"
 ]
 const adminRoutes = [
-    "/admin"
+    "/admin",
+    "/learning"
 ]
 const supervisorRoutes = [
     "/supervisor"

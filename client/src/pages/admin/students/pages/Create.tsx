@@ -3,10 +3,10 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Stack from "@mui/material/Stack";
-import SectionHeader from "@components/SectionHeader";
+import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
 import Grid from "@mui/material/Grid2";
-import ButtonSolid from "@components/ButtonSolid";
-import ErrorHelperText from "@components/ErrorHelperText";
+import ButtonSolid from "@components/buttons/ButtonSolid";
+import ErrorHelperText from "@components/bubbles/ErrorBubble/ErrorHelperText";
 
 // Features
 import { useRef } from "react";

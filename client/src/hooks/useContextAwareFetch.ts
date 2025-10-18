@@ -17,16 +17,16 @@ import {
     useAppDispatch
 } from "@slices/store"
 
-export type Response<ResponseData, RequestBody> = [
+export type Response<ResponseData, RequestBody = null> = {
     response: ResponseData | null,
     isLoading: boolean,
     error: string,
-    doFetch: (body: RequestBody) => void,
-]
+    send: (body: RequestBody) => void,
+}
 
 // useContextAwareFetch is a wrapper around fetch that checks the responses from server for specific events in each call. It returns a JSON
 // useContextAwareFetch will cause unecessary rerenders if its arguments are non-memoized objects
-function useContextAwareFetch<ResponseData, RequestBody>(
+function useContextAwareFetch<ResponseData, RequestBody = null>(
     input: string | URL | globalThis.Request,
     init?: RequestInit,
 ): Response<ResponseData, RequestBody> {
@@ -37,12 +37,12 @@ function useContextAwareFetch<ResponseData, RequestBody>(
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
 
-    const send = useCallback(async (body: RequestBody) => {
+    const send = useCallback(async (body: RequestBody | never) => {
         setResponse(null)
         setIsLoading(true)
         setError("")
         try {
-            if (init != null) {
+            if (init != null && init.method != "GET") {
                 init.body = JSON.stringify(body);
             }
             const response = await fetch(input, init)
@@ -57,14 +57,14 @@ function useContextAwareFetch<ResponseData, RequestBody>(
             } else {
                 setError(responseBody.error)
             }
-        } catch {
-            setError("Falha ao processar a requisição")
+        } catch(e) {
+                setError("Falha ao processar a requisição")
         } finally {
             setIsLoading(false)
         }
     }, [init, input, navigate, dispatch]); 
 
-    return [response, isLoading, error, send]
+    return { response, isLoading, error, send }
 }
 
 export default useContextAwareFetch;

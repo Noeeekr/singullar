@@ -1,6 +1,6 @@
 // Components
 import FormSection from "./FormSection"
-import ErrorBubble from "@components/ErrorBubble";
+import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
 
 // Hooks
 import { useState, createContext } from 'react';
@@ -41,7 +41,7 @@ export const FormContext = createContext<FormContext>({} as FormContext);
  * This component also has a context provided by the same file that can help manage its inputs, their values, and their state.
  */
 const FormCreateClass = (): JSX.Element => {
-    const [response, isLoading, error, send] = useContextAwareFetch<DefaultResponse<string>, FormRequest>(
+    const { response, isLoading, error, send } = useContextAwareFetch<DefaultResponse<string>, FormRequest>(
         `${SERVER_ADDR}/api/class/create`,
         {
             method: "POST",

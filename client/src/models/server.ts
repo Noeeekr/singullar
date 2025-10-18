@@ -10,9 +10,9 @@ export interface IDField {
     "id": ID
 }
 export interface DefaultFields extends IDField {
-    created_at: Date,
-    deleted_at: Date | null,
-    updated_at: Date,
+    created_at: string,
+    deleted_at: string | null,
+    updated_at: string,
 }
 
 export interface Institution extends DefaultFields {

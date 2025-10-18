@@ -1,5 +1,5 @@
 // Components
-import SectionHeader from '@components/SectionHeader';
+import SectionHeader from '@components/headers/sectionHeader/SectionHeader';
 import Stack from '@mui/material/Stack';
 
 import CreateForm from './components/Form';

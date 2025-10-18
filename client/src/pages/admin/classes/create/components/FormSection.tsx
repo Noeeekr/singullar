@@ -1,7 +1,7 @@
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import Box from "@mui/material/Box"
-import ButtonSolid from "@components/ButtonSolid"
+import ButtonSolid from "@components/buttons/ButtonSolid"
 
 import { FormContext } from "./Form"
 import { formSections as sections } from "../data"
@@ -19,7 +19,7 @@ export default function FormSection({ activeSection }: { activeSection: number }
         const keys = Object.keys(formSections) as Array<keyof FormSections>
         for (const key of keys) {
             const section = formSections[key]
-            data = { ...data, ...section }
+            data = { ...section, ...data }
         }
         return data
     }, [formSections])
@@ -72,7 +72,7 @@ export default function FormSection({ activeSection }: { activeSection: number }
                                     : <div style={{ margin: '0 0 0 auto' }}>
                                         <Stack flexDirection="row" gap={2}>
                                             {
-                                                i == 1
+                                                i == 0  
                                                     ? <></>
                                                     : <ButtonSolid onClick={handleRedoSection}>
                                                         Refazer última etápa

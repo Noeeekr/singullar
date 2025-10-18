@@ -1,6 +1,6 @@
-import SectionHeader from "@components/SectionHeader";
-import Button from "@components/ButtonSolid";
-import ButtonLink from "@components/ButtonLink";
+import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
+import Button from "@components/buttons/ButtonSolid";
+import ButtonLink from "@components/buttons/ButtonLink";
 import SearchTeachers from "./components/Search";
 
 const SearchPage = (): JSX.Element => {

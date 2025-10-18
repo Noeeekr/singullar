@@ -9,8 +9,8 @@ import IconButton from '@mui/material/IconButton'
 import ButtonBase from '@mui/material/ButtonBase'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import ErrorBubble from '@components/ErrorBubble';
-import ErrorHelperText from '@components/ErrorHelperText';
+import ErrorBubble from '@components/bubbles/ErrorBubble/ErrorBubble';
+import ErrorHelperText from '@components/bubbles/ErrorBubble/ErrorHelperText';
 
 // Icons
 import { 

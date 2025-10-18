@@ -3,7 +3,10 @@ import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Select from "@mui/material/Select"
 import Grid from "@mui/material/Grid2"
-import ButtonSolid from "@components/ButtonSolid"
+import ButtonSolid from "@components/buttons/ButtonSolid"
+import OutlinedInput from "@mui/material/OutlinedInput"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
 
 // Features
 import { useForm } from "react-hook-form"
@@ -12,17 +15,8 @@ import { useAppSelector } from "@slices/store"
 // Models
 import type { UserSegments } from "@models/server"
 import { EF1, EF2, EM } from "../../../../models/server"
-import { OutlinedInput, Stack, Typography } from "@mui/material"
 import { useState } from "react"
-
-export interface SearchClassFilters {
-    class_name?: string
-    teacher_name?: string
-    student_name?: string
-    segment?: UserSegments
-    series?: string
-    creation_year?: Date
-}
+import { SearchClassFilters } from "@hooks/useFetchClasses"
 
 export default function SearchFilters({ send }: { send: (body: SearchClassFilters[]) => void }): JSX.Element {
     const institution = useAppSelector((store) => store.institution)

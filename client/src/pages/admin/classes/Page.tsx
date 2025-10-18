@@ -1,36 +1,30 @@
 // Features
-import useContextAwareFetch from '@hooks/useContextAwareFetch';
 import { useAppSelector } from '@slices/store';
-import { createContext } from "react"
+import { createContext, useEffect } from "react"
 
 // Components
 import SearchFilters from "./components/SearchFilters"
-import ClassBubble from "./components/ClassBubble"
-import SectionHeader from "@components/SectionHeader"
-import LinkButton from "@components/ButtonLink"
+import ClassBubble from "./components/ClassList"
+import SectionHeader from "@components/headers/sectionHeader/SectionHeader"
+import LinkButton from "@components/buttons/ButtonLink"
 import Typography from '@mui/material/Typography';
+import ErrorBubble from '@components/bubbles/ErrorBubble/ErrorBubble';
 
 // Models
-import type { SearchClassFilters } from './components/SearchFilters';
-import type { Class } from '@models/server';
-import { SERVER_ADDR } from '../../../configs';
-import ErrorBubble from '@components/ErrorBubble';
+import type { SearchClassFilters } from '@hooks/useFetchClasses';
+import useFetchClasses from '@hooks/useFetchClasses';
 
 const FormContext = createContext<(body: SearchClassFilters[]) => void>((_) => { })
 
 export default function Search(): JSX.Element {
     const institution = useAppSelector((store) => store.institution)
 
-    const [classes, isLoading, error, send] = useContextAwareFetch<Class[], SearchClassFilters[]>(
-        `${SERVER_ADDR}/api/classes`,
-        {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }
-    )
+    const { response, isLoading, error, send } = useFetchClasses()
+
+
+    useEffect(() => {
+        send([])
+    },[])
 
     return (
         <FormContext.Provider value={send}>
@@ -60,7 +54,7 @@ export default function Search(): JSX.Element {
                     ? <Typography variant="body2" fontWeight="bold">Carregando turmas...</Typography>
                     : <></>
             }
-            <ClassBubble classes={classes} />
+            <ClassBubble classes={response} navegable={true}/>
         </FormContext.Provider>
     )
 }

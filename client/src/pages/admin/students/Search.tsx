@@ -3,11 +3,11 @@ import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import SectionHeader from "@components/SectionHeader";
-import SectionTitle from "@components/SectionTitle";
+import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
+import SectionTitle from "@components/headers/sectionHeader/SectionTitle";
 import Grid from "@mui/material/Grid2";
-import Button from "@components/ButtonSolid";
-import ButtonLink from "@components/ButtonLink";
+import Button from "@components/buttons/ButtonSolid";
+import ButtonLink from "@components/buttons/ButtonLink";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography"
@@ -16,7 +16,7 @@ import { useEffect } from "react";
 import useFetchUsers from "@hooks/useFetchUsers";
 
 import { EF1, EF2, EM, ROLE_STUDENT, User, UserRoles } from "../../../models/server"
-import ErrorBubble from "@components/ErrorBubble";
+import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
 import { useForm } from "react-hook-form";
 
 const roles: UserRoles[] = [ROLE_STUDENT]
@@ -36,10 +36,10 @@ const CreatePage = (): JSX.Element => {
     const segment = watch("segment")
     const id = watch("id")
 
-    const [users, isLoading, error, send] = useFetchUsers()
+    const { response, isLoading, error, send } = useFetchUsers()
 
     useEffect(() => {
-        send(roles)
+        send({"accepted_roles": roles })
     }, [])
 
     return (
@@ -135,7 +135,7 @@ const CreatePage = (): JSX.Element => {
 
                 <Grid container paddingY={2} spacing={2}>
                     {
-                        users != null && users.length == 0
+                        response != null && response.length == 0
                             ?
                             <Box sx={{
                                 borderRadius: 2,
@@ -159,12 +159,12 @@ const CreatePage = (): JSX.Element => {
                                         : <></>
                                 }
                                 {
-                                    users != null && users.length == 0 && !isLoading ?
+                                    response != null && response.length == 0 && !isLoading ?
                                         <>
                                             <Typography variant="subtitle1">
                                                 Nenhum usuário encontrado
                                             </Typography>
-                                            <Button onClick={() => { send(roles) }}>Recarregar</Button>
+                                            <Button onClick={() => { send({"accepted_roles": roles})}}>Recarregar</Button>
                                         </>
                                         : <></>
                                 }
@@ -172,7 +172,7 @@ const CreatePage = (): JSX.Element => {
                             : <></>
                     }
                     {
-                        users?.filter((user) => {
+                        response?.filter((user) => {
                             if (name && user.name.toLowerCase().search(name.toLowerCase())) {
                                 return false
                             }
