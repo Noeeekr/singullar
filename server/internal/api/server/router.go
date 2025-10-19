@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/Noeeekr/singullar/server/internal/api/server/handlers"
+	"github.com/Noeeekr/singullar/server/internal/api/server/middlewares"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/util"
@@ -13,7 +14,7 @@ import (
 )
 
 func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.Engine, error) {
-	middlewares := RouterMiddlewares{
+	middlewares := middlewares.Middlewares{
 		Environment: env,
 	}
 
@@ -34,19 +35,17 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 	}))
 
 	// Auth routes
-	r.POST("/api/auth/", handlers.SignIn) // LOGIN - VALIDATE VIA DATABASE, CREATE COOKIE
-	r.GET("/api/auth/", handlers.SignOut) // LOGOUT - DELETE COOKIE
+	r.POST("/api/auth/", handlers.SignIn) // Validate through database, create validation cookie
+	r.GET("/api/auth/", handlers.SignOut) // Delete validation cookie
 
-	// Is this even necessary?
-	// r.GET("/api/user/auth", handlers.Authenticate) // For users and institutions
-
-	// SELECT
+	// Get data
+	r.GET("/api/dashboard", middlewares.Authenticate(models.SUPERVISOR, models.ADMIN), handlers.GetDashboard)
 	r.GET("/api/institution", middlewares.Authenticate(models.STUDENT, models.ADMIN, models.TEACHER, models.SUPERVISOR), handlers.GetInstitution)
 	r.POST("/api/students", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetStudents)
 	r.POST("/api/users", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetUsers)
 	r.POST("/api/classes", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.ADMIN, models.SUPERVISOR), handlers.GetClasses)
 
-	// CREATE
+	// Create data
 	r.POST("/api/user/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateUser) // Institution admin creates users
 	r.POST("/api/class/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateClass)
 

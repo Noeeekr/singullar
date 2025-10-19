@@ -325,7 +325,7 @@ func Institutions(institutions *[]*models.Institutions) borm.ReturnScanner {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
-		return len(*institutions) == 0, nil
+		return len(*institutions) != 0, nil
 	}
 }
 func Classes(classes *[]*models.Classes) borm.ReturnScanner {

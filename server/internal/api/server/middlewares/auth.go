@@ -1,4 +1,4 @@
-package server
+package middlewares
 
 import (
 	"errors"
@@ -10,11 +10,11 @@ import (
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
-type RouterMiddlewares struct {
+type Middlewares struct {
 	*types.Environment
 }
 
-func (m *RouterMiddlewares) Authenticate(roles ...models.UserRole) func(ctx *gin.Context) {
+func (m *Middlewares) Authenticate(roles ...models.UserRole) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		// Check if cookie exists
 		cookie, err := ctx.Cookie("auth")

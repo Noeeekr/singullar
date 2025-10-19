@@ -41,6 +41,7 @@ func (ops *Operations) CommitTransaction() error {
 }
 
 type FilterClassOptions struct {
+	Id           *int                 `json:"id"`
 	ClassName    *string              `json:"class_name"`
 	TeacherName  *string              `json:"teacher_name"`
 	StudentName  *string              `json:"student_name"`
@@ -53,15 +54,14 @@ func (ops *Operations) SelectClasses(institutionId int, filters ...*FilterClassO
 	classes := &[]*models.Classes{}
 
 	query := models.TableClasses.
-		Select("c.created_at", "c.updated_at", "c.deleted_at", "c.name", "c.segment", "c.series", "c.institution_id", "c.id", "c.teacher_id").As("c").
+		SelectDistinct("c.created_at", "c.updated_at", "c.deleted_at", "c.name", "c.segment", "c.series", "c.institution_id", "c.id", "c.teacher_id").As("c").
 		LeftJoin(models.TableUsersClasses, "uc").On("c.id", "uc.class_id").
 		LeftJoin(models.TableUsers, "u").On("uc.user_id", "u.id")
-	query.Where(
-		query.And(
-			query.Field("c.institution_id").IsEqual(institutionId),
-			addSelectClassesFilters(query, &filters),
-		),
-	)
+	condition := query.Field("c.institution_id").IsEqual(institutionId)
+	if len(filters) != 0 {
+		condition = query.And(condition, addSelectClassesFilters(query, &filters))
+	}
+	query.Where(condition)
 
 	err := ops.Commiter.Do(query.Scanner(scan.Classes(classes)))
 	if err != nil {
@@ -91,7 +91,7 @@ func (ops *Operations) SelectUserByEmail(emails ...string) ([]*models.Users, err
 	query := models.TableUsers.
 		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
 		Scanner(scan.Users(&users))
-	query.Where(query.Field("u.email").IsIn(emailList...))
+	query.Where(query.Field("u.email").IsAny(emailList...))
 	err := ops.Commiter.Do(query)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (ops *Operations) SelectUsersById(institutionId int, ids ...int) ([]*models
 	query.Where(
 		query.And(
 			query.Field("u.institution_id").IsEqual(institutionId),
-			query.Field("u.id").IsIn(idList...),
+			query.Field("u.id").IsAny(idList...),
 		),
 	)
 	err := ops.Do(query)
@@ -147,27 +147,27 @@ func (ops *Operations) SelectInstitutionById(id int) (*models.Institutions, erro
 	return insts[0], nil
 }
 
+type SelectUserRequest struct {
+	Roles   []*models.UserRole `json:"accepted_roles" binding:"omitempty"`
+	Filters []*UsersFilters    `json:"filters" binding:"omitempty"`
+	Offset  int                `json:"offset"`
+}
+type UsersFilters struct {
+	ID *int `json:"id" binding:"omitempty"`
+}
+
 // Returns an empty array if no users were found. Hashed Password is returned and must be removed
-func (ops *Operations) SelectUsers(institutionId int, roles ...models.UserRole) ([]*models.Users, error) {
-	if len(roles) == 0 {
-		roles = []models.UserRole{models.STUDENT}
-	}
-
-	var targetRoles = make([]any, len(roles))
-	for i, role := range roles {
-		targetRoles[i] = role
-	}
-
+func (ops *Operations) SelectUsers(institutionId int, request *SelectUserRequest) ([]*models.Users, error) {
 	users := []*models.Users{}
 	query := models.TableUsers.
 		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
 		InnerJoin(models.TableInstitutions, "i").On("i.id", "u.institution_id").
 		Scanner(scan.Users(&users))
-	query.
-		Where(
-			query.And(
-				query.Field("u.institution_id").IsEqual(institutionId),
-				query.Field("u.role").IsIn(targetRoles...)))
+	query.Where(query.And(
+		query.Field("u.institution_id").IsEqual(institutionId),
+		addSelectUsersFilters(query, request),
+	)).Limit(10).Offset(request.Offset)
+	//$$$
 	err := ops.Do(query)
 	if err != nil && !errors.Is(err, borm.ErrNotFound) {
 		return nil, err
@@ -175,19 +175,47 @@ func (ops *Operations) SelectUsers(institutionId int, roles ...models.UserRole) 
 	return users, nil
 }
 
+func addSelectUsersFilters(query *borm.Query, request *SelectUserRequest) *borm.ConditionalQuery {
+	conditions := []*borm.ConditionalQuery{}
+	if len(request.Roles) != 0 {
+		targetRoles := make([]any, len(request.Roles))
+		for i, role := range request.Roles {
+			targetRoles[i] = role
+		}
+		conditions = append(conditions, query.Field("u.role").IsAny(targetRoles...))
+	}
+
+	filters := []*borm.ConditionalQuery{}
+	for _, filter := range request.Filters {
+		var condition []*borm.ConditionalQuery = []*borm.ConditionalQuery{}
+		if filter.ID != nil {
+			condition = append(condition, query.Field("u.id").IsEqual(*filter.ID))
+		}
+		if len(condition) > 0 {
+			filters = append(filters, query.Compose(query.And(condition...)))
+		}
+	}
+
+	conditions = append(conditions, query.Compose(query.And(filters...)))
+	return query.And(conditions...)
+}
+
 type FilterStudentOptions struct {
 	Email   string              `json:"email" binding:"omitempty,email"`
 	Name    string              `json:"name" binding:"omitempty,min=1"`
 	Segment models.UserSegments `json:"segment" binding:"omitempty"`
-	ID      string              `json:"id" binding:"omitempty"`
+	ID      *int                `json:"id" binding:"omitempty"`
+	ClassID *int                `json:"class_id" binding:"omitempty"`
 }
 
 // Returns an empty array if no users were found. Hashed Password is returned and must be removed. Default values will be ignored in search, expect for segment.
 func (ops *Operations) SelectStudents(institutionId int, options *[]FilterStudentOptions, includePassword bool) ([]*models.Users, error) {
 	users := []*models.Users{}
 	query := models.TableUsers.
-		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
+		SelectDistinct("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
 		InnerJoin(models.TableInstitutions, "i").On("i.id", "u.institution_id").
+		LeftJoin(models.TableUsersClasses, "uc").On("u.id", "uc.user_id").
+		LeftJoin(models.TableClasses, "c").On("c.id", "uc.class_id").
 		Scanner(scan.Users(&users))
 	query.Where(
 		query.And(
@@ -197,12 +225,6 @@ func (ops *Operations) SelectStudents(institutionId int, options *[]FilterStuden
 		),
 	)
 
-	blocks := make([]string, len(query.Blocks))
-	fmt.Println(len(*options))
-	for i := range query.Blocks {
-		blocks[i] = query.Blocks[i].Block
-	}
-	fmt.Printf("[%s]\n", strings.Join(blocks, "]\n["))
 	err := ops.Do(query)
 	if err != nil && !errors.Is(err, borm.ErrNotFound) {
 		return nil, err
@@ -210,7 +232,6 @@ func (ops *Operations) SelectStudents(institutionId int, options *[]FilterStuden
 
 	if !includePassword {
 		for i := range users {
-			fmt.Println(users[i].Name, users[i].Segment, users[i].Id)
 			users[i].Password = ""
 		}
 	}
@@ -432,6 +453,9 @@ func addSelectClassesFilters(query *borm.Query, filters *[]*FilterClassOptions) 
 	conditions := make([]*borm.ConditionalQuery, len(*filters))
 	for i, filter := range *filters {
 		condition := []*borm.ConditionalQuery{}
+		if filter.Id != nil {
+			condition = append(condition, query.Field("c.id").IsEqual(*filter.Id))
+		}
 		if filter.ClassName == nil {
 			condition = append(condition, query.Field("c.name").IsLike("%", false))
 		} else {
@@ -460,8 +484,6 @@ func addSelectClassesFilters(query *borm.Query, filters *[]*FilterClassOptions) 
 		}
 		conditions[i] = query.Compose(query.And(condition...))
 	}
-
-	borm.Settings().Environment().SetEnvironment(borm.DEBUGGING)
 	return query.Compose(query.Or(conditions...))
 }
 func addSelectStudentsFilters(query *borm.Query, filters *[]FilterStudentOptions) *borm.ConditionalQuery {
@@ -479,8 +501,11 @@ func addSelectStudentsFilters(query *borm.Query, filters *[]FilterStudentOptions
 		if filter.Name != "" {
 			condition = append(condition, query.Field("u.name").IsLike("%"+strings.ToLower(filter.Name)+"%", false))
 		}
-		if filter.ID != "" {
+		if filter.ID != nil {
 			condition = append(condition, query.Field("u.id").IsEqual(filter.ID))
+		}
+		if filter.ClassID != nil {
+			condition = append(condition, query.Field("c.id").IsEqual(filter.ClassID))
 		}
 		conditions[i] = query.And(condition...)
 	}

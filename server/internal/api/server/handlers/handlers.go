@@ -17,6 +17,7 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
+	"github.com/Noeeekr/singullar/server/internal/database/scan"
 	"github.com/Noeeekr/singullar/server/util"
 )
 
@@ -87,6 +88,30 @@ func (h *Handlers) Authenticate(ctx *gin.Context) {
 	}
 }
 */
+
+func (h *Handlers) GetDashboard(ctx *gin.Context) {
+	user := &models.Users{}
+	{
+		unsignedUser, _ := ctx.Get(types.USER_COOKIE_ID)
+		*user = (unsignedUser).(models.Users)
+	}
+
+	institutions := []*models.Institutions{}
+	query := models.TableInstitutions.
+		Select("created_at", "updated_at", "deleted_at", "name", "id").
+		Scanner(scan.Institutions(&institutions))
+	query.Where(query.Field("id").IsEqual(user.InstitutionId))
+	if err := h.operations.Do(query); err != nil {
+		if errors.Is(err, borm.ErrNotFound) {
+			ctx.JSON(http.StatusNotFound, types.NewServerResponse(nil, "Falha ao encontrar a instituição"))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao procurar dados"))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, types.NewServerResponse(institutions[0]))
+}
 
 // Errors
 //
@@ -342,9 +367,10 @@ func (h *Handlers) GetClasses(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, types.NewServerResponse(classes))
 }
+
 func (h *Handlers) GetUsers(ctx *gin.Context) {
-	var roles []models.UserRole
-	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&roles)) {
+	request := &operations.SelectUserRequest{}
+	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
 		return
 	}
 
@@ -355,7 +381,7 @@ func (h *Handlers) GetUsers(ctx *gin.Context) {
 	}
 	user := unsignedUser.(models.Users)
 
-	users, err := h.operations.SelectUsers(user.Id, roles...)
+	users, err := h.operations.SelectUsers(user.Id, request)
 	if err != nil {
 		h.internalError(ctx, "Falha ao procurar usuários", err)
 		return

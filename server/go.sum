@@ -8,6 +8,14 @@ github.com/Noeeekr/borm v0.0.0-20251006232823-448f3721d52e h1:3Izc7D/xcOZ4E1T0/l
 github.com/Noeeekr/borm v0.0.0-20251006232823-448f3721d52e/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
 github.com/Noeeekr/borm v0.0.0-20251007180850-c07fa1fbc2a5 h1:1v1KT0rn3UVS7Onw+ghkNTOrVeP1eH3S9277lwUVtFE=
 github.com/Noeeekr/borm v0.0.0-20251007180850-c07fa1fbc2a5/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
+github.com/Noeeekr/borm v0.0.0-20251015231306-eda1959eb305 h1:h8l+QXL0JC0JXCoWIkepUV8Ss0TVUy56Z+bTZEDTH2A=
+github.com/Noeeekr/borm v0.0.0-20251015231306-eda1959eb305/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
+github.com/Noeeekr/borm v0.0.0-20251016212901-6eedaa15457d h1:K9kHkdWW9XhJyxYmCnwT+BdzHxJvOhPGq8e+DkWdDTg=
+github.com/Noeeekr/borm v0.0.0-20251016212901-6eedaa15457d/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
+github.com/Noeeekr/borm v0.0.0-20251017180424-b6034c71c596 h1:JsvOl+2ugnmbegtzf3nfddKaVuyinHI55c8tMhmJhfU=
+github.com/Noeeekr/borm v0.0.0-20251017180424-b6034c71c596/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
+github.com/Noeeekr/borm v0.0.0-20251018182202-c4e18aad09e5 h1:10wZCtC2uT24CO/mod5J/EiwDNhZNJIDpjs4Nt+7tA4=
+github.com/Noeeekr/borm v0.0.0-20251018182202-c4e18aad09e5/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
 github.com/bytedance/sonic v1.12.2 h1:oaMFuRTpMHYLpCntGca65YWt5ny+wAceDERTkT2L9lg=
 github.com/bytedance/sonic v1.12.2/go.mod h1:B8Gt/XvtZ3Fqj+iSKMypzymZxw/FVwgIGKzMzT9r/rk=
 github.com/bytedance/sonic/loader v0.1.1/go.mod h1:ncP89zfokxS5LZrJxl5z0UJcsk4M4yY2JpfqGeCtNLU=
