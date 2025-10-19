@@ -1,25 +1,21 @@
-import type { ISideMenuItems } from '@models/buttonProps'
+import { SideMenuButtons } from "../SideMenuButtons";
+import { NavigationPopupProps } from "@components/layout/navbar/AppNavbar";
 
-export const teacher_sidemenu_data: ISideMenuItems[] = [
+export const teacher_sidemenu_data: SideMenuButtons[] = [
 
 ];
 
 export type TeacherNavbarPopupId = "deleteLater" | "";
 
-export interface INavbarPopupData {
-    structure: "side" | "bubble",
-    title: string,
-    id: TeacherNavbarPopupId,
-    icon: JSX.Element,
-    content: JSX.Element,
-}
-
-export const teacher_navbar_popup_data: INavbarPopupData[] = [
+export const teacher_navbar_popup_data: NavigationPopupProps[] = [
     {
-        structure: "side",
+        variant: "side",
         title: "deleteLater",
         id: "deleteLater",
-        icon: <span>D</span>,
-        content: <div>Memeteur Vivem</div>,
+        icon: {
+            component: <span>D</span>
+        },
+        element: <div>Memeteur Vivem</div>,
+        type: "popup"
     },
 ];

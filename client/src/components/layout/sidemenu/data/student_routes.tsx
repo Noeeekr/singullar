@@ -13,134 +13,157 @@ import NotificationPopupContent from '../../../popups/NotificationPopupContent'
 import MyAccountPopupContent from '../../../popups/PopupContentMyAccount'
 import QuickAccessPopupContent from '../../../popups/PopupContentQuickAccess'
 
-// Types
-import { 
-    ISideMenuItems, 
-    ISideMenuLinkButton, 
-    ISideMenuButton 
-} from '../../../../models/buttonProps'
-
 // Data
-import { 
+import {
     sidemenu_data_classroom,
     sidemenu_data_quickaccess,
 } from './any_role_routes';
 
-const students_sidemenu_data_myaccount: (ISideMenuLinkButton | ISideMenuButton)[] = [
+import type { LinkButtonProps } from '@components/buttons/ButtonLink';
+import { SideMenuButtons } from '../SideMenuButtons';
+import { ButtonsProps } from '@components/buttons/Button';
+import { NavigationPopupProps } from '@components/layout/navbar/AppNavbar';
+
+const students_sidemenu_data_myaccount: (LinkButtonProps | ButtonsProps)[] = [
     {
         title: "Dados pessoais e acesso",
-        icon: <LuScanFace />,
+        icon: {
+            component: <LuScanFace />,
+        },
         type: "link",
         href: "/",
     },
     {
         title: "Responsáveis vinculados",
-        icon: <IoPeopleOutline />,
+        icon: {
+            component: <IoPeopleOutline />,
+        },
         type: "link",
         href: "/",
     },
     {
         title: "Código de acesso",
-        icon: <IoBarcodeOutline />,
+        icon: {
+            component: <IoBarcodeOutline />,
+        },
         type: "link",
         href: "/",
     },
     {
         title: "Comunicações",
-        icon: <TbSpeakerphone />,
+        icon: {
+            component: <TbSpeakerphone />,
+        },
         type: "link",
         href: "/",
     },
     {
         title: "Privacidade",
-        icon: <GoLock />,
+        icon: {
+            component: <GoLock />,
+        },
         type: "link",
         href: "/",
     },
     {
         title: "Sair",
-        icon: <IoExitOutline />,
+        icon: {
+            component: <IoExitOutline />,
+        },
         type: "button",
     },
 ];
 
-const students_sidemenu_data_main: ISideMenuItems = {
+const students_sidemenu_data_main: SideMenuButtons = {
     title: "Principal",
-    items: [
+    menus: [
         {
             title: "Início",
-            icon: <TbSmartHome />,
+            icon: {
+                component: <TbSmartHome />,
+            },
             type: "link",
             href: "/home",
         },
         {
             title: "Notificações",
-            icon: <MdOutlineNotificationsNone />,
+            icon: {
+                component: <MdOutlineNotificationsNone />,
+            },
             type: "popup",
-            content: <NotificationPopupContent />,
-            structure: "side",
+            element: <NotificationPopupContent />,
+            variant: "side",
             id: "notifications",
         },
         {
             title: "Ajuda",
-            icon: <BiDirections />,
+            icon: {
+                component: <BiDirections />,
+            },
             type: "popup",
-            content: <NotificationPopupContent />,
-            structure: "side",
+            element: <NotificationPopupContent />,
+            variant: "side",
             id: "help",
         },
         {
             title: "Minha conta",
-            icon: <GoPerson />,
+            menus: students_sidemenu_data_myaccount,
+            icon: {
+                component: <GoPerson />,
+            },
             type: "group",
-            items: students_sidemenu_data_myaccount
         },
     ],
+    type: "group",
 };
 
-export const students_sidemenu_data: ISideMenuItems[] = [
+export const students_sidemenu_data: SideMenuButtons[] = [
     students_sidemenu_data_main,
     sidemenu_data_classroom,
     sidemenu_data_quickaccess,
 ]
 
-export type StudentNavbarPopupId = "help" | "notifications" | "myaccount" | "quickaccess" | "";
+export type StudentNavbarPopupIds = "help" | "notifications" | "myaccount" | "quickaccess" | "";
 
-export interface INavbarPopupData {
-    structure: "side" | "bubble",
-    title: string,
-    id: StudentNavbarPopupId,
-    icon: JSX.Element,
-    content: JSX.Element,
-}
-
-export const students_navbar_popup_data: INavbarPopupData[] = [
+export const students_navbar_popup_data: NavigationPopupProps[] = [
     {
-        structure:"side",
-        title:"Central de ajuda",
-        id:"help",
-        icon: <IoIosHelpCircleOutline color="white" fontSize={26} />,
-        content: <div>Lorem Ipsum</div>,
+        variant: "side",
+        title: "Central de ajuda",
+        id: "help",
+        icon: {
+            component: <IoIosHelpCircleOutline color="white" fontSize={26} />,
+        },
+        element: <div>Lorem Ipsum</div>,
+        type: "popup",
     },
     {
-        structure:"side",
-        title:"Notificações",
-        id:"notifications",
-        icon: <IoIosNotificationsOutline color="white" fontSize={26} />,
-        content: <NotificationPopupContent/>,
+        variant: "side",
+        title: "Notificações",
+        id: "notifications",
+        icon: {
+            component: <IoIosNotificationsOutline color="white" fontSize={26} />,
+        },
+        element: <NotificationPopupContent />,
+        type: "popup",
     },
     {
-        structure: "bubble",
-        title:"Minha conta",
-        id:"myaccount",
-        icon: <VscAccount color="white" fontSize={22} />,
-        content: <MyAccountPopupContent items={students_sidemenu_data_myaccount} />,
+        variant: "bubble",
+        title: "Minha conta",
+        id: "myaccount",
+        icon: {
+            component: <VscAccount color="white" fontSize={22} />,
+        },
+        element: <MyAccountPopupContent menus={students_sidemenu_data_myaccount} />,
+        type: "popup",
     },
     {
-        structure: "bubble",
-        title:"Acesso Rápido",
-        id:"quickaccess",
-        icon: <TbGridDots color="white" fontSize={23} />,
-        content: <QuickAccessPopupContent items={sidemenu_data_quickaccess.items} />,
+        variant: "bubble",
+        title: "Acesso Rápido",
+        id: "quickaccess",
+        icon: {
+            component: <TbGridDots color="white" fontSize={23} />,
+        },
+        element: <QuickAccessPopupContent menus={sidemenu_data_quickaccess.menus} />,
+        type: "popup",
     }
 ]

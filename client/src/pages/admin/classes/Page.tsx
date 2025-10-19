@@ -35,7 +35,7 @@ export default function Search(): JSX.Element {
                 <div style={{ margin: '0px 0px 0px auto' }}>
                     <LinkButton
                         title=""
-                        icon={<></>}
+                        icon={{ component: <></> }}
                         type="link"
                         href="/admin/classes/create"
                     >

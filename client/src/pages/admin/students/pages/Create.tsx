@@ -5,7 +5,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Stack from "@mui/material/Stack";
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
 import Grid from "@mui/material/Grid2";
-import ButtonSolid from "@components/buttons/ButtonSolid";
+import ButtonSolid from "@components/buttons/Button/Solid";
 import ErrorHelperText from "@components/bubbles/ErrorBubble/ErrorHelperText";
 
 // Features

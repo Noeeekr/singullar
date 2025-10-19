@@ -3,7 +3,7 @@ import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Select from "@mui/material/Select"
 import Grid from "@mui/material/Grid2"
-import ButtonSolid from "@components/buttons/ButtonSolid"
+import ButtonSolid from "@components/buttons/Button/Solid"
 import OutlinedInput from "@mui/material/OutlinedInput"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
@@ -62,7 +62,7 @@ export default function SearchFilters({ send }: { send: (body: SearchClassFilter
 
                                                 let years: number[] = []
                                                 let currentYear = new Date(Date.now()).getFullYear()
-                                                let createdYear = institution.created_at.getFullYear()
+                                                let createdYear = new Date(institution.created_at).getFullYear()
                                                 while (createdYear < currentYear) {
                                                     years.push(createdYear)
                                                     createdYear++
@@ -177,9 +177,7 @@ export default function SearchFilters({ send }: { send: (body: SearchClassFilter
                 }
             </Grid>
             <Stack flexDirection="column" gap={2}>
-                <ButtonSolid onClick={() => send([getValues()])}>
-                    Pesquisar
-                </ButtonSolid>
+                <ButtonSolid title="Pesquisar" onClick={() => send([getValues()])}/>
                 <Typography
                     color="primary.purpleLight"
                     sx={{

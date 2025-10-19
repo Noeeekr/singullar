@@ -1,58 +1,46 @@
-import {
-    useState,
-    useEffect,
-    useCallback,
-    cloneElement,
-} from 'react'
 
-import {
-    Box,
-    Stack,
-    Typography,
-    useMediaQuery,
-} from '@mui/material'
-import {
-    useTheme,
-} from '@mui/material/styles'
+// Components
+import Box from "@mui/material/Box"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
+import { DefaultButtonLayout } from '@components/buttons/Button/Default'
 
-import {
-    FaCaretUp,
-} from "react-icons/fa";
+// Icons
+import { FaCaretUp } from "react-icons/fa";
 
-import {
-    ISideMenuLinkButton,
-    ISideMenuButton
-} from '../../models/buttonProps'
+// Features
+import { useTheme } from '@mui/material/styles'
+import { useState } from "react"
+import { useEffect } from "react"
+import { useCallback } from "react"
+import { cloneElement } from "react"
 
-import MenuItems, { MenuItemStack } from '../layout/sidemenu/SideMenuButtons'
+// Types
+import type { PopupButtonProps } from "./ButtonSidePopup"
+import type { ButtonProps, ButtonsProps } from './Button/Button';
+import type { LinkButtonProps } from './ButtonLink';
+import SideMenuButtons from "@components/layout/sidemenu/SideMenuButtons"
 
-interface ILinkButtonGroupProps {
-    title: string,
-    icon: JSX.Element,
-    items: (ISideMenuLinkButton | ISideMenuButton)[],
+export interface ButtonGroupProps extends ButtonProps {
+    menus: (LinkButtonProps | ButtonsProps | ButtonGroupProps | PopupButtonProps)[]
+    type: "group"
 
-    fontSize?: number,
-    isOpen?: boolean,
+    isOpen?: boolean
 }
 
-const MenuItemGroup = (props: ILinkButtonGroupProps): JSX.Element => {
+const ButtonGroup = ({
+    icon: { component: IconComponent, size: iconSize, display: displayIcon = true } = { component: <></> },
+    title,
+    isOpen,
+    menus,
+    ...props
+}: ButtonGroupProps): JSX.Element => {
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
-
-    const { icon, title, items, fontSize, isOpen } = props;
-
-    const Icon = cloneElement(
-        icon,
-        {
-            fontSize: fontSize || 21,
-            color: theme.palette.primary.purpleDark,
-        }
-    )
 
     const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
-    const toggleDrawer = useCallback(() => { 
+    const toggleDrawer = useCallback(() => {
         if (isOpen) setIsWardrobeOpen(prevState => !prevState);
-    },[isOpen]);
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen && isWardrobeOpen) {
@@ -62,16 +50,25 @@ const MenuItemGroup = (props: ILinkButtonGroupProps): JSX.Element => {
 
     return (
         <Stack component="ul" gap={0.5}>
-            <MenuItemStack
-                paddingX={1}
-                paddingY={isMobile ? 1.5 : 1}
+            <DefaultButtonLayout {...props} onClick={toggleDrawer}>
+                {
+                    displayIcon &&
+                    <Box sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
 
-                onClick={toggleDrawer}
-            >
-                {/* ICON, TEXT CONTENT, EXPAND MENU ARROW */}
-                <Box display='flex' sx={{ opacity: 0.7 }}>
-                    {Icon}
-                </Box>
+                        opacity: 0.7,
+                        padding: "0.4rem",
+                    }}>
+                        {
+                            cloneElement(IconComponent, {
+                                style: { fontSize: iconSize || 21 },
+                                color: theme.palette.primary.purpleDark,
+                            })
+                        }
+                    </Box>
+                }
                 <Typography variant="body2" fontWeight={500} sx={{ paddingX: 1 }}>
                     {title}
                 </Typography>
@@ -84,15 +81,22 @@ const MenuItemGroup = (props: ILinkButtonGroupProps): JSX.Element => {
                         transition: 'transform 200ms ease-in-out'
                     }}
                 />
-            </MenuItemStack>
+            </DefaultButtonLayout>
             {
                 isWardrobeOpen &&
-                    <Box sx={{ paddingLeft: 2.6 }}>
-                        <MenuItems items={items} fontWeight={350} fontSize={13.5} />
-                    </Box>
+                <Box sx={{ paddingLeft: 2.6 }}>
+                    <SideMenuButtons 
+                        gap={2}
+                        isOpen={isOpen} 
+                        title={""}
+                        showIcon={false} 
+                        menus={menus} 
+                        fontWeight={350} 
+                    />
+                </Box>
             }
         </Stack>
     )
 }
 
-export default MenuItemGroup
+export default ButtonGroup;

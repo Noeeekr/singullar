@@ -6,8 +6,8 @@ import MenuItem from "@mui/material/MenuItem";
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
 import SectionTitle from "@components/headers/sectionHeader/SectionTitle";
 import Grid from "@mui/material/Grid2";
-import Button from "@components/buttons/ButtonSolid";
-import ButtonLink from "@components/buttons/ButtonLink";
+import Button from "@components/buttons/Button/Solid";
+import LinkButton from "@components/buttons/ButtonLink";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography"
@@ -48,14 +48,15 @@ const CreatePage = (): JSX.Element => {
 
             <SectionHeader title="Selecione um estudante">
                 <Box sx={{ margin: "0 0 0 auto" }}>
-                    <ButtonLink
-                        icon={<></>}
+                    <LinkButton
+                        icon={{ component: <></> }}
                         type="link"
-                        title="doesnt-matter"
+                        title="Criar Estudante"
+                        variant="solid"
                         href="/admin/students/create"
                     >
                         Criar estudante
-                    </ButtonLink>
+                    </LinkButton>
                 </Box>
             </SectionHeader>
 
@@ -164,7 +165,7 @@ const CreatePage = (): JSX.Element => {
                                             <Typography variant="subtitle1">
                                                 Nenhum usuário encontrado
                                             </Typography>
-                                            <Button onClick={() => { send({"accepted_roles": roles})}}>Recarregar</Button>
+                                            <Button title="Recarregar" onClick={() => { send({"accepted_roles": roles})}}>Recarregar</Button>
                                         </>
                                         : <></>
                                 }

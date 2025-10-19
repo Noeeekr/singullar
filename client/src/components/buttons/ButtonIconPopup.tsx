@@ -14,20 +14,20 @@ import {
 
 import SidePopup from '../popups/SidePopup'
 
-interface INavbarItemGroupProps {
+interface NavigationPopupsProps {
     // for toggle menu open click event handling
     id: string,
     isOpen?: string,
     isCorner?: boolean,
     onClickCb: (key: string) => void,
 
-    icon: JSX.Element,
+    icon?: JSX.Element,
     children: JSX.Element,
     title: string, // for small title popup
 
     sx?: object,
 
-    structure?: "side" | "bubble"
+    variant?: "side" | "bubble"
 }
 
 const PopupIconLabelBox = styled(({ children, ...props }: { isCorner?: boolean, children: JSX.Element }) => (
@@ -125,7 +125,7 @@ const PopupIconButton = styled((
     },
 }))
 
-const SidePopupWithIcon = (props: INavbarItemGroupProps) => {
+const SidePopupWithIcon = (props: NavigationPopupsProps) => {
     const { title, icon, isOpen, isCorner, onClickCb } = props;
     const { notifications } = useContext(NotificationContext);
 
@@ -142,7 +142,7 @@ const SidePopupWithIcon = (props: INavbarItemGroupProps) => {
                 hasNotifications={hasNotifications}
                 onClickCb={() => (onClickCb(id))}
             >
-                {icon}
+                {icon ? icon : <></>}
             </PopupIconButton>
             {
                 (isOpen === id) &&
@@ -152,7 +152,7 @@ const SidePopupWithIcon = (props: INavbarItemGroupProps) => {
     )
 }
 
-const BubblePopupWithIcon = (props: INavbarItemGroupProps) => {
+const BubblePopupWithIcon = (props: NavigationPopupsProps) => {
     const { title, isCorner, icon, children, isOpen, onClickCb, id, sx } = props;
 
     return (
@@ -165,7 +165,7 @@ const BubblePopupWithIcon = (props: INavbarItemGroupProps) => {
                 sx={sx ? { ...sx } : {}}
                 onClickCb={() => (onClickCb(id))}
             >
-                {icon}
+                {icon ? icon : <></>}
             </PopupIconButton>
             {
                 (isOpen === id) &&
@@ -189,8 +189,8 @@ const BubblePopupWithIcon = (props: INavbarItemGroupProps) => {
         </div>
     )
 }
-const NavbarItemPopup = (props: INavbarItemGroupProps) => {
-    switch (props.structure) {
+const NavigationPopup = (props: NavigationPopupsProps) => {
+    switch (props.variant) {
         case "side":
             return <SidePopupWithIcon {...props} />
         case "bubble":
@@ -200,6 +200,4 @@ const NavbarItemPopup = (props: INavbarItemGroupProps) => {
     }
 }
 
-//     const { title, icon, href, showIcon, iconSize, fontSize, fontWeight } = props;
-
-export default NavbarItemPopup;
+export default NavigationPopup;

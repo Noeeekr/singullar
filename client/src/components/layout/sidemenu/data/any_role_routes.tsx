@@ -9,27 +9,29 @@ import { FiPaperclip } from 'react-icons/fi';
 import { FaRegPenToSquare } from 'react-icons/fa6';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { IoMdHelpCircle, IoIosBarcode } from 'react-icons/io';
+import { LinkButtonProps } from '@components/buttons/ButtonLink';
+import { SideMenuButtons } from '../SideMenuButtons';
 
-import type {
-    ISideMenuLinkButton,
-    ISideMenuItems
-} from '@models/buttonProps';
-
-export const sidemenu_data_quickaccess: { title: string, items: ISideMenuLinkButton[] } = {
+export const sidemenu_data_quickaccess: { title: string, menus: LinkButtonProps[], type: "group" } = {
+    type: "group",
     title: "Acesso Rápido",
-    items: [
+    menus: [
         {
             title: "Ir para o perfil do criador",
             description: "Aproveite para ver outros projetos!",
 
-            icon: <BorderIcon><FaGithub /></BorderIcon>,
+            icon: {
+                component: <BorderIcon><FaGithub /></BorderIcon>,
+            },
             type: "link",
             href: "/",
         },
         {
             title: "Ir para o perfil do parceiro 1",
             description: "Caso não tenha achado o que procurava.",
-            icon: <BorderIcon><LuPartyPopper /></BorderIcon>,
+            icon: {
+                component: <BorderIcon><LuPartyPopper /></BorderIcon>,
+            },
             type: "link",
             href: "/",
         },
@@ -37,48 +39,62 @@ export const sidemenu_data_quickaccess: { title: string, items: ISideMenuLinkBut
             title: "Ir para o perfil do parceiro 2",
             description: "A sorte vem na terceira tentativa.",
 
-            icon: <BorderIcon><FaShareAlt /></BorderIcon>,
+            icon: {
+                component: <BorderIcon><FaShareAlt /></BorderIcon>,
+            },
             type: "link",
             href: "/",
         },
     ]
 };
 
-export const sidemenu_data_classroom: ISideMenuItems = {
+export const sidemenu_data_classroom: SideMenuButtons = {
     title: "Sala de aula",
-    items: [
+    menus: [
         {
             title: "Biblioteca de conteúdos",
-            icon: <GrBook />,
+            icon: {
+                component: <GrBook />,
+            },
             type: "link",
             href: "/classroom/bookshelf",
         },
         {
             title: "Atividades",
-            icon: <FaRegPenToSquare />, // might need the other version for hover effect
+            icon: {
+                component: <FaRegPenToSquare />, // might need the other version for hover effect
+            },
             type: "link",
             href: "/classroom/exercises",
         },
         {
             title: "Aulas digitais",
-            icon: <FaChalkboardTeacher />,
+            icon: {
+                component: <FaChalkboardTeacher />,
+            },
             type: "link",
             href: "/classroom/meetings",
         },
         {
             title: "Simulados e Provas",
-            icon: <IoNewspaperOutline />,
+            icon: {
+                component: <IoNewspaperOutline />,
+            },
             type: "group",
-            items: [
+            menus: [
                 {
                     title: "Avaliações",
-                    icon: <div>I</div>,
+                    icon: {
+                        component: <></>,
+                    },
                     type: "link",
                     href: "/classroom/tests",
                 },
                 {
                     title: "Resultados de Avaliações",
-                    icon: <div>I</div>,
+                    icon: {
+                        component: <></>,
+                    },
                     type: "link",
                     href: "/classroom/tests/results",
                 },
@@ -86,52 +102,68 @@ export const sidemenu_data_classroom: ISideMenuItems = {
         },
         {
             title: "Dúvidas e materiais",
-            icon: <AiOutlineQuestionCircle />,
+            icon: {
+                component: <AiOutlineQuestionCircle />,
+            },
             type: "group",
-            items: [
+            menus: [
                 {
                     title: "Ver materiais e tirar dúvidas",
-                    icon: <div>I</div>,
+                    icon: {
+                        component: <></>,
+                    },
                     type: "link",
                     href: "/help",
                 },
                 {
                     title: "Minhas dúvidas",
-                    icon: <div>I</div>,
+                    icon: {
+                        component: <></>,
+                    },
                     type: "link",
                     href: "/help/questions",
                 },
             ],
         },
     ],
+    type: "group",
 };
 
-export const sidemenu_data_utilities: { title: string, items: ISideMenuLinkButton[] } = {
+export const sidemenu_data_utilities: SideMenuButtons = {
     title: "Utilidades",
-    items: [
+    menus: [
         {
             title: "Mensagens",
             type: "link",
             href: "/admin/students",
-            icon: <BiMessageSquareDetail />,
+            icon: {
+                component: <BiMessageSquareDetail />,
+            },
         },
         {
             title: "Tutoriais",
             type: "link",
             href: "/admin/students",
-            icon: <IoMdHelpCircle />,
+            icon: {
+                component: <IoMdHelpCircle />,
+            },
         },
         {
             title: "Dúvidas e materiais",
             type: "link",
             href: "/admin/students",
-            icon: <FiPaperclip />,
+            icon: {
+                component: <FiPaperclip />,
+            },
         },
         {
             title: "Código de acesso",
             type: "link",
             href: "/admin/students",
-            icon: <IoIosBarcode />,
+            icon: {
+                component: <IoIosBarcode />,
+            },
         },
     ],
+    type: "group",
 }

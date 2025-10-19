@@ -12,153 +12,182 @@ import NotificationPopupContent from '../../../popups/NotificationPopupContent'
 import MyAccountPopupContent from '../../../popups/PopupContentMyAccount'
 import QuickAccessPopupContent from '../../../popups/PopupContentQuickAccess'
 
-// Types
-import type { 
-    ISideMenuItems, 
-    ISideMenuButton,
-    ISideMenuLinkButton, 
-    ISideMenuPopupButton,
-} from '../../../../models/buttonProps'
-
 // Data
-import { 
+import {
     sidemenu_data_classroom,
     sidemenu_data_quickaccess,
     sidemenu_data_utilities,
 } from './any_role_routes'
+import { ButtonProps } from '@components/buttons/Button/Button';
+import { LinkButtonProps } from '@components/buttons/ButtonLink';
+
+import { SideMenuButtons } from '../SideMenuButtons';
+import { NavigationPopupProps } from '@components/layout/navbar/AppNavbar';
 /**
  * This must reflect all the id's fields present in navbar pop-up data 
- **/ 
-export type AdminNavbarPopupId = "notifications" | "schooldata" | "myaccount" | "" | "help";
+ **/
+export type AdminNavbarPopupIds = "notifications" | "schooldata" | "myaccount" | "" | "help";
 
 export interface INavbarPopupData {
-    structure: "side" | "bubble",
+    variant: "side" | "bubble",
     title: string,
-    id: AdminNavbarPopupId,
+    id: AdminNavbarPopupIds,
     icon: JSX.Element,
-    content: JSX.Element,
+    element: JSX.Element,
 };
 
-const admin_sidemenu_data_myaccount: (ISideMenuLinkButton | ISideMenuButton)[] = [
+const admin_sidemenu_data_myaccount: (ButtonProps | LinkButtonProps)[] = [
     {
         title: "Dados pessoais e acesso",
-        icon: <LuScanFace/>,
+        icon: {
+            component: <LuScanFace />
+        },
         type: "link",
         href: "/admin/notdone",
     },
     {
         title: "Comunicações",
-        icon: <TbSpeakerphone/>,
+        icon: {
+            component: <TbSpeakerphone />,
+        },
         type: "link",
         href: "/admin/notdone",
     },
     {
         title: "Privacidade",
-        icon: <GoLock />,
+        icon: {
+            component: <GoLock />
+        },
         type: "link",
         href: "/admin/notdone",
     },
     {
         title: "Sair",
-        icon: <IoExitOutline />,
-        type: "button",
+        icon: {
+            component: <IoExitOutline />
+        },
     },
 ];
 
-export const admin_navbar_popup_data: ISideMenuPopupButton[] = [
+export const admin_navbar_popup_data: NavigationPopupProps[] = [
     {
-        id:"notifications",
-        title:"Notificações",
-        structure:"side",
+        id: "notifications",
+        title: "Notificações",
+        variant: "side",
+        icon: {
+            component: <MdOutlineNotificationsNone color="white" fontSize={22} />
+        },
+        element: <NotificationPopupContent />,
         type: "popup",
-        icon: <MdOutlineNotificationsNone color="white" fontSize={22} />,
-        content: <NotificationPopupContent/>,
     },
     {
-        id:"myaccount",
-        title:"Minha conta",
-        structure: "bubble",
+        id: "myaccount",
+        title: "Minha conta",
+        variant: "bubble",
+        icon: {
+            component: <GoPerson color="white" fontSize={22} />,
+        },
+        element: <MyAccountPopupContent menus={admin_sidemenu_data_myaccount} />,
         type: "popup",
-        icon: <GoPerson color="white" fontSize={22} />,
-        content: <MyAccountPopupContent items={admin_sidemenu_data_myaccount} />,
     },
     {
-        id:"help",
+        id: "help",
+        variant: "side",
+        title: "Central de ajuda",
+        element: <div>Lorem Ipsum</div>,
+        icon: {
+            component: <BiDirections color="white" fontSize={20} />,
+        },
         type: "popup",
-        structure:"side",
-        title:"Central de ajuda",
-        content: <div>Lorem Ipsum</div>,
-        icon: <BiDirections color="white" fontSize={20}/>,
     },
     {
         id: "quickaccess",
         title: "Acesso rápido",
-        structure: "bubble",
+        variant: "bubble",
+        icon: {
+            component: <TbGridDots color="white" fontSize={23} />,
+        },
+        element: <QuickAccessPopupContent menus={sidemenu_data_quickaccess.menus} />,
         type: "popup",
-        icon: <TbGridDots color="white" fontSize={23} />,
-        content: <QuickAccessPopupContent items={sidemenu_data_quickaccess.items}/>,
     },
 ];
 
-export const admin_sidemenu_data: ISideMenuItems[] = [
+export const admin_sidemenu_data: SideMenuButtons[] = [
     {
         title: "Principal",
-        items: [
+        menus: [
             {
                 title: "Inicio",
                 type: "link",
                 href: "/admin",
-                icon: <TbSmartHome/>,
+                icon: {
+                    component: <TbSmartHome />,
+                },
             },
             ...admin_navbar_popup_data,
-        ]
+        ],
+        type: "group",
     },
     {
         title: "Ferramentas",
-        items: [
+        menus: [
             {
                 title: "Dados escolares",
                 type: "link",
-                icon: <LuAtom color="white" fontSize={22}/>,
-                href: "/admin/dashboard",   
+                icon: {
+                    component: <LuAtom color="white" fontSize={22} />,
+                },
+                href: "/admin/dashboard",
             },
             {
                 title: "Minhas turmas",
                 type: "link",
                 href: "/admin/classes",
-                icon: <IoSchool/>,
+                icon: {
+                    component: <IoSchool />,
+                },
             },
             {
                 title: "Meus professores",
                 type: "link",
                 href: "/admin/teachers",
-                icon: <FaChalkboardTeacher/>,
+                icon: {
+                    component: <FaChalkboardTeacher />,
+                },
             },
             {
                 title: "Meus alunos",
                 type: "link",
                 href: "/admin/students",
-                icon: <IoPeopleSharp/>,
+                icon: {
+                    component: <IoPeopleSharp />,
+                },
             },
-        ]
+        ],
+        type: "group",
     },
     {
         title: "Plataforma",
-        items: [
+        menus: [
             {
                 title: "Banco de questões",
                 type: "link",
                 href: "/learning/questions",
-                icon: <FaEdit/>,
+                icon: {
+                    component: <FaEdit />,
+                },
             },
             {
                 title: "Estudo orientado",
                 type: "link",
                 href: "/learning/study",
-                icon: <GoDiscussionDuplicate/>,
+                icon: {
+                    component: <GoDiscussionDuplicate />,
+                },
             },
-            ...sidemenu_data_classroom.items,
-        ]
+            ...sidemenu_data_classroom.menus,
+        ],
+        type: "group",
     },
     sidemenu_data_utilities,
 ];

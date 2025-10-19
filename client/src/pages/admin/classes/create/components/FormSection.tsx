@@ -1,7 +1,7 @@
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import Box from "@mui/material/Box"
-import ButtonSolid from "@components/buttons/ButtonSolid"
+import ButtonSolid from "@components/buttons/Button/Solid"
 
 import { FormContext } from "./Form"
 import { formSections as sections } from "../data"

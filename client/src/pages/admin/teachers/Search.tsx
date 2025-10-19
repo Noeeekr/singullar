@@ -1,5 +1,5 @@
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
-import Button from "@components/buttons/ButtonSolid";
+import ButtonSolid from "@components/buttons/Button/Solid";
 import ButtonLink from "@components/buttons/ButtonLink";
 import SearchTeachers from "./components/Search";
 
@@ -10,15 +10,14 @@ const SearchPage = (): JSX.Element => {
 
             <SectionHeader title="Selecione um professor">
                 <>
-                    <Button sx={{ margin: "0 0 0 auto" }}>Filtrar</Button>
+                    <ButtonSolid title="Filtrar" sx={{ margin: "0 0 0 auto" }}/>
                     <ButtonLink
-                        icon={<></>}
+                        icon={{ component: <></> }}
                         type="link"
-                        title="doesnt-matter"
+                        title="Criar professor"
+                        variant="solid"
                         href="/admin/students/create"
-                    >
-                        Criar professor
-                    </ButtonLink>
+                    />
                 </>
             </SectionHeader>
 

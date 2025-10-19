@@ -1,23 +1,22 @@
 // Features
 import { styled } from '@mui/material'
-import { useAppSelector } from '../../../slices/store';
-import {
-    useMemo,
-    Fragment,
-} from 'react'
+import { useAppSelector } from "@slices/store"
+import { useMemo } from "react"
 
 // Types
 import type { BoxProps } from '@mui/material'
 
 // Components
-import { Stack } from '@mui/material'
-import MenuItems from './SideMenuButtons'
+import Stack from '@mui/material/Stack'
+
+import { Fragment } from "react"
 
 // Data 
 import { admin_sidemenu_data } from './data/admin_routes'
 import { supervisor_sidemenu_data } from './data/supervisor_routes'
 import { teacher_sidemenu_data } from './data/teacher_routes'
 import { students_sidemenu_data } from './data/student_routes'
+import SideMenuButtons from './SideMenuButtons'
 
 interface SideMenuProps extends BoxProps {
     isMobile?: boolean,
@@ -62,7 +61,7 @@ const SideMenu = (
 ): JSX.Element => {
     const user = useAppSelector((store) => store.user.user)
 
-    const data = useMemo(() => {
+    const menus = useMemo(() => {
         switch (user?.role) {
             case "student":
                 return students_sidemenu_data
@@ -81,14 +80,14 @@ const SideMenu = (
         <Layout isOpen={isOpen} isMobile={isMobile}>
             <NavigationBar isMobile={isMobile}>
                 {
-                    data.map((section, i) => {
+                    menus.map((menu, i) => {
                         return (
-                            <Fragment key={section.title + i}>
-                                <MenuItems
-                                    title={i == 0 ? "" : section.title}
+                            <Fragment key={menu.title + i}>
+                                <SideMenuButtons 
+                                    title={!i  ? isMobile ? menu.title : "" : menu.title}
                                     showIcon={true}
                                     isOpen={isOpen}
-                                    items={!isMobile ? i == 0 ? [section.items[0]] : section.items : section.items}
+                                    menus={!i  ? isMobile ? menu.menus : [menu.menus[0]] : menu.menus}
                                 />
                             </Fragment>
                         )

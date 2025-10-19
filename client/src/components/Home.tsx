@@ -9,7 +9,7 @@ import {
     Grid2 as Grid,
 } from '@mui/material'
 import BannerSlider from './BannerSlider';
-import LinkButton from './buttons/ButtonLink';
+import LinkButton, { LinkButtonProps } from './buttons/ButtonLink';
 
 // Data
 import { admin_sidemenu_data } from './layout/sidemenu/data/admin_routes'               
@@ -17,19 +17,15 @@ import { supervisor_sidemenu_data } from './layout/sidemenu/data/supervisor_rout
 import { teacher_sidemenu_data } from './layout/sidemenu/data/teacher_routes'
 import { students_sidemenu_data } from './layout/sidemenu/data/student_routes'
 
-// Types
-import type { 
-    ISideMenuItems,
-    ISideMenuLinkButton,
-} from '../models/buttonProps';
+import type { SideMenuButtons } from './layout/sidemenu/SideMenuButtons';
 
 const Root = (): JSX.Element => {
     const { user, mostVisitedUrls } = useAppSelector((state) => state.user);
 
     const data = useMemo(() => {
-        let allItems: ISideMenuItems[];
-        let linkItems: ISideMenuLinkButton[] = [];
-        let mostVisited: ISideMenuLinkButton[] = [];
+        let allItems: SideMenuButtons[]
+        let linkItems: LinkButtonProps[] = [];
+        let mostVisited: LinkButtonProps[] = [];
 
         switch (user?.role) {
             case "student":
@@ -49,8 +45,8 @@ const Root = (): JSX.Element => {
         }
 
         // Returns only the items;
-        allItems.forEach(i => i.items.forEach(z => {
-            if (z.type === "link") linkItems.push(z as ISideMenuLinkButton); 
+        allItems.forEach(i => i.menus.forEach(z => {
+            if (z.type === "link") linkItems.push(z as LinkButtonProps); 
         }))
         
         mostVisited = linkItems.filter(i => mostVisitedUrls[i.href]);
@@ -81,7 +77,6 @@ const Root = (): JSX.Element => {
                     data.map((d,i) => (
                         <Grid key={i} size={{ mobile: 6, xs: 4, md: 3 }}>
                             <LinkButton
-                                showIcon={true}
                                 href={d.href}
                                 type={d.type}
                                 title={d.title}
@@ -91,7 +86,6 @@ const Root = (): JSX.Element => {
                         </Grid>
                     ))
                 }
-                
             </Grid>
         </Stack>
     )

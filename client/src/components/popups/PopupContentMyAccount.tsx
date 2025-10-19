@@ -12,13 +12,12 @@ import useSignout from '../../hooks/useSignout'
 import UserProfile from '../UserProfile'
 import Divider from '../Divider'
 import SideMenuItems from '../layout/sidemenu/SideMenuButtons'
-import Button from '@components/buttons/Button'
+import Button from '@components/buttons/Button/Default'
+import { LinkButtonProps } from '@components/buttons/ButtonLink'
+import { ButtonProps } from '@components/buttons/Button/Button'
 
-import { ISideMenuLinkProps } from '../buttons/ButtonLink'
-import { ISideMenuButtonProps } from '@components/buttons/Button'
-
-const MyAccountPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenuButtonProps)[] }) => {
-    const { items } = props;
+const MyAccountPopupContent = (props: { menus: (LinkButtonProps | ButtonProps)[] }) => {
+    const { menus } = props;
 
     const navigate = useNavigate()
 
@@ -42,8 +41,8 @@ const MyAccountPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenuBu
                     fontWeight={400}
                     fontSize={13.5}
                     showIcon={true}
-                    hasHoverEffect={true}
-                    items={items.slice(0, -1)}
+                    effects={{ enableHoverEffect: true}}
+                    menus={menus.slice(0, -1)}
                 />
             </Box>
             <Divider />
@@ -52,9 +51,8 @@ const MyAccountPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenuBu
                     <Button 
                         fontWeight={400}
                         fontSize={13.5}
-                        showIcon={true}
-                        hasHoverEffect={true}
-                        { ...items[items.length - 1] }
+                        effects={{ enableHoverEffect: true }}
+                        { ...menus[menus.length - 1] }
                         type="button"
                     />
                 </div>

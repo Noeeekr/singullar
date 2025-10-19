@@ -1,93 +1,60 @@
 // Components
-import {
-    Stack,
-    styled,
-    StackProps,
-    Divider,
-} from '@mui/material'
+import { Divider, Stack, StackProps, useMediaQuery, useTheme } from '@mui/material'
+import type { PopupButtonProps } from '../../buttons/ButtonSidePopup'
+import type { ButtonGroupProps } from '../../buttons/ButtonGroup'
+import type { LinkButtonProps } from '../../buttons/ButtonLink'
 
-import PopupButton from '../../buttons/ButtonSidePopup'
-import LinkButtonGroup from '../../buttons/ButtonGroup'
-import LinkButton from '../../buttons/ButtonLink'
-import Button from '@components/buttons/Button'
-
-// types
-import type {
-    ISideMenuLinkButton,
-    ISideMenuButtonGroup,
-    ISideMenuPopupButton,
-    ISideMenuButton,
-} from '../../../models/buttonProps'
-import type {
-    ButtonCoreProps
-} from '@components/buttons/Button'
-import SectionTitle from '@components/headers/sectionHeader/SectionTitle'
+import ButtonGroup from '../../buttons/ButtonGroup'
 import { Fragment } from 'react/jsx-runtime'
+import SectionTitle from '@components/headers/sectionHeader/SectionTitle'
+import LinkButton from '../../buttons/ButtonLink'
+import PopupButton from '../../buttons/ButtonSidePopup'
+import Button, { ButtonEffectsProps, ButtonsProps } from '@components/buttons/Button/Button'
 
-interface ISideMenuItemsProps extends ButtonCoreProps {
-    title: string
+export interface SideMenuButtons extends ButtonGroupProps {}
 
-    items: (ISideMenuLinkButton | ISideMenuButtonGroup | ISideMenuPopupButton | ISideMenuButton)[],
-
+export interface SideMenuButtonsProps extends StackProps {
     isOpen?: boolean,
-    gap?: number,
+    showIcon?: boolean,
+    showDescription?: boolean
+    menus: (LinkButtonProps | ButtonsProps | ButtonGroupProps | PopupButtonProps)[]
+    effects?: ButtonEffectsProps
 }
 
-/**
- * Holds the icon, the text, and the arrow of each Link / Group
- */
-const MenuItemStack = styled(({ children, onClick, ...props }: StackProps) => (
-    <Stack direction="row" component="li" onClick={onClick} {...props}>{children}</Stack>
-))(({ theme }) => ({
-    alignItems: "center",
-    overflow: 'hidden',
-    textWrap: 'nowrap',
-    cursor: "pointer",
-    color: "black",
-    borderRadius: 6,
-    "&:hover > .MuiBox-root": {
-        opacity: 1,
-        transition: 'opacity 200ms ease-in-out',
-    },
-    "&:hover > .MuiBox-root > .MuiBox-root": {
-        opacity: 1,
-        transition: 'opacity 200ms ease-in-out',
-    },
-    "&:active": {
-        backgroundColor: theme.palette.primary.purpleLightInv
-    },
-}))
-
-const SideMenuItems = ({ items, isOpen, title, ...props }: ISideMenuItemsProps): JSX.Element => {
+const SideMenuButtons = ({ 
+    isOpen,
+    title,
+    menus,
+    ...props 
+}: SideMenuButtonsProps): JSX.Element => {
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
+    
     return (
         <Fragment>
             { Boolean(title) && !isOpen && <Divider /> }
-            <Stack gap={1}>
-                { isOpen && title && <SectionTitle>{title}</SectionTitle> }
-                <Stack component="ul" sx={{ WebkitUserSelect: 'none', userSelect: 'none', msUserSelect: 'none' }} gap={props.gap ? props.gap : 0.5}>
+                <Stack component="ul" sx={{ WebkitUserSelect: 'none', userSelect: 'none', msUserSelect: 'none' }} gap={props.gap ? props.gap : 0.5} {...props}>
+                { isOpen && title && <SectionTitle sx={{ fontSize: 14 }}>{title}</SectionTitle> }
                     {
-                        items.map((item) => {
+                        menus && menus.map((item) => {
+                            item.isMobile = isMobile
                             switch (item.type) {
                                 case "link":
-                                    return <LinkButton key={item.title} {...props} {...item} variant="button" />;
+                                    return <LinkButton key={item.title} {...item as LinkButtonProps} />;
                                 case "popup":
-                                    return <PopupButton key={item.title} {...props} {...item} />;
+                                    return <PopupButton key={item.title} {...item as PopupButtonProps} />;
                                 case "group":
-                                    return <LinkButtonGroup key={item.title} {...props} {...item} />;
+                                    return <ButtonGroup key={item.title} isOpen={isOpen} {...item as ButtonGroupProps} />;
                                 case "button":
-                                    return <Button key={item.title} {...props} {...item} />;
+                                    return <Button key={item.title} {...item} />;
                                 default:
                                     return <div>Error rendering button, type does not exist in ISideMenuItemsProps</div>
                             }
                         })
                     }
                 </Stack>
-            </Stack>
         </Fragment>
-
     )
 }
 
-export { MenuItemStack }
-
-export default SideMenuItems
+export default SideMenuButtons

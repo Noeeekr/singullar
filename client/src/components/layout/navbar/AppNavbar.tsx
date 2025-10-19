@@ -10,7 +10,7 @@ import { NotificationContext } from '../../../context/notificationsContext'
 import { useAppSelector } from '../../../slices/store'
 
 // COMPONENTS
-import NavbarItemPopup from '../../buttons/ButtonIconPopup'
+import NavigationPopup from '../../buttons/ButtonIconPopup'
 import MenuIcon from './NavbarIconButton'
 
 import {
@@ -21,15 +21,24 @@ import {
 } from '@mui/material'
 
 // DATA
-import { admin_navbar_popup_data } from '../sidemenu/data/admin_routes'
-import { supervisor_navbar_popup_data } from '../sidemenu/data/supervisor_routes'
-import { teacher_navbar_popup_data } from '../sidemenu/data/teacher_routes'
-import { students_navbar_popup_data } from '../sidemenu/data/student_routes'
+import { admin_navbar_popup_data, AdminNavbarPopupIds } from '../sidemenu/data/admin_routes'
+import { supervisor_navbar_popup_data, SupervisorNavbarPopupId } from '../sidemenu/data/supervisor_routes'
+import { teacher_navbar_popup_data, TeacherNavbarPopupId } from '../sidemenu/data/teacher_routes'
+import { StudentNavbarPopupIds, students_navbar_popup_data } from '../sidemenu/data/student_routes'
+import type { ButtonProps } from '@components/buttons/Button/Button'
+import { PopupButtonProps } from '@components/buttons/ButtonSidePopup'
 
 interface IAppNavBarProps {
     menuButtonCallback: () => void,
     children?: JSX.Element[],
     showMenu?: boolean
+}
+
+// Types 
+export interface NavigationPopupProps extends PopupButtonProps {
+    variant: "side" | "bubble",
+    id: TeacherNavbarPopupId | StudentNavbarPopupIds | SupervisorNavbarPopupId | AdminNavbarPopupIds,
+    element: JSX.Element,
 }
 
 /**
@@ -69,8 +78,6 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                 return supervisor_navbar_popup_data
             case "teacher":
                 return teacher_navbar_popup_data
-            default:
-                return []
         }
     }, [role])
 
@@ -142,36 +149,36 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                             margin="auto 0 auto auto"
                         >
                             {
-                                !isMobile && datas.map((data, i) => {
+                                !isMobile && datas != null && datas.map((data, i) => {
 
                                     if (i === (datas.length - 1)) {
                                         return (
-                                            <NavbarItemPopup
+                                            <NavigationPopup
                                                 isCorner={true}
-                                                structure={data.structure}
+                                                variant={data.variant}
                                                 title={data.title}
                                                 id={data.id}
                                                 isOpen={isOpen}
                                                 onClickCb={toggleIsOpen}
-                                                icon={data.icon}
-                                                key={data.title + data.id + data.structure}
+                                                icon={data.icon?.component}
+                                                key={data.title + data.id + data.variant}
                                             >
-                                                {data.content}
-                                            </NavbarItemPopup>
+                                                { data.element }
+                                            </NavigationPopup>
                                         )
                                     }
                                     return (
-                                        <NavbarItemPopup
-                                            structure={data.structure}
+                                        <NavigationPopup
+                                            variant={data.variant}
                                             title={data.title}
                                             id={data.id}
                                             isOpen={isOpen}
                                             onClickCb={toggleIsOpen}
-                                            icon={data.icon}
-                                            key={data.title + data.id + data.structure}
+                                            icon={data.icon?.component}
+                                            key={data.title + data.id + data.variant}
                                         >
-                                            {data.content}
-                                        </NavbarItemPopup>
+                                            {data.element}
+                                        </NavigationPopup>
                                     )
                                 })
                             }

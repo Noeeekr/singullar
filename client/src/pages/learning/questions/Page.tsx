@@ -1,11 +1,11 @@
-import Button from "@components/buttons/Button";
+import DefaultButton from "@components/buttons/Button/Default";
 
 const QuestionsPage = ():JSX.Element => {
     return(
         <div>
             Questions page
-            <Button variant="button" type="button" title="Botão padrão (no variant)" icon={<div>Icone</div>}></Button>
-            <Button variant="paper" type="button" title="Botão padrão (paper variant)" icon={<div>Icone</div>}></Button>
+            <DefaultButton title="Botão padrão (no variant)" icon={{ component: <div>Icone</div>}}></DefaultButton>
+            <DefaultButton title="Botão padrão (paper variant)" icon={{ component: <div>Icone</div>}}></DefaultButton>
             
         </div>
     )

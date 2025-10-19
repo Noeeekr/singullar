@@ -1,96 +1,71 @@
-import {
-    cloneElement,
-    useCallback,
-    useContext,
-    useState,
-    useMemo,
-} from 'react'
-import {
-    NotificationContext
-} from '../../context/notificationsContext'
+import { cloneElement } from 'react'
+import { useCallback } from 'react'
+import { useContext } from 'react'
+import { useState } from 'react'
+import { useMemo } from 'react'
 
-import {
-    Box,
-    Typography,
-    Stack,
-    useMediaQuery
-} from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import Box from "@mui/material/Box"
+import Typography from "@mui/material/Typography"
+import Stack from "@mui/material/Stack"
 
-import { MenuItemStack } from '../layout/sidemenu/SideMenuButtons'
-
-import { ISideMenuPopupButton } from '../../models/buttonProps';
 import SidePopup from '../popups/SidePopup'
+import { DefaultButtonLayout } from '@components/buttons/Button/Default'
 
-interface IPopupButtonProps extends ISideMenuPopupButton {
-    hasHoverEffect?: boolean,
-    showIcon?: boolean,
-    iconSize?: number,
-    fontSize?: number,
-    fontWeight?: number,
+import { useTheme } from '@mui/material/styles'
+import { NotificationContext } from '../../context/notificationsContext'
+
+import type { ButtonProps } from './Button/Button'
+import type { AdminNavbarPopupIds } from '@components/layout/sidemenu/data/admin_routes';
+import type { StudentNavbarPopupIds } from '@components/layout/sidemenu/data/student_routes';
+import { TeacherNavbarPopupId } from '@components/layout/sidemenu/data/teacher_routes'
+import { SupervisorNavbarPopupId } from '@components/layout/sidemenu/data/supervisor_routes'
+
+export interface PopupButtonProps extends ButtonProps { 
+    element: JSX.Element
+    id: AdminNavbarPopupIds | StudentNavbarPopupIds | TeacherNavbarPopupId | SupervisorNavbarPopupId
+    variant: "side" | "bubble"
+    type: "popup"
 }
 
-const PopupButton = (props: IPopupButtonProps) => {
+const PopupButton = ({
+    icon: { component: IconComponent, size: iconSize, display: displayIcon } = { component: <></> },
+    isMobile,
+    id,
+    fontWeight,
+    fontSize,
+    title,
+    element,
+    ...props
+}: PopupButtonProps) => {
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
 
     const [isOpen, setIsOpen] = useState(false)
-    const toggleIsOpen = useCallback(
-        () => (setIsOpen(prevState => !prevState))
-    ,[])
-
-    const {
-        title,
-        content,
-
-        id,
-        icon,
-        showIcon,
-
-        iconSize,
-        fontSize,
-        fontWeight,
-        hasHoverEffect,
-    } = props;
-
-    const Icon = useMemo(() => {
-        return Boolean(showIcon)
-            ? <Box display='flex' sx={{ opacity: 0.7 }}>
-                {
-                    cloneElement(icon,
-                        {
-                            fontSize: iconSize || 21,
-                            color: theme.palette.primary.purpleDark,
-                        }
-                    )
-                }
-            </Box>
-            : <></>
-    }, [showIcon]);
+    const toggleIsOpen = useCallback(() => (setIsOpen(prevState => !prevState)), [])
 
     const { notifications } = useContext(NotificationContext)
-    const hasNotifications = useMemo(
-        () => (Object.keys(notifications).includes(id))
-    ,[id])
+    const hasNotifications = useMemo(() => Object.keys(notifications).includes(id), [id])
 
     return (
         <>
-            <MenuItemStack
+            <DefaultButtonLayout
                 component="li"
-
-                paddingX={1}
-                paddingY={isMobile ? 1.5 : 1}
-
-                sx={{
-                    "&:hover": {
-                        backgroundColor: hasHoverEffect ? theme.palette.primary.purpleLightInv : "none",
-                    },
-                }}
-
                 onClick={toggleIsOpen}
+                {...props}
             >
                 <Box sx={{ position: 'relative' }}>
-                    {Icon}
+                    {
+                        displayIcon &&
+                        <Box display='flex' sx={{ opacity: 0.7 }}>
+                            {
+                                cloneElement(IconComponent,
+                                    {
+                                        fontSize: iconSize || 21,
+                                        color: theme.palette.primary.purpleDark,
+                                    }
+                                )
+                            }
+                        </Box>
+                    }
                     {
                         hasNotifications &&
                         <Box sx={{
@@ -111,9 +86,9 @@ const PopupButton = (props: IPopupButtonProps) => {
                         {title}
                     </Typography>
                 </Stack>
-            </MenuItemStack>
+            </DefaultButtonLayout>
             <SidePopup onClickCb={toggleIsOpen} title={title} isOpen={isOpen}>
-                {content}
+                { element }
             </SidePopup>
         </>
     )

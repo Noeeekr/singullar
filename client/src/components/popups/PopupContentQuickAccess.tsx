@@ -1,16 +1,14 @@
+import { LinkButtonProps } from '@components/buttons/ButtonLink';
 import SectionTitle from '../headers/sectionHeader/SectionTitle'
-import SideMenuItems from '../layout/sidemenu/SideMenuButtons'
-
-import type { ISideMenuLinkProps } from '../buttons/ButtonLink'
-import type { ISideMenuButtonProps } from '@components/buttons/Button'
+import SideMenuItems, { SideMenuButtons } from '../layout/sidemenu/SideMenuButtons'
 
 import {
     Box,
     Stack,
 } from '@mui/material'
 
-const QuickAccessPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenuButtonProps)[] }) => {
-    const { items } = props;
+const QuickAccessPopupContent = (props: { menus: (LinkButtonProps | SideMenuButtons)[] }) => {
+    const { menus } = props;
 
     return (
         <Box
@@ -25,9 +23,10 @@ const QuickAccessPopupContent = (props: { items: (ISideMenuLinkProps | ISideMenu
                     Ir para
                 </SectionTitle>
                 <SideMenuItems
+                    title=""
                     showIcon={true}
                     showDescription={true}
-                    items={items}
+                    menus={menus}
                 />
             </Stack>
         </Box>
