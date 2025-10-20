@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
-import { DefaultResponse } from '../models/server'
+import { DefaultResponse } from '../models/server/server'
 
 import { updateUser } from '../slices/userSlice'
 import { AppDispatch } from '../slices/store'
 import { useDispatch } from 'react-redux'
 
 import { SERVER_ADDR } from '../configs'
-import type { User } from '../models/server'
+import type { User } from '../models/server/server'
 
 const useSignIn = (): {
     signin: typeof signin, 

@@ -21,8 +21,8 @@ export const DefaultButtonLayout = styled(({ children, ...props }: ButtonLayoutP
     alignItems: "center",
     
     backgroundColor: effects?.enableSelectEffect ? theme.palette.primary.purpleLightInv : 'transparent',
-    paddingY: isMobile ? "2.5rem" : "10rem",
-    paddingX: "10000px",
+    paddingY: isMobile ? "2.5rem" : "2rem",
+    paddingX: "10px",
     borderRadius: 6,
     boxSizing: "content-box",
 
@@ -83,10 +83,10 @@ const Button = ({
                 </Box>
                 : <></>
             }
-            <Stack gap={0.2} paddingY="0.7rem">
+            <Stack gap={0.2} paddingY="0.4rem">
             {
                 Boolean(title) ?
-                <Typography variant="body2" fontWeight={fontWeight || 500} sx={{ paddingX: 1 }}>
+                <Typography variant="body2" fontWeight={fontWeight || 500} fontSize={15} sx={{ paddingX: 0.5 }}>
                     {title}
                 </Typography>
                 : <></>

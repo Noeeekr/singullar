@@ -9,14 +9,14 @@ import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 
 // Features
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useAppSelector } from "@slices/store"
+import { EF1, EF2, EM } from "../../../../models/server/user"
 
 // Models
+import type { SearchClassFilters } from "@hooks/useFetchClasses"
 import type { UserSegments } from "@models/server"
-import { EF1, EF2, EM } from "../../../../models/server"
-import { useState } from "react"
-import { SearchClassFilters } from "@hooks/useFetchClasses"
 
 export default function SearchFilters({ send }: { send: (body: SearchClassFilters[]) => void }): JSX.Element {
     const institution = useAppSelector((store) => store.institution)

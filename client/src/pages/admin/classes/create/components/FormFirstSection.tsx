@@ -12,8 +12,8 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { FormContext } from "./Form";
 
 // Types
-import type { UserSegments } from "@models/server";
-import { EF1, EF2, EM } from "../../../../../models/server";
+import type { UserSegments } from "@models/server/server";
+import { EF1, EF2, EM } from "../../../../../models/server/server";
 
 export type FormFirstSectionData = {
   className: string,

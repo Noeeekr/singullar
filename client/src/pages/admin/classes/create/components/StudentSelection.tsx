@@ -20,7 +20,7 @@ import useContextAwareFetch from '@hooks/useContextAwareFetch';
 
 // Models
 import type { ChangeEvent, SyntheticEvent, Dispatch, SetStateAction } from 'react';
-import type { User } from '../../../../../models/server';
+import type { User } from '../../../../../models/server/server';
 import { SERVER_ADDR } from '../../../../../configs';
 import { StudentFilters } from '@hooks/useFetchStudents';
 

@@ -16,14 +16,14 @@ import { useCallback } from "react"
 import { cloneElement } from "react"
 
 // Types
-import type { PopupButtonProps } from "./ButtonSidePopup"
+import type { PopupButtonProps } from "./Popup"
 import type { ButtonProps, ButtonsProps } from './Button/Button';
-import type { LinkButtonProps } from './ButtonLink';
+import type { LinkButtonProps } from './Link';
 import SideMenuButtons from "@components/layout/sidemenu/SideMenuButtons"
 
 export interface ButtonGroupProps extends ButtonProps {
     menus: (LinkButtonProps | ButtonsProps | ButtonGroupProps | PopupButtonProps)[]
-    type: "group"
+    type?: "group"
 
     isOpen?: boolean
 }
@@ -50,7 +50,7 @@ const ButtonGroup = ({
 
     return (
         <Stack component="ul" gap={0.5}>
-            <DefaultButtonLayout {...props} onClick={toggleDrawer}>
+            <DefaultButtonLayout {...props} onClick={toggleDrawer} paddingY="0.1rem">
                 {
                     displayIcon &&
                     <Box sx={{
@@ -63,13 +63,13 @@ const ButtonGroup = ({
                     }}>
                         {
                             cloneElement(IconComponent, {
-                                style: { fontSize: iconSize || 21 },
+                                style: { fontSize: iconSize || 24 },
                                 color: theme.palette.primary.purpleDark,
                             })
                         }
                     </Box>
                 }
-                <Typography variant="body2" fontWeight={500} sx={{ paddingX: 1 }}>
+                <Typography variant="body2" fontWeight={500} fontSize={15} sx={{ paddingX: 0.5 }}>
                     {title}
                 </Typography>
                 <FaCaretUp
@@ -86,7 +86,7 @@ const ButtonGroup = ({
                 isWardrobeOpen &&
                 <Box sx={{ paddingLeft: 2.6 }}>
                     <SideMenuButtons 
-                        gap={2}
+                        gap={0}
                         isOpen={isOpen} 
                         title={""}
                         showIcon={false} 

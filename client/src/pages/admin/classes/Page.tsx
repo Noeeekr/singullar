@@ -6,7 +6,7 @@ import { createContext, useEffect } from "react"
 import SearchFilters from "./components/SearchFilters"
 import ClassBubble from "./components/ClassList"
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader"
-import LinkButton from "@components/buttons/ButtonLink"
+import LinkButton from "@components/buttons/Link"
 import Typography from '@mui/material/Typography';
 import ErrorBubble from '@components/bubbles/ErrorBubble/ErrorBubble';
 

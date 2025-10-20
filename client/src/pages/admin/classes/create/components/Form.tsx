@@ -10,7 +10,7 @@ import useContextAwareFetch from "@hooks/useContextAwareFetch";
 // Models
 import { SERVER_ADDR } from "../../../../../configs";
 
-import type { DefaultResponse } from "@models/server";
+import type { DefaultResponse } from "@models/server/server";
 import type { UseFormSetValue } from 'react-hook-form';
 import type { Dispatch, SetStateAction } from 'react';
 import type { FormFirstSectionData } from "./FormFirstSection";

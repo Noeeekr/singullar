@@ -1,14 +1,14 @@
 // Components
 import { Divider, Stack, StackProps, useMediaQuery, useTheme } from '@mui/material'
-import type { PopupButtonProps } from '../../buttons/ButtonSidePopup'
+import type { PopupButtonProps } from '../../buttons/Popup'
 import type { ButtonGroupProps } from '../../buttons/ButtonGroup'
-import type { LinkButtonProps } from '../../buttons/ButtonLink'
+import type { LinkButtonProps } from '../../buttons/Link'
 
 import ButtonGroup from '../../buttons/ButtonGroup'
 import { Fragment } from 'react/jsx-runtime'
 import SectionTitle from '@components/headers/sectionHeader/SectionTitle'
-import LinkButton from '../../buttons/ButtonLink'
-import PopupButton from '../../buttons/ButtonSidePopup'
+import LinkButton from '../../buttons/Link'
+import PopupButton from '../../buttons/Popup'
 import Button, { ButtonEffectsProps, ButtonsProps } from '@components/buttons/Button/Button'
 
 export interface SideMenuButtons extends ButtonGroupProps {}

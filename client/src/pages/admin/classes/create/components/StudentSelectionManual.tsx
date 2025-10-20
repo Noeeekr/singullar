@@ -15,11 +15,11 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
 import useContextAwareFetch from "@hooks/useContextAwareFetch";
 
-import { EF1, EF2, EM } from "../../../../../models/server";
+import { EF1, EF2, EM } from "../../../../../models/server/server";
 import { SERVER_ADDR } from "../../../../../configs";
 import { FormContext } from "./Form";
 
-import type { User } from "@models/server";
+import type { User } from "@models/server/server";
 import type { StudentFilters } from "@hooks/useFetchStudents";
 
 const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback: () => void }): JSX.Element => {

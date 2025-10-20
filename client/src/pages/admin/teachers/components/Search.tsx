@@ -13,7 +13,8 @@ import { useForm } from "react-hook-form"
 import { useCallback, useEffect, useState } from "react";
 import useFetchUsers from "@hooks/useFetchUsers";
 
-import { ROLE_TEACHER, UserRoles } from "../../../../models/server"
+import { ROLE_TEACHER } from "../../../../models/server" 
+import type { UserRoles } from "@models/server"
 
 const roles: UserRoles[] = [ROLE_TEACHER]
 

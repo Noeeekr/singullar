@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography"
 import { useEffect } from "react";
 import useContextAwareFetch from "@hooks/useContextAwareFetch";
 
-import { Institution } from "@models/server";
+import { Institution } from "@models/server/server";
 import { SERVER_ADDR } from "../../../configs";
 import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader";

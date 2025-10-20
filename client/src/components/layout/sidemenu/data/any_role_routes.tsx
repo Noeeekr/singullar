@@ -9,7 +9,7 @@ import { FiPaperclip } from 'react-icons/fi';
 import { FaRegPenToSquare } from 'react-icons/fa6';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { IoMdHelpCircle, IoIosBarcode } from 'react-icons/io';
-import { LinkButtonProps } from '@components/buttons/ButtonLink';
+import { LinkButtonProps } from '@components/buttons/Link';
 import { SideMenuButtons } from '../SideMenuButtons';
 
 export const sidemenu_data_quickaccess: { title: string, menus: LinkButtonProps[], type: "group" } = {

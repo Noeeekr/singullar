@@ -4,7 +4,7 @@ import {
 } from "react"
 import { 
     DefaultResponse 
-} from "../models/server"
+} from "../models/server/server"
 
 import { 
     useNavigate 

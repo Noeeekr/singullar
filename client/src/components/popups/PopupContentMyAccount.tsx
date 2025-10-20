@@ -13,7 +13,7 @@ import UserProfile from '../UserProfile'
 import Divider from '../Divider'
 import SideMenuItems from '../layout/sidemenu/SideMenuButtons'
 import Button from '@components/buttons/Button/Default'
-import { LinkButtonProps } from '@components/buttons/ButtonLink'
+import { LinkButtonProps } from '@components/buttons/Link'
 import { ButtonProps } from '@components/buttons/Button/Button'
 
 const MyAccountPopupContent = (props: { menus: (LinkButtonProps | ButtonProps)[] }) => {

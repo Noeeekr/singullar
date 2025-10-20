@@ -1,4 +1,4 @@
-import { User, UserSegments } from "@models/server"
+import { User, UserSegments } from "@models/server/server"
 import useContextAwareFetch, { Response } from "./useContextAwareFetch"
 import { SERVER_ADDR } from "../configs"
 

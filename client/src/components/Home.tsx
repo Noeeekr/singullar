@@ -9,7 +9,7 @@ import {
     Grid2 as Grid,
 } from '@mui/material'
 import BannerSlider from './BannerSlider';
-import LinkButton, { LinkButtonProps } from './buttons/ButtonLink';
+import LinkButton, { LinkButtonProps } from './buttons/Link';
 
 // Data
 import { admin_sidemenu_data } from './layout/sidemenu/data/admin_routes'               

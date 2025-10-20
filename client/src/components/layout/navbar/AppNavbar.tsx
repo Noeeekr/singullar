@@ -10,7 +10,7 @@ import { NotificationContext } from '../../../context/notificationsContext'
 import { useAppSelector } from '../../../slices/store'
 
 // COMPONENTS
-import NavigationPopup from '../../buttons/ButtonIconPopup'
+import NavigationPopup from '../../buttons/PopupIcon'
 import MenuIcon from './NavbarIconButton'
 
 import {
@@ -26,7 +26,7 @@ import { supervisor_navbar_popup_data, SupervisorNavbarPopupId } from '../sideme
 import { teacher_navbar_popup_data, TeacherNavbarPopupId } from '../sidemenu/data/teacher_routes'
 import { StudentNavbarPopupIds, students_navbar_popup_data } from '../sidemenu/data/student_routes'
 import type { ButtonProps } from '@components/buttons/Button/Button'
-import { PopupButtonProps } from '@components/buttons/ButtonSidePopup'
+import { PopupButtonProps } from '@components/buttons/Popup'
 
 interface IAppNavBarProps {
     menuButtonCallback: () => void,

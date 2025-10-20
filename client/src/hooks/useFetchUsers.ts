@@ -3,7 +3,7 @@ import { SERVER_ADDR } from "../configs";
 import useContextAwareFetch from "./useContextAwareFetch";
 
 import type { Response } from "./useContextAwareFetch";
-import type { User, UserRoles } from "../models/server";
+import type { User, UserRoles } from "../models/server/server";
 
 interface UserRequest {
 	"accepted_roles"?:   UserRoles[]

@@ -1,4 +1,4 @@
-import { LinkButtonProps } from '@components/buttons/ButtonLink';
+import { LinkButtonProps } from '@components/buttons/Link';
 import SectionTitle from '../headers/sectionHeader/SectionTitle'
 import SideMenuItems, { SideMenuButtons } from '../layout/sidemenu/SideMenuButtons'
 

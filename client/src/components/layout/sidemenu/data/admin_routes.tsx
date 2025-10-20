@@ -19,7 +19,7 @@ import {
     sidemenu_data_utilities,
 } from './any_role_routes'
 import { ButtonProps } from '@components/buttons/Button/Button';
-import { LinkButtonProps } from '@components/buttons/ButtonLink';
+import { LinkButtonProps } from '@components/buttons/Link';
 
 import { SideMenuButtons } from '../SideMenuButtons';
 import { NavigationPopupProps } from '@components/layout/navbar/AppNavbar';

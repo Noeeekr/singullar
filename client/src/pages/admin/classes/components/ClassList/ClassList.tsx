@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 
 // Types
 import type { ClassListProps } from "./types";
-import type { Class } from "@models/server";
+import type { Class } from "@models/server/server";
 import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
 import { useNavigate } from "react-router-dom";
 
