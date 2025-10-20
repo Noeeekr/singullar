@@ -28,7 +28,7 @@ const SectionHeader = ({
     <Stack direction="row" alignItems="center" width="100%" justifyContent="space-between" gap={1}>
       <Stack direction="row" alignItems="center" gap={1}>
         <CircularButton onClickCb={() => {navigate(-1)}} />
-        <Stack gap={0.5} direction="row" alignItems="center">
+        <Stack gap={0.5} direction="column" alignItems="start">
           <Typography component="h4" variant="h4" fontWeight="600">
             {title}
           </Typography>
