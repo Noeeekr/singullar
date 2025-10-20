@@ -13,6 +13,7 @@ const PaperButtonLayout = styled(Stack)(() => ({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
 
+    backgroundColor: "white",
     height: '120px',
     borderRadius: '17px',
     boxShadow: 'rgba(114, 119, 128, 0.09) 0px 1px 0px 0px,rgba(114, 119, 128, 0.09) 0px 2px 4px 0px, rgba(114, 119, 128, 0.09) 0px 4px 8px 0px',
