@@ -23,7 +23,7 @@ const SectionHeader = ({ children, title, subtitle, breadcrumbs, ...props }: Sec
   return (
     <Stack direction="row" alignItems="center" width="100%" justifyContent="space-between" gap={1} {...props}>
       <Stack direction="row" alignItems="center" gap={1}>
-        <CircularButton onClickCb={() => {navigate(-1)}} />
+        <CircularButton onClick={() => {navigate(-1)}} />
         <Stack gap={0.5} direction="column" alignItems="start">
           <Typography component="h3" variant="h4" fontWeight="600">
             {title}
