@@ -15,11 +15,11 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
 import useContextAwareFetch from "@hooks/useContextAwareFetch";
 
-import { EF1, EF2, EM } from "../../../../../models/server/server";
+import { EF1, EF2, EM } from "../../../../../models/server";
 import { SERVER_ADDR } from "../../../../../configs";
 import { FormContext } from "./Form";
 
-import type { User } from "@models/server/server";
+import type { User } from "@models/server";
 import type { StudentFilters } from "@hooks/useFetchStudents";
 
 const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback: () => void }): JSX.Element => {
@@ -47,7 +47,7 @@ const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback
     )
 
     useEffect(() => {
-        console.log(getValues())
+        (getValues())
         send([getValues()]);
     }, [])
 
@@ -66,17 +66,15 @@ const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback
         <Stack flexDirection="row" flexWrap="wrap" alignItems="center" gap={2}>
             <Stack gap={1}>
                 <ButtonSolid
+                    title="Voltar"
                     sx={{ backgroundColor: "white", boxShadow: "0px 0px 2px 3px rgb(0,0,0,0.01)" }}
                     color="primary.purpleDark"
                     onClick={returnButtonCallback}
-                >
-                    Voltar
-                </ButtonSolid>
+                />
                 <ButtonSolid
                     onClick={() => send([getValues()])}
-                >
-                    Procurar
-                </ButtonSolid>
+                    title="Procurar"
+                />
             </Stack>
             <Box flexGrow={1}>
                 <SectionTitle

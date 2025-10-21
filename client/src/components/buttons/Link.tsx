@@ -20,7 +20,7 @@ const LinkButton = ({ href, variant = "button", ...props}: LinkButtonProps): JSX
     const location = useLocation();
     if (props.effects == undefined) props.effects = { enableSelectEffect: location.pathname == href };
     if (props.effects?.enableSelectEffect == undefined) props.effects.enableSelectEffect = location.pathname == href;
-
+    
     return (
         <Link 
             to={href}

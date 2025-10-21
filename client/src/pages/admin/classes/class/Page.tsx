@@ -12,7 +12,7 @@ import { useParams } from "react-router-dom"
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader"
 import useFetchStudents from "@hooks/useFetchStudents"
 import useFetchUsers from "@hooks/useFetchUsers"
-import { ROLE_TEACHER } from "../../../../models/server/server"
+import { ROLE_TEACHER } from "../../../../models/server"
 
 const ClassPage = ({ ...props }: StackProps): JSX.Element => {
     const classRequest = useFetchClasses()

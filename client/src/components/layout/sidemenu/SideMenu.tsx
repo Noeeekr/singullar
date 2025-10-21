@@ -37,7 +37,7 @@ const Layout = styled('nav')<SideMenuProps>(({ theme, isMobile, isOpen }) => ({
     overflow: 'hidden',
     zIndex: 9,
 }))
-const NavigationBar = styled(({ children, ...props }: SideMenuProps) => (
+const NavigationBar = styled(({ children, isMobile, ...props }: SideMenuProps) => (
     <Stack component="nav" {...props}>
         {children}
     </Stack>
@@ -85,7 +85,6 @@ const SideMenu = (
                             <Fragment key={menu.title + i}>
                                 <SideMenuButtons 
                                     title={!i  ? isMobile ? menu.title : "" : menu.title}
-                                    showIcon={true}
                                     isOpen={isOpen}
                                     menus={!i  ? isMobile ? menu.menus : [menu.menus[0]] : menu.menus}
                                 />

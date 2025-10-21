@@ -30,7 +30,7 @@ interface NavigationPopupsProps {
     variant?: "side" | "bubble"
 }
 
-const PopupIconLabelBox = styled(({ children, ...props }: { isCorner?: boolean, children: JSX.Element }) => (
+const PopupIconLabelBox = styled(({ children, isCorner, ...props }: { isCorner?: boolean, children: JSX.Element }) => (
     <Box {...props}>{children}</Box>
 ))(({ isCorner }) => ({
     position: "absolute",

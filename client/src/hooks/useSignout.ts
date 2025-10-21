@@ -19,7 +19,6 @@ const useSignOut = () => {
                 credentials: "include"
             })
 
-            console.log(response.ok)
             if (response.ok) {
                 dispatch(updateUser(null))
             } else {

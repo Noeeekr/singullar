@@ -15,7 +15,6 @@ export interface SideMenuButtons extends ButtonGroupProps {}
 
 export interface SideMenuButtonsProps extends StackProps {
     isOpen?: boolean,
-    showIcon?: boolean,
     showDescription?: boolean
     menus: (LinkButtonProps | ButtonsProps | ButtonGroupProps | PopupButtonProps)[]
     effects?: ButtonEffectsProps

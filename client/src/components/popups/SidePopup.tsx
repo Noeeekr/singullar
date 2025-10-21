@@ -52,30 +52,30 @@ const SidePopupWrapper = styled(({ children, onClick, ...props }: BoxProps & { i
     pointerEvents: isOpen ? 'all' : 'none',
 }))
 
-interface INavbarItemGroupProps {
+interface INavbarItemGroupProps extends BoxProps {
     // for toggle menu open click event handling
     isOpen: boolean,
-    onClickCb?: (id: string) => void,
     id?: string,
 
     children: JSX.Element,
     title: string, // for small title popup
 
     structure?: "side" | "bubble"
-}
+
+    onClose: () => void
+} 
 
 const SidePopup = (props: INavbarItemGroupProps) => {
-    const { children, isOpen, onClickCb, title, id } = props;
-
-    const togglePopup = () => { if (onClickCb && id) onClickCb(id); }
+    const { children, onClose, isOpen, title } = props;
 
     return (
         <>
             <ShadowBackground
                 isOpen={isOpen}
-                onClick={togglePopup}
+                onClick={() => onClose()}
             />
             <SidePopupWrapper
+                {...props}
                 isOpen={isOpen}
             >
                 <Stack
@@ -90,9 +90,7 @@ const SidePopup = (props: INavbarItemGroupProps) => {
                     >
                         {title}
                     </Typography>
-                    <CircularButton
-                        onClickCb={togglePopup}
-                    >
+                    <CircularButton onClick={() => onClose()}>
                         <Suspense fallback={<></>}>
                             <CloseRounded style={{ fontSize: 21 }} />
                         </Suspense>

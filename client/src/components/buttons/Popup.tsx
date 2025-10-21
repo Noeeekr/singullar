@@ -1,5 +1,4 @@
 import { cloneElement } from 'react'
-import { useCallback } from 'react'
 import { useContext } from 'react'
 import { useState } from 'react'
 import { useMemo } from 'react'
@@ -20,7 +19,7 @@ import type { StudentNavbarPopupIds } from '@components/layout/sidemenu/data/stu
 import { TeacherNavbarPopupId } from '@components/layout/sidemenu/data/teacher_routes'
 import { SupervisorNavbarPopupId } from '@components/layout/sidemenu/data/supervisor_routes'
 
-export interface PopupButtonProps extends ButtonProps { 
+export interface PopupButtonProps extends ButtonProps {
     element: JSX.Element
     id: AdminNavbarPopupIds | StudentNavbarPopupIds | TeacherNavbarPopupId | SupervisorNavbarPopupId
     variant: "side" | "bubble"
@@ -28,7 +27,7 @@ export interface PopupButtonProps extends ButtonProps {
 }
 
 const PopupButton = ({
-    icon: { component: IconComponent, size: iconSize, display: displayIcon } = { component: <></> },
+    icon: { component: IconComponent, size: iconSize, display: displayIcon = true } = { component: <></> },
     isMobile,
     id,
     fontWeight,
@@ -40,7 +39,6 @@ const PopupButton = ({
     const theme = useTheme();
 
     const [isOpen, setIsOpen] = useState(false)
-    const toggleIsOpen = useCallback(() => (setIsOpen(prevState => !prevState)), [])
 
     const { notifications } = useContext(NotificationContext)
     const hasNotifications = useMemo(() => Object.keys(notifications).includes(id), [id])
@@ -49,20 +47,27 @@ const PopupButton = ({
         <>
             <DefaultButtonLayout
                 component="li"
-                onClick={toggleIsOpen}
+                onClick={() => setIsOpen(prevState => !prevState)}
                 {...props}
             >
                 <Box sx={{ position: 'relative' }}>
                     {
                         displayIcon &&
-                        <Box display='flex' sx={{ opacity: 0.7 }}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+
+                                opacity: 0.7,
+                                padding: "0.4rem",
+                            }}
+                        >
                             {
-                                cloneElement(IconComponent,
-                                    {
-                                        fontSize: iconSize || 21,
-                                        color: theme.palette.primary.purpleDark,
-                                    }
-                                )
+                                cloneElement(IconComponent, {
+                                    style: { fontSize: iconSize || "1.5rem" },
+                                    color: theme.palette.primary.purpleDark,
+                                })
                             }
                         </Box>
                     }
@@ -70,8 +75,8 @@ const PopupButton = ({
                         hasNotifications &&
                         <Box sx={{
                             position: 'absolute',
-                            top: '0',
-                            right: '0',
+                            top: '10%',
+                            right: '10%',
 
                             content: '""',
                             backgroundColor: (theme) => theme.palette.primary.contrast,
@@ -87,8 +92,8 @@ const PopupButton = ({
                     </Typography>
                 </Stack>
             </DefaultButtonLayout>
-            <SidePopup onClickCb={toggleIsOpen} title={title} isOpen={isOpen}>
-                { element }
+            <SidePopup onClose={() => setIsOpen(prevState => !Boolean(prevState))} title={title} isOpen={isOpen}>
+                {element}
             </SidePopup>
         </>
     )

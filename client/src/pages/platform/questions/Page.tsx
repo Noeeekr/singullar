@@ -15,8 +15,11 @@ import { useTheme } from "@mui/material";
 import type { FilterOptions } from "./components/QuestionList";
 import SolidButton from "@components/buttons/Button/Solid";
 import { useState } from "react";
+import { useAppSelector } from "@slices/store";
+import { ROLE_ADMIN } from "../../../models/server";
 
 const QuestionsPage = (): JSX.Element => {
+    const user = useAppSelector((store) => store.user.user)
     const theme = useTheme();
 
     const [isHidden, setIsHidden] = useState(false);
@@ -25,7 +28,11 @@ const QuestionsPage = (): JSX.Element => {
     return (
         <Stack direction="column" gap={3} paddingBottom={4}>
             <SectionHeader title="Banco de questões">
-                <LinkButton title="Adicionar questões" href="/admin/learning/create" variant="solid" />
+                {
+                    user?.role == ROLE_ADMIN 
+                        ? <LinkButton title="Adicionar questões" href="/platform/questions/list/create" variant="solid" />
+                        : <></>
+                }
             </SectionHeader>
             <Divider/>
             <Stack direction="row" justifyContent="space-between">

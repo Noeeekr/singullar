@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography"
 import { useEffect } from "react";
 import useContextAwareFetch from "@hooks/useContextAwareFetch";
 
-import { Institution } from "@models/server/server";
+import { Institution } from "@models/server";
 import { SERVER_ADDR } from "../../../configs";
 import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
@@ -29,7 +29,7 @@ const Dashboard = (): JSX.Element => {
 
     return (
         <Stack gap={2}>
-            <SectionHeader title="Informações escolares" subtitle="Ultima atualização: Agora" />
+            <SectionHeader title="Informações Escolares" subtitle="Ultima atualização: Agora" />
             <Divider />
             <div>
                 {
@@ -56,6 +56,10 @@ const Dashboard = (): JSX.Element => {
                         : <></>
                 }
             </div>
+            <Divider/>
+            <Typography variant="h5" component="h4" fontWeight="bold">
+                Curriculo Escolar
+            </Typography>
         </Stack>
     )
 }

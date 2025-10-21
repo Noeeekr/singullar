@@ -65,7 +65,7 @@ export default function ({ filters }: QuestionListProps): JSX.Element {
             questionQuantity: 6,
         },
         {
-            title: "Questões extras de matematica",
+            title: "Matematica básica (Extras)",
             subject: "matematica",
             difficultyLevel: 2,
             difficultyName: "intermediário",
@@ -98,8 +98,8 @@ export default function ({ filters }: QuestionListProps): JSX.Element {
                                 <span style={{ fontWeight: "bold" }}>Matéria:</span> { questionList.subject }
                             </Typography>
                         </Stack>
-                        <Typography>
-                            Dificuldade: { questionList.difficultyName }
+                        <Typography textTransform="capitalize">
+                            <span style={{ fontWeight: "bold" }}>Dificuldade:</span> { questionList.difficultyName }
                         </Typography>
                         <Stack direction="row" gap={1} marginY={2}>
                             { ...questionDisplay }

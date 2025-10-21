@@ -13,7 +13,7 @@ import type { ButtonLayoutProps, ButtonProps } from './Button'
 /**
  * Holds the icon, the text, and the arrow of each Link / Group
  */
-export const DefaultButtonLayout = styled(({ children, ...props }: ButtonLayoutProps) => (
+export const DefaultButtonLayout = styled(({ children, isMobile, ...props }: ButtonLayoutProps) => (
     <Stack direction="row" component="li" {...props} >
         { children }
     </Stack>
@@ -56,7 +56,7 @@ const Button = ({
     icon: { component: IconComponent, size: iconSize, display: displayIcon = true } = { component: <></> },
     title,
     description, showDescription,
-    fontWeight,
+    fontWeight, fontSize,
     ...props
 }: ButtonProps): JSX.Element => {
     const theme = useTheme();
@@ -86,9 +86,9 @@ const Button = ({
             <Stack gap={0.2} paddingY="0.4rem">
             {
                 Boolean(title) ?
-                <Typography variant="body2" fontWeight={fontWeight || 500} fontSize={15} sx={{ paddingX: 0.5 }}>
-                    {title}
-                </Typography>
+                    <Typography variant="body2" sx={{ paddingX: 1 }} fontSize={fontSize} fontWeight={fontWeight || 500}>
+                        {title}
+                    </Typography>
                 : <></>
             }
             {

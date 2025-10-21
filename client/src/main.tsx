@@ -12,18 +12,20 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } 
 
 import { lazy, Suspense } from "react";
 
-const Layout = lazy(() => import("./components/layout/Layout")) 
-const Root = lazy(() => import("./components/Home")) 
 const ProtectedRoutes = lazy(() => import("./components/layout/ProtectedRoutes"))
-const PgStudentsSearch = lazy(() => import("./pages/admin/students/Search")) 
-const PgStudentsCreate = lazy(() => import("./pages/admin/students/pages/Create")) 
-const PgClassesSearch = lazy(() => import("./pages/admin/classes/Page")) 
+const Layout = lazy(() => import("./components/layout/Layout"))
+const Home = lazy(() => import("./components/Home"))
+
+const PgStudentsSearch = lazy(() => import("./pages/admin/students/Search"))
+const PgStudentsCreate = lazy(() => import("./pages/admin/students/pages/Create"))
+const PgClassesSearch = lazy(() => import("./pages/admin/classes/Page"))
 const PgClass = lazy(() => import("./pages/admin/classes/class/Page"))
-const PgClassesCreate = lazy(() => import("./pages/admin/classes/create/Page")) 
+const PgClassesCreate = lazy(() => import("./pages/admin/classes/create/Page"))
 const PgTeachersSearch = lazy(() => import("./pages/admin/teachers/Search"))
 const PgAuthentication = lazy(() => import("./pages/auth/Auth"))
 const PgDashboard = lazy(() => import("./pages/admin/dashboard/Page"))
-const PgQuestions = lazy(() => import("./pages/learning/questions/Page"))
+const PgQuestionList = lazy(() => import("./pages/platform/questions/Page"))
+const PgQuestionListCreate = lazy(() => import("./pages/platform/questions/create/Page"))
 
 const routerRoutes = createRoutesFromElements(
   <>
@@ -38,24 +40,38 @@ const routerRoutes = createRoutesFromElements(
         element={<Suspense fallback={<div>Loading Layout Page</div>}><Layout /></Suspense>}
       >
         <Route index element={<div>Home root page</div>} />
-        <Route path="learning">
-          <Route path="questions" element={<Suspense fallback={<div>Loading Questions Page</div>}><PgQuestions/></Suspense>}/>
+        <Route path="platform">
+          <Route path="questions">
+            <Route index
+              element={<Suspense fallback={<div>Loading Questions Page</div>}><PgQuestionList /></Suspense>}
+            />
+            <Route path="list">
+              <Route path="create"
+                element={<Suspense fallback={<div>Loading Questions Page</div>}><PgQuestionListCreate /></Suspense>}
+              />
+              <Route path=":listId"
+                element={<Suspense fallback={<div>Loading Questions Page</div>}><PgQuestionListCreate /></Suspense>}
+              />
+            </Route>
+          </Route>
         </Route>
         <Route path="teacher">
           <Route index element={<div>Teacher root page</div>} />
           <Route path="*" element={<div>Teacher path home page</div>} />
+        </Route>
+        <Route path="home">
+          <Route index element={<Home />} />
         </Route>
         <Route path="supervisor">
           <Route index element={<div>Supervisor root page</div>} />
           <Route path="*" element={<div>Supervisor path home page</div>} />
         </Route>
         <Route path="admin">
-          <Route index element={<Root />} />
-          <Route path="dashboard" 
-            element={<Suspense fallback={<div>Loading Dashboard Page</div>}><PgDashboard/></Suspense>} 
+          <Route path="dashboard"
+            element={<Suspense fallback={<div>Loading Dashboard Page</div>}><PgDashboard /></Suspense>}
           />
           <Route path="students">
-            <Route index 
+            <Route index
               element={<Suspense fallback={<div>Loading Students</div>}><PgStudentsSearch /></Suspense>}
             />
             <Route path="create"
@@ -63,12 +79,8 @@ const routerRoutes = createRoutesFromElements(
             />
           </Route>
           <Route path="classes">
-            <Route index
-              element={<Suspense fallback={<div>Loading Classes</div>}><PgClassesSearch /></Suspense>}
-            />
-            <Route path=":id"
-              element={<Suspense fallback={<div>Loading Class Info</div>}><PgClass/></Suspense>}
-            />
+            <Route index element={<Suspense fallback={<div>Loading Classes</div>}><PgClassesSearch /></Suspense>} />
+            <Route path=":id" element={<Suspense fallback={<div>Loading Class Info</div>}><PgClass /></Suspense>} />
             <Route path="create"
               element={<Suspense fallback={<div>Loading Classes Create</div>}><PgClassesCreate /></Suspense>}
             />
@@ -93,7 +105,7 @@ createRoot(document.getElementById("root")!).render(
         <ThemeProvider theme={lightTheme}>
           <CssBaseline />
           <GlobalStyles styles={{ ul: { padding: 0, margin: 0 } }} />
-            <RouterProvider router={createBrowserRouter(routerRoutes)} />
+          <RouterProvider router={createBrowserRouter(routerRoutes)} />
         </ThemeProvider>
       </PersistGate>
     </Provider>

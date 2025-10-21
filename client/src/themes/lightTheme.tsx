@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles'
+import { stepConnectorClasses } from '@mui/material';
 
 import './fonts.css'
 
@@ -154,6 +155,28 @@ const lightTheme = createTheme({
                 }
             }
         },
+        MuiStepConnector: {
+            styleOverrides: {
+                root: {
+                    [`& .${stepConnectorClasses.line}`]: {
+                        height: 3,
+                        border: 0,
+                        backgroundColor: '#eaeaf0',
+                        borderRadius: 1,
+                    },
+                    [`&.${stepConnectorClasses.active}`]: {
+                        [`& .${stepConnectorClasses.line}`]: {
+                            backgroundColor: lightPaletteTheme.palette.primary.purpleExtraLight,
+                        },
+                    },
+                    [`&.${stepConnectorClasses.completed}`]: {
+                        [`& .${stepConnectorClasses.line}`]: {
+                            backgroundColor: lightPaletteTheme.palette.primary.purpleLight,
+                        }
+                    }
+                },
+            }
+        },
         MuiInputBase: {
             styleOverrides: {
                 root: {
@@ -212,7 +235,7 @@ const lightTheme = createTheme({
                 }
             }
         },
-        MuiOutlinedInput: { 
+        MuiOutlinedInput: {
             styleOverrides: {
                 root: {
                     height: '43px', // applies for all themes
@@ -244,7 +267,7 @@ const lightTheme = createTheme({
                         '&:-webkit-autofill': {
                             position: 'relative'
                         },
-                      },
+                    },
                 },
                 notchedOutline: {
                     borderColor: 'rgb(230,230,230)',

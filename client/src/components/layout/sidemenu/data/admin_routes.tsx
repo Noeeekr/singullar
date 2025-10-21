@@ -119,7 +119,7 @@ export const admin_sidemenu_data: SideMenuButtons[] = [
             {
                 title: "Inicio",
                 type: "link",
-                href: "/admin",
+                href: "/home",
                 icon: {
                     component: <TbSmartHome />,
                 },
@@ -172,7 +172,7 @@ export const admin_sidemenu_data: SideMenuButtons[] = [
             {
                 title: "Banco de questões",
                 type: "link",
-                href: "/learning/questions",
+                href: "/platform/questions",
                 icon: {
                     component: <FaEdit />,
                 },
@@ -180,7 +180,7 @@ export const admin_sidemenu_data: SideMenuButtons[] = [
             {
                 title: "Estudo orientado",
                 type: "link",
-                href: "/learning/study",
+                href: "/platform/study",
                 icon: {
                     component: <GoDiscussionDuplicate />,
                 },
