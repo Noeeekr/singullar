@@ -15,14 +15,10 @@ export type {
     UserSegments,
 } from "./user"
 export {
-    ROLE_ADMIN,
-    ROLE_STUDENT,
-    ROLE_SUPERVISOR,
-    ROLE_TEACHER, 
-    EF1, 
-    EF2, 
-    EM 
+    ROLE_ADMIN, ROLE_STUDENT, ROLE_SUPERVISOR, ROLE_TEACHER, 
+    EF1, EF2, EM 
 } from "./user"
+
 // Class related models
 export type { Class } from "./class"
 
@@ -31,3 +27,6 @@ export type { Institution } from "./institution"
 
 // Response related models
 export type { DefaultResponse } from "./response"
+
+// Question related models
+export type { Question } from "./question"

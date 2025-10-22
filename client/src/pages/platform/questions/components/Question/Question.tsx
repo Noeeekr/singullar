@@ -1,6 +1,8 @@
-export interface Question {
+export interface QuestionProps {
     // name: string
 }
-export default function() {
-    
+export default function (): JSX.Element {
+    return (
+        <div></div>
+    )
 }
