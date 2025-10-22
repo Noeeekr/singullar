@@ -1,4 +1,4 @@
-export interface ThirdSectionProps {
+export interface ThirdSectionFormState {
 
 }
 

@@ -172,7 +172,7 @@ export const admin_sidemenu_data: SideMenuButtons[] = [
             {
                 title: "Banco de questões",
                 type: "link",
-                href: "/platform/questions",
+                href: "/platform/question/list",
                 icon: {
                     component: <FaEdit />,
                 },

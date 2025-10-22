@@ -1,9 +1,17 @@
-export interface SecondSectionProps {
+import Questions from "../../../components/Questions"
+
+export interface SecondSectionFormState {
 
 } 
 
-export default function(): JSX.Element {
+export interface SecondSectionProps {
+    title: string
+    onParentClick: (cb: () => void) => void
+    parentButtonTitle: string
+}
+
+export default function({ onParentClick }: SecondSectionProps): JSX.Element {
     return(
-        <div>Second section</div>
+        <Questions onParentClick={onParentClick} />
     )
 }

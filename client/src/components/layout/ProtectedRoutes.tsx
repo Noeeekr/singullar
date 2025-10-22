@@ -4,7 +4,7 @@ import useSignOut from "@hooks/useSignout";
 
 import RouteGuard, { routes } from "../../routes";
 import { useEffect, useState } from "react";
-import { ROLE_STUDENT, UserRoles } from "../../models/server";
+import { UserRoles } from "../../models/server";
 
 /**
  * Protected routes checks if user is logged and manages the authorization

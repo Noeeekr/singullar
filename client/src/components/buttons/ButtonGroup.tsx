@@ -89,7 +89,6 @@ const ButtonGroup = ({
                         gap={0}
                         isOpen={isOpen} 
                         title={""}
-                        showIcon={false} 
                         menus={menus} 
                         fontWeight={350} 
                     />

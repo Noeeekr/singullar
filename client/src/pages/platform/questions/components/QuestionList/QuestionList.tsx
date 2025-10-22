@@ -48,7 +48,7 @@ const QuestionContainer = styled(({ children, ...props }: Grid2Props) => (
     }
 }))
 
-export default function ({ filters }: QuestionListProps): JSX.Element {
+export default function ({}: QuestionListProps): JSX.Element {
     const questionLists: QuestionList[] = [
         {
             title: "Fundamentos da matematica",

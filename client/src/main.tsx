@@ -41,11 +41,11 @@ const routerRoutes = createRoutesFromElements(
       >
         <Route index element={<div>Home root page</div>} />
         <Route path="platform">
-          <Route path="questions">
-            <Route index
-              element={<Suspense fallback={<div>Loading Questions Page</div>}><PgQuestionList /></Suspense>}
-            />
+          <Route path="question">
             <Route path="list">
+              <Route index
+                element={<Suspense fallback={<div>Loading Questions Page</div>}><PgQuestionList /></Suspense>}
+              />
               <Route path="create"
                 element={<Suspense fallback={<div>Loading Questions Page</div>}><PgQuestionListCreate /></Suspense>}
               />

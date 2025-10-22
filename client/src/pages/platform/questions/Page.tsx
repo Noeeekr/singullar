@@ -24,13 +24,13 @@ const QuestionsPage = (): JSX.Element => {
 
     const [isHidden, setIsHidden] = useState(false);
 
-    const { register, watch } = useForm<FilterOptions>({ defaultValues: {} })
+    const { watch } = useForm<FilterOptions>({ defaultValues: {} })
     return (
         <Stack direction="column" gap={3} paddingBottom={4}>
             <SectionHeader title="Banco de questões">
                 {
                     user?.role == ROLE_ADMIN 
-                        ? <LinkButton title="Adicionar questões" href="/platform/questions/list/create" variant="solid" />
+                        ? <LinkButton title="Adicionar questões" href="/platform/question/list/create" variant="solid" />
                         : <></>
                 }
             </SectionHeader>

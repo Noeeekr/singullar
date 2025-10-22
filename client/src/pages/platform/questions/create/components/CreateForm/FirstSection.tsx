@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form"
 import { useContext, useEffect } from "react"
 import { FormContext } from "./Form"
 
-export interface FirstSectionProps {
+export interface FirstSectionFormState {
     questionListName: string
     questionListDifficultyLevel: number
 }
@@ -26,12 +26,12 @@ const InputTitle = styled(Typography)(() => ({
 }))
 
 export default function ({ }: { title: string }): JSX.Element {
-    const { register, watch, formState: { isValid }, control } = useForm<FirstSectionProps>()
+    const { register, getValues, formState: { isValid }, control } = useForm<FirstSectionFormState>()
     const { setFormState } = useContext(FormContext)
 
     useEffect(() => {
         if (isValid == false) return setFormState("1", undefined);
-        setFormState("1", { ...watch(), complete: true })
+        setFormState("1", { ...getValues(), complete: true })
     }, [isValid])
 
     return (
