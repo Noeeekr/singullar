@@ -3,9 +3,12 @@ package environment
 import (
 	"os"
 
-	"github.com/Noeeekr/singullar/server/util"
+	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/singullar/server/common/logs"
+	"github.com/Noeeekr/singullar/server/internal/common/commandutil"
 	"github.com/caarlos0/env"
 	dotenv "github.com/joho/godotenv"
+	"github.com/spf13/cobra"
 )
 
 type EnvironmentMode string
@@ -26,12 +29,19 @@ var environment *Environment = &Environment{
 	Mode: PRODUCTION,
 }
 
+var EnvironmentFilesFlagName = "env-files"
+var EnvironmentFilesFlagToken = commandutil.RegisterConfigurationToken()
+
 func init() {
+	commandutil.RegisterFlagConfiguration(EnvironmentFilesFlagToken, func(c *cobra.Command) {
+		c.Flags().StringArrayP(EnvironmentFilesFlagName, string(EnvironmentFilesFlagName[0]), []string{}, "Defines the path to the environment files containing the necessary environment variables if not already supplied in the environment")
+	})
+
 	if err := Scan(environment); err != nil {
-		res := util.NewResponse().
+		res := common.NewResponse().
 			WithDescription("Unable to start program: Environment variables not set correctly.").
-			WithStatus(util.StatusInternalError)
-		util.Error.Println(res.String() + "\n\t" + err.String())
+			WithStatus(common.StatusInternalError)
+		logs.Error.Println(res.String() + "\n\t" + err.String())
 		os.Exit(1)
 	}
 }
@@ -60,7 +70,7 @@ func OverrideEmpty(key string, newValue string) string {
 	}
 	return originalValue
 }
-func Parse(files ...string) *util.Response {
+func Parse(files ...string) *common.Response {
 	if len(files) == 0 {
 		return nil
 	}
@@ -68,20 +78,20 @@ func Parse(files ...string) *util.Response {
 	for _, file := range files {
 		stat, err := os.Stat(file)
 		if err != nil {
-			return util.NewResponse().
-				WithStatus(util.StatusNotFound).
+			return common.NewResponse().
+				WithStatus(common.StatusNotFound).
 				WithDescription("Environment file not found.")
 		}
 		if stat.IsDir() {
-			return util.NewResponse().
-				WithStatus(util.StatusInvalidRequest).
+			return common.NewResponse().
+				WithStatus(common.StatusInvalidRequest).
 				WithDescription("Path doesn't lead to an actual file.")
 		}
 	}
 
 	if err := dotenv.Load(files...); err != nil {
-		return util.NewResponse().
-			WithStatus(util.StatusInternalError).
+		return common.NewResponse().
+			WithStatus(common.StatusInternalError).
 			WithDescription("Failed to load environment file")
 	}
 
@@ -89,10 +99,10 @@ func Parse(files ...string) *util.Response {
 }
 
 // Populates v with all variables. V must be a struct with all fields to be parsed
-func Scan(v any) *util.Response {
+func Scan(v any) *common.Response {
 	if err := env.Parse(v); err != nil {
-		return util.NewResponse().
-			WithStatus(util.StatusInternalError).
+		return common.NewResponse().
+			WithStatus(common.StatusInternalError).
 			WithDescription("Failed to retrieve environment variables to application: " + err.Error())
 	}
 	return nil

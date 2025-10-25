@@ -6,11 +6,12 @@ import (
 	"testing"
 
 	"github.com/Noeeekr/borm"
+	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/singullar/server/common/environment"
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/Noeeekr/singullar/server/internal/database/seeder"
-	"github.com/Noeeekr/singullar/server/util"
-	"github.com/Noeeekr/singullar/server/util/environment"
 )
 
 type InstitutionData struct {
@@ -33,11 +34,11 @@ type Utils struct {
 
 // Test Utility Functions
 
-func (m *Utils) ClearEnvironment() *util.Response {
+func (m *Utils) ClearEnvironment() *common.Response {
 	m.MainTest.Log("Finished operations, dropping tables")
 	err := m.Commiter.DropRelations()
 	if err != nil {
-		util.Error.Fatal(err)
+		logs.Error.Fatal(err)
 	}
 	return nil
 }
@@ -56,7 +57,7 @@ func (m *Utils) PrepareEnvironment() error {
 	return nil
 }
 func (m *Utils) ConnectToDevelopmentDatabase() string {
-	var res *util.Response
+	var res *common.Response
 	m.MainTest.Run("PARSE ENVIRONMENT", func(t *testing.T) {
 		res = environment.Parse(databaseSecretsFilepath)
 		if res != nil {
@@ -131,19 +132,19 @@ var databaseSecretsFilepath = "../../../secrets/postgres.env"
 var institutions = InstitutionNameToData{}
 
 func TestDatabaseOperations(test *testing.T) {
-	utils := NewUtil(test)
-	if err := utils.PrepareEnvironment(); err != nil {
+	testutil := NewUtil(test)
+	if err := testutil.PrepareEnvironment(); err != nil {
 		test.Fatal(err)
 	}
-	defer utils.ClearEnvironment()
+	defer testutil.ClearEnvironment()
 
-	utils.MustPass("INSERT INSTITUTIONS", func(t *testing.T) {
-		if err := utils.operations.StartTransaction(); err != nil {
+	testutil.MustPass("INSERT INSTITUTIONS", func(t *testing.T) {
+		if err := testutil.operations.StartTransaction(); err != nil {
 			t.Fatal(err)
 		}
 		for _, data := range seeder.CreateInstitutionRequest(10) {
 			institution := operations.CreateInstitutionRequest(data.Name, data.Email, data.Password)
-			createdUsers, err := utils.operations.InsertInstitutions(institution)
+			createdUsers, err := testutil.operations.InsertInstitutions(institution)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -157,13 +158,13 @@ func TestDatabaseOperations(test *testing.T) {
 				Users:         []*models.Users{},
 			}
 		}
-		if err := utils.operations.CommitTransaction(); err != nil {
+		if err := testutil.operations.CommitTransaction(); err != nil {
 			t.Fatal(err)
 		}
 	})
-	utils.MustPass("SELECT INSTITUTIONS BY ID", func(t *testing.T) {
+	testutil.MustPass("SELECT INSTITUTIONS BY ID", func(t *testing.T) {
 		for _, institution := range institutions {
-			institution, err := utils.operations.SelectInstitutionById(institution.Admin.InstitutionId)
+			institution, err := testutil.operations.SelectInstitutionById(institution.Admin.InstitutionId)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -173,35 +174,35 @@ func TestDatabaseOperations(test *testing.T) {
 			institutions[institution.Name].Info = institution
 		}
 	})
-	utils.MustPass("SELECT INSTITUTIONS BY NAME", func(t *testing.T) {
+	testutil.MustPass("SELECT INSTITUTIONS BY NAME", func(t *testing.T) {
 		for _, institution := range institutions {
-			_, err := utils.operations.SelectInstitutionByName(institution.Info.Name)
+			_, err := testutil.operations.SelectInstitutionByName(institution.Info.Name)
 			if err != nil {
 				t.Fatal(err)
 			}
 		}
 	})
 
-	utils.MustPass("INSERT USERS", func(t *testing.T) {
-		if err := utils.operations.StartTransaction(); err != nil {
+	testutil.MustPass("INSERT USERS", func(t *testing.T) {
+		if err := testutil.operations.StartTransaction(); err != nil {
 			t.Fatal(err)
 		}
 		for _, institution := range institutions {
 			userRequests := seeder.CreateUserRequests(20, institution.Info.Id)
-			users, err := utils.operations.InsertManyUsers(userRequests...)
+			users, err := testutil.operations.InsertManyUsers(userRequests...)
 			if err != nil {
 				t.Fatal(err)
 			}
 			institution.Users = append(institution.Users, users...)
 		}
-		if err := utils.operations.CommitTransaction(); err != nil {
+		if err := testutil.operations.CommitTransaction(); err != nil {
 			t.Fatal(err)
 		}
 	})
-	utils.MustPass("SELECT USERS BY EMAIL", func(t *testing.T) {
+	testutil.MustPass("SELECT USERS BY EMAIL", func(t *testing.T) {
 		for _, institution := range institutions {
 			for _, user := range institution.Users {
-				_, err := utils.operations.SelectUserByEmail(user.Email)
+				_, err := testutil.operations.SelectUserByEmail(user.Email)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -209,10 +210,10 @@ func TestDatabaseOperations(test *testing.T) {
 		}
 	})
 
-	utils.MustPass("SELECT USERS BY ID", func(t *testing.T) {
+	testutil.MustPass("SELECT USERS BY ID", func(t *testing.T) {
 		for _, institution := range institutions {
 			for _, user := range institution.Users {
-				_, err := utils.operations.SelectUsersById(user.Id)
+				_, err := testutil.operations.SelectUsersById(user.Id)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -220,8 +221,8 @@ func TestDatabaseOperations(test *testing.T) {
 		}
 	})
 
-	utils.MustPass("INSERT NOTIFICATIONS", func(t *testing.T) {
-		if err := utils.operations.StartTransaction(); err != nil {
+	testutil.MustPass("INSERT NOTIFICATIONS", func(t *testing.T) {
+		if err := testutil.operations.StartTransaction(); err != nil {
 			t.Fatal(err)
 		}
 		for _, institution := range institutions {
@@ -248,18 +249,18 @@ func TestDatabaseOperations(test *testing.T) {
 					notificationRequests = append(notificationRequests, operations.CreateNotificationRequest(notificationContentRequest, usersNotificationsRequest))
 				}
 			}
-			notifications, err := utils.operations.InsertNotifications(notificationRequests...)
+			notifications, err := testutil.operations.InsertNotifications(notificationRequests...)
 			if err != nil {
 				t.Fatal(err)
 			}
 			institution.Notifications = append(institution.Notifications, notifications...)
 		}
-		if err := utils.operations.CommitTransaction(); err != nil {
+		if err := testutil.operations.CommitTransaction(); err != nil {
 			t.Fatal(err)
 		}
 	})
 
-	utils.MustPass("SELECT NOTIFICATIONS BY TARGET ID", func(t *testing.T) {
+	testutil.MustPass("SELECT NOTIFICATIONS BY TARGET ID", func(t *testing.T) {
 		var student_ids []int
 		for _, institution := range institutions {
 			for _, user := range institution.Users {
@@ -269,7 +270,7 @@ func TestDatabaseOperations(test *testing.T) {
 			}
 		}
 		for _, id := range student_ids {
-			notifications, err := utils.operations.SelectNotificationsByTargetId(id)
+			notifications, err := testutil.operations.SelectNotificationsByTargetId(id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -278,25 +279,25 @@ func TestDatabaseOperations(test *testing.T) {
 			}
 		}
 	})
-	utils.MustPass("DELETE NOTIFICATIONS BY ISSUER ID", func(t *testing.T) {
-		if err := utils.operations.StartTransaction(); err != nil {
+	testutil.MustPass("DELETE NOTIFICATIONS BY ISSUER ID", func(t *testing.T) {
+		if err := testutil.operations.StartTransaction(); err != nil {
 			t.Fatal(err)
 		}
 		for _, institution := range institutions {
 			for _, notification := range institution.Notifications {
-				err := utils.operations.DeleteNotificationsByIssuerId(notification.IssuerId)
+				err := testutil.operations.DeleteNotificationsByIssuerId(notification.IssuerId)
 				if err != nil {
 					t.Fatal(err)
 				}
 			}
 		}
-		if err := utils.operations.CommitTransaction(); err != nil {
+		if err := testutil.operations.CommitTransaction(); err != nil {
 			t.Fatal(err)
 		}
 	})
 
-	utils.MustPass("DELETE USERS BY EMAIL AND ID", func(t *testing.T) {
-		if err := utils.operations.StartTransaction(); err != nil {
+	testutil.MustPass("DELETE USERS BY EMAIL AND ID", func(t *testing.T) {
+		if err := testutil.operations.StartTransaction(); err != nil {
 			t.Fatal(err)
 		}
 		for _, institution := range institutions {
@@ -307,21 +308,21 @@ func TestDatabaseOperations(test *testing.T) {
 			for i, user := range institution.Users {
 				var err error
 				if i > userAmount/2 {
-					err = utils.operations.DeleteUserByEmail(user.Email)
+					err = testutil.operations.DeleteUserByEmail(user.Email)
 				} else {
-					err = utils.operations.DeleteUserById(user.Id)
+					err = testutil.operations.DeleteUserById(user.Id)
 				}
 				if err != nil {
 					t.Fatal(err)
 				}
 			}
 		}
-		if err := utils.operations.CommitTransaction(); err != nil {
+		if err := testutil.operations.CommitTransaction(); err != nil {
 			t.Fatal(err)
 		}
 	})
-	utils.MustPass("DELETE INSTITUTIONS BY EMAIL AND ID", func(t *testing.T) {
-		if err := utils.operations.StartTransaction(); err != nil {
+	testutil.MustPass("DELETE INSTITUTIONS BY EMAIL AND ID", func(t *testing.T) {
+		if err := testutil.operations.StartTransaction(); err != nil {
 			t.Fatal(err)
 		}
 		institutionAmount := len(institutions)
@@ -332,16 +333,16 @@ func TestDatabaseOperations(test *testing.T) {
 		var index int = 0
 		for _, institution := range institutions {
 			if index > institutionAmount/2 {
-				err = utils.operations.DeleteInstitutionById(institution.Info.Id)
+				err = testutil.operations.DeleteInstitutionById(institution.Info.Id)
 			} else {
-				err = utils.operations.DeleteInstitutionByName(institution.Info.Name)
+				err = testutil.operations.DeleteInstitutionByName(institution.Info.Name)
 			}
 			if err != nil {
 				t.Fatal(err)
 			}
 			index++
 		}
-		if err := utils.operations.CommitTransaction(); err != nil {
+		if err := testutil.operations.CommitTransaction(); err != nil {
 			t.Fatal(err)
 		}
 	})

@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/Noeeekr/borm"
+	"github.com/Noeeekr/singullar/server/common/environment"
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
-	"github.com/Noeeekr/singullar/server/util"
-	"github.com/Noeeekr/singullar/server/util/environment"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -33,7 +33,7 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 
 		files, _ := cmd.Flags().GetStringArray("environmentFiles")
 		if err := environment.Parse(files...); err != nil {
-			util.Error.Fatal(err)
+			logs.Error.Fatal(err)
 			return
 		}
 
@@ -46,7 +46,7 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 
 		commiter, err := borm.Connect(models.EnvironmentDatabase)
 		if err != nil {
-			util.Error.Fatal(err)
+			logs.Error.Fatal(err)
 		}
 		ops := operations.New(commiter)
 
@@ -55,7 +55,7 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 			fmt.Println("User with specified email already exists, please choose other.")
 			return
 		} else if !errors.Is(err, borm.ErrNotFound) {
-			util.Error.Fatal(err)
+			logs.Error.Fatal(err)
 			return
 		}
 
@@ -64,7 +64,7 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 
 		err = ops.StartTransaction()
 		if err != nil {
-			util.Error.Fatal(err)
+			logs.Error.Fatal(err)
 		}
 
 		users, err := ops.InsertInstitutions(institution)

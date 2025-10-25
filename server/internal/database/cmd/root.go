@@ -8,7 +8,7 @@ import (
 
 var rootCmd *cobra.Command = &cobra.Command{
 	Use:   "database",
-	Short: "Database is a utility tool that allows inserting rows into singullar.",
+	Short: "Database is a ty tool that allows inserting rows into singullar.",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()

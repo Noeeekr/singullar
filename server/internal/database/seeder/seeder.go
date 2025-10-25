@@ -3,8 +3,8 @@ package seeder
 import (
 	"math/rand/v2"
 
+	"github.com/Noeeekr/singullar/server/common"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
-	"github.com/Noeeekr/singullar/server/util"
 )
 
 func CreateInstitutionRequest(amount int) []*models.CreateInstitutions {
@@ -13,9 +13,9 @@ func CreateInstitutionRequest(amount int) []*models.CreateInstitutions {
 		data = append(
 			data,
 			&models.CreateInstitutions{
-				Name:     util.GenerateRandomStrings(10),
-				Email:    util.GenerateRandomStrings(10),
-				Password: util.GenerateRandomStrings(10),
+				Name:     common.GenerateRandomStrings(10),
+				Email:    common.GenerateRandomStrings(10),
+				Password: common.GenerateRandomStrings(10),
 			},
 		)
 	}
@@ -25,7 +25,7 @@ func CreateUserRequests(amount, institutionId int) []*models.CreateUsers {
 	users := make([]*models.CreateUsers, amount)
 
 	for i := range amount {
-		password := util.GenerateRandomStrings(10)
+		password := common.GenerateRandomStrings(10)
 		role := models.STUDENT
 		luckyNumber := rand.N(50)
 		if luckyNumber > 45 {
@@ -36,8 +36,8 @@ func CreateUserRequests(amount, institutionId int) []*models.CreateUsers {
 		}
 		segment := models.EF1
 		users[i] = models.CreateUser(
-			util.GenerateRandomStrings(10),
-			util.GenerateRandomStrings(10),
+			common.GenerateRandomStrings(10),
+			common.GenerateRandomStrings(10),
 			password,
 			institutionId,
 			role,
@@ -52,8 +52,8 @@ func CreateNotificationContentRequests(amount, issuerId int) []*models.CreateNot
 	notifications := make([]*models.CreateNotificationContents, amount)
 	for i := range amount {
 		notifications[i] = &models.CreateNotificationContents{
-			Title:       util.GenerateRandomStrings(10),
-			Description: util.GenerateRandomStrings(10),
+			Title:       common.GenerateRandomStrings(10),
+			Description: common.GenerateRandomStrings(10),
 			IssuerId:    issuerId,
 		}
 	}

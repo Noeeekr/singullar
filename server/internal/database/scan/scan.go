@@ -10,21 +10,21 @@ import (
 /*
 // If the return value is nil scan only check for errors on scan
 
-	func UsersIds(ids *[]int) borm.QueryRowsScanner {
+	func UsersIds(ids *[]int) borm.QueryrowsScanner {
 
-		return func(Rows *sql.Rows, throwOnNotFound, throwOnFound) error {
+		return func(rows *sql.Rows, throwOnNotFound, throwOnFound) error {
 
 			if ids == nil {
 				return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 			}
 
-			for Rows.Next() {
+			for rows.Next() {
 
 				if throwOnFound {
 					return borm.ErrorDescription(StatusFound), "Found"				}
 
 				var id int
-				if err := Rows.Scan(&id); err != nil {
+				if err := rows.Scan(&id); err != nil {
 					return borm.ErrorDescription(borm.ErrFailedTransaction, ).Error())
 				}
 				*ids = append(*ids, id)
@@ -35,7 +35,7 @@ import (
 					return borm.ErrorDescription(StatusNotFound), "NotFound"				}
 			}
 
-			if err := Rows.Err(); err != nil {
+			if err := rows.Err(); err != nil {
 						return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 					}
 					if !throwErrorOnFound {
@@ -48,21 +48,21 @@ import (
 */
 
 func DatabaseTypes(names *[]string) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if names == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
-		defer Rows.Close()
 
 		var name string
-		for Rows.Next() {
-			if err := Rows.Scan(&name); err != nil {
+		for rows.Next() {
+			if err := rows.Scan(&name); err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*names = append(*names, name)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 		if len(*names) == 0 {
@@ -74,21 +74,21 @@ func DatabaseTypes(names *[]string) borm.ReturnScanner {
 }
 
 func DatabaseTables(names *[]string) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if names == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
-		defer Rows.Close()
 
 		var name string
-		for Rows.Next() {
-			if err := Rows.Scan(&name); err != nil {
+		for rows.Next() {
+			if err := rows.Scan(&name); err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*names = append(*names, name)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
@@ -101,21 +101,21 @@ func DatabaseTables(names *[]string) borm.ReturnScanner {
 }
 
 func DatabaseUsers(names *[]string) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if names == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
-		defer Rows.Close()
 
 		var name string
-		for Rows.Next() {
-			if err := Rows.Scan(&name); err != nil {
+		for rows.Next() {
+			if err := rows.Scan(&name); err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*names = append(*names, name)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 		if len(*names) == 0 {
@@ -125,20 +125,20 @@ func DatabaseUsers(names *[]string) borm.ReturnScanner {
 	}
 }
 func DatabaseNames(names *[]string) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if names == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
-		defer Rows.Close()
 
 		var name string
-		for Rows.Next() {
-			if err := Rows.Scan(&name); err != nil {
+		for rows.Next() {
+			if err := rows.Scan(&name); err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*names = append(*names, name)
 		}
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
@@ -151,20 +151,21 @@ func DatabaseNames(names *[]string) borm.ReturnScanner {
 
 // If the return value is nil scan only check for errors on scan
 func NotificationContents(notifications *[]*models.NotificationContents) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if notifications == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
 
-		for Rows.Next() {
+		for rows.Next() {
 			var n models.NotificationContents
-			if err := Rows.Scan(&n.CreatedAt, &n.UpdatedAt, &n.DeletedAt, &n.Id, &n.IssuerId, &n.Title, &n.Description); err != nil {
+			if err := rows.Scan(&n.CreatedAt, &n.UpdatedAt, &n.DeletedAt, &n.Id, &n.IssuerId, &n.Title, &n.Description); err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*notifications = append(*notifications, &n)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
@@ -177,20 +178,21 @@ func NotificationContents(notifications *[]*models.NotificationContents) borm.Re
 }
 
 func Notifications(detailedNotifications *[]*models.Notifications) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if detailedNotifications == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
 
-		for Rows.Next() {
+		for rows.Next() {
 			var n models.Notifications
-			if err := Rows.Scan(&n.CreatedAt, &n.UpdatedAt, &n.DeletedAt, &n.TargetId, &n.TargetName, &n.IssuerId, &n.Title, &n.Description); err != nil {
+			if err := rows.Scan(&n.CreatedAt, &n.UpdatedAt, &n.DeletedAt, &n.TargetId, &n.TargetName, &n.IssuerId, &n.Title, &n.Description); err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*detailedNotifications = append(*detailedNotifications, &n)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
@@ -202,20 +204,21 @@ func Notifications(detailedNotifications *[]*models.Notifications) borm.ReturnSc
 }
 
 func Integers(ids *[]int) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if ids == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
 
-		for Rows.Next() {
+		for rows.Next() {
 			var id int
-			if err := Rows.Scan(&id); err != nil {
+			if err := rows.Scan(&id); err != nil {
 				return false, borm.ErrorDescription(borm.ErrFailedTransaction, err.Error())
 			}
 			*ids = append(*ids, id)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
@@ -228,20 +231,21 @@ func Integers(ids *[]int) borm.ReturnScanner {
 
 // If the return value is nil scan only check for errors on scan
 func UsersEmail(emails *[]string) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if emails == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
 
-		for Rows.Next() {
+		for rows.Next() {
 			var email string
-			if err := Rows.Scan(&email); err != nil {
+			if err := rows.Scan(&email); err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*emails = append(*emails, email)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 		if len(*emails) == 0 {
@@ -252,21 +256,22 @@ func UsersEmail(emails *[]string) borm.ReturnScanner {
 }
 
 func Users(users *[]*models.Users) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if users == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
 
-		for Rows.Next() {
+		for rows.Next() {
 			u := models.Users{}
-			err := Rows.Scan(&u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Name, &u.Email, &u.Password, &u.InstitutionId, &u.Role, &u.Id, &u.ProfilePicture, &u.Segment)
+			err := rows.Scan(&u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Name, &u.Email, &u.Password, &u.InstitutionId, &u.Role, &u.Id, &u.ProfilePicture, &u.Segment)
 			if err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*users = append(*users, &u)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
@@ -280,20 +285,21 @@ func Users(users *[]*models.Users) borm.ReturnScanner {
 
 // If the return value is nil scan only check for errors on scan
 func InstitutionsIds(ids *[]int) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if ids == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
 
-		for Rows.Next() {
+		for rows.Next() {
 			var id int
-			if err := Rows.Scan(&id); err != nil {
+			if err := rows.Scan(&id); err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 			}
 			*ids = append(*ids, id)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
@@ -306,14 +312,15 @@ func InstitutionsIds(ids *[]int) borm.ReturnScanner {
 
 // If the return value is nil scan only check for errors on scan
 func Institutions(institutions *[]*models.Institutions) borm.ReturnScanner {
-	return func(Rows *sql.Rows) (bool, error) {
+	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if institutions == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
 
-		for Rows.Next() {
+		for rows.Next() {
 			i := models.Institutions{}
-			err := Rows.Scan(&i.CreatedAt, &i.UpdatedAt, &i.DeletedAt, &i.Name, &i.Id)
+			err := rows.Scan(&i.CreatedAt, &i.UpdatedAt, &i.DeletedAt, &i.Name, &i.Id)
 			if err != nil {
 				return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 
@@ -321,7 +328,7 @@ func Institutions(institutions *[]*models.Institutions) borm.ReturnScanner {
 			*institutions = append(*institutions, &i)
 		}
 
-		if err := Rows.Err(); err != nil {
+		if err := rows.Err(); err != nil {
 			return false, borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 
@@ -330,6 +337,7 @@ func Institutions(institutions *[]*models.Institutions) borm.ReturnScanner {
 }
 func Classes(classes *[]*models.Classes) borm.ReturnScanner {
 	return func(rows *sql.Rows) (bool, error) {
+		defer rows.Close()
 		if classes == nil {
 			return false, borm.ErrorDescription(borm.ErrSyntax, "Cannot scan to nil pointer")
 		}
@@ -349,4 +357,16 @@ func Classes(classes *[]*models.Classes) borm.ReturnScanner {
 
 		return len(*classes) != 0, nil
 	}
+}
+
+func Subjects(subjects *[]*models.Subjects) borm.ReturnScanner {
+	return Scanner[models.Subjects](func(row *sql.Rows) error {
+		subject := models.Subjects{}
+		err := row.Scan(&subject.Id, &subject.SubjectName, &subject.InstitutionId)
+		if err != nil {
+			return borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
+		}
+		*subjects = append(*subjects, &subject)
+		return nil
+	}).On(subjects)
 }

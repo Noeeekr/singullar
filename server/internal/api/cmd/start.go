@@ -5,13 +5,15 @@ import (
 	"os"
 
 	"github.com/Noeeekr/borm"
+	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/singullar/server/common/environment"
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/server"
 	"github.com/Noeeekr/singullar/server/internal/api/server/handlers"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
+	"github.com/Noeeekr/singullar/server/internal/common/commandutil"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
-	"github.com/Noeeekr/singullar/server/util"
-	"github.com/Noeeekr/singullar/server/util/environment"
 	"github.com/gin-gonic/gin"
 
 	"github.com/Noeeekr/singullar/server/internal/database/cmd/migrate"
@@ -51,12 +53,12 @@ var startCmd *cobra.Command = &cobra.Command{
 				flags = append(flags, "--recreate-existing")
 			}
 			if res := Migrate(mode, flags...); res != nil {
-				util.Info.Fatal(res.String())
+				logs.Info.Fatal(res.String())
 			}
 		}
 
-		if err := StartApi(domain, port, mode); err != nil {
-			util.Error.Fatal(err.Error())
+		if err := start(domain, port, mode); err != nil {
+			logs.Error.Fatal(err.Error())
 		}
 	},
 }
@@ -64,21 +66,18 @@ var startCmd *cobra.Command = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(startCmd)
 
+	commandutil.ConsumeFlagConfiguration(environment.EnvironmentFilesFlagToken, startCmd)
+	commandutil.ConsumeFlagConfiguration(migrate.MigrationFlagsToken, startCmd)
+
 	startCmd.Flags().Bool("enable-debug", false, "Defines if the server should start in debug mode. Defaults to false")
 	startCmd.Flags().Bool("enable-migrations", false, "Defines if the server should start with migrations. Defaults to false")
-
-	startCmd.Flags().Bool("recreate-existing", false, "Drop and recreate relations in the database migration if already exists.")
-	startCmd.Flags().Bool("ignore-existing", false, "Doesn't throw errors and proceed if the database relation already exists.")
-	startCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
 
 	startCmd.Flags().String("mode", "development", "The environment to migrate on. Defaults to development.")
 	startCmd.Flags().String("port", "80", "Defines the port the server will listen to.")
 	startCmd.Flags().String("domain", "", "Defines the server host portion of the URI")
-
-	startCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "The path to the files containing the required environment variables.")
 }
 
-func StartApi(domain, port, mode string) error {
+func start(domain, port, mode string) error {
 	commiter, err := borm.Connect(models.EnvironmentDatabase)
 	if err != nil {
 		return err
@@ -89,38 +88,39 @@ func StartApi(domain, port, mode string) error {
 		return err.ParseToError()
 	}
 
-	router, err := server.PrepareRouter(handlers.New(operations.New(commiter), &env), &env)
+	operator := operations.New(commiter)
+	handlers := handlers.New(operator, &env)
+	router, err := server.PrepareRouter(handlers, &env)
 	if err != nil {
 		return err
 	}
 
 	addr := fmt.Sprintf("%s:%s", domain, port)
-	server := server.New(router, addr).
-		WithErrLogger(util.Error)
+	server := server.
+		New(router, addr).
+		RegisterErrorLogger(logs.Error)
 
-	util.Info.Printf("Mode: %s", mode)
-	util.Info.Printf("Domain: %s", domain)
-	util.Info.Printf("Database: %s", commiter.Name)
-	util.Info.Printf("Address: %s\n", addr)
+	logs.Info.Printf("Mode: %s", mode)
+	logs.Info.Printf("Domain: %s", domain)
+	logs.Info.Printf("Database: %s", commiter.Name)
+	logs.Info.Printf("Address: %s\n", addr)
 	return server.ListenAndServe()
 }
 
-func Migrate(mode string, flags ...string) *util.Response {
-	args := []string{"./api", mode}
-	args = append(args, flags...)
-
-	os.Args = args
+func Migrate(mode string, flags ...string) *common.Response {
+	os.Args = make([]string, len(flags)+2)
+	os.Args = append(os.Args, "/api")
+	os.Args = append(os.Args, mode)
+	os.Args = append(os.Args, flags...)
 
 	err := migrate.EnvironmentCmd.Execute()
 	if err != nil {
-		return util.NewResponse().WithDescription(err.Error()).WithStatus(util.StatusInternalError)
+		return common.NewResponse().WithDescription(err.Error()).WithStatus(common.StatusInternalError)
 	}
-
-	os.Args = args
 
 	err = migrate.RelationsCmd.Execute()
 	if err != nil {
-		return util.NewResponse().WithDescription(err.Error()).WithStatus(util.StatusInternalError)
+		return common.NewResponse().WithDescription(err.Error()).WithStatus(common.StatusInternalError)
 	}
 
 	return nil

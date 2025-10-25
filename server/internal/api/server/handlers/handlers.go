@@ -14,11 +14,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/Noeeekr/borm"
+	"github.com/Noeeekr/singullar/server/common"
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/Noeeekr/singullar/server/internal/database/scan"
-	"github.com/Noeeekr/singullar/server/util"
 )
 
 type Handlers struct {
@@ -32,8 +33,8 @@ type Handlers struct {
 
 func New(ops *operations.Operations, env *types.Environment) *Handlers {
 	return &Handlers{
-		LogInfo:    util.Info,
-		LogErr:     util.Error,
+		LogInfo:    logs.Info,
+		LogErr:     logs.Error,
 		operations: ops,
 
 		Environment: env,
@@ -117,25 +118,25 @@ func (h *Handlers) GetDashboard(ctx *gin.Context) {
 //
 //	borm.ErrNotFound
 //	bcrypt.ErrMismatchedPasswords
-func (h *Handlers) checkUserPassword(email string, password string) (*models.Users, util.ResponseStatus, error) {
+func (h *Handlers) checkUserPassword(email string, password string) (*models.Users, common.ResponseStatus, error) {
 	user, err := h.operations.SelectUserByEmail(email)
 	if err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
-			return nil, util.StatusNotFound, err
+			return nil, common.StatusNotFound, err
 		}
-		return nil, util.StatusInternalError, err
+		return nil, common.StatusInternalError, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user[0].Password), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return nil, util.StatusNotEqual, err
+			return nil, common.StatusNotEqual, err
 		}
-		return nil, util.StatusInternalError, err
+		return nil, common.StatusInternalError, err
 	}
 
 	user[0].Password = ""
-	return user[0], util.StatusEmpty, nil
+	return user[0], common.StatusEmpty, nil
 }
 
 // SingInHandler gets a SignInRequest, check the user email and password agaisnt database.
@@ -153,10 +154,10 @@ func (h *Handlers) SignIn(ctx *gin.Context) {
 		default:
 			h.internalError(ctx, "Falha ao checar se o usuario existe. ", err)
 			return
-		case util.StatusNotFound:
+		case common.StatusNotFound:
 			h.clientError(ctx, "Usuario não existe")
 			return
-		case util.StatusNotEqual:
+		case common.StatusNotEqual:
 			h.internalError(ctx, "Senha incorreta.", err)
 			return
 		}
@@ -348,7 +349,7 @@ func (h *Handlers) GetStudents(ctx *gin.Context) {
 }
 
 func (h *Handlers) GetClasses(ctx *gin.Context) {
-	filters := []*operations.FilterClassOptions{}
+	filters := []*operations.FilterClassesOptions{}
 	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&filters)) {
 		ctx.JSON(http.StatusBadRequest, types.NewServerResponse(nil, "Dados em formato incorreto"))
 		return
@@ -369,7 +370,7 @@ func (h *Handlers) GetClasses(ctx *gin.Context) {
 }
 
 func (h *Handlers) GetUsers(ctx *gin.Context) {
-	request := &operations.SelectUserRequest{}
+	request := &operations.SelectUsersOptions{}
 	if h.BadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
 		return
 	}

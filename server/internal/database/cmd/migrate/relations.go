@@ -2,9 +2,10 @@ package migrate
 
 import (
 	"github.com/Noeeekr/borm"
+	"github.com/Noeeekr/singullar/server/common/environment"
+	"github.com/Noeeekr/singullar/server/common/logs"
+	"github.com/Noeeekr/singullar/server/internal/common/commandutil"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
-	"github.com/Noeeekr/singullar/server/util"
-	"github.com/Noeeekr/singullar/server/util/environment"
 	"github.com/spf13/cobra"
 )
 
@@ -18,12 +19,12 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
 		if ignoreExisting {
 			borm.Settings().Migrations().IgnoreExisting()
-			util.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
+			logs.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
 		}
 		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
 		if recreateExisting {
 			borm.Settings().Migrations().RecreateExisting()
-			util.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
+			logs.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
 		}
 
 		// Configure environment
@@ -35,30 +36,40 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 
 		path, _ := cmd.Flags().GetStringArray("environmentFiles")
 		if res := environment.Parse(path...); res != nil {
-			util.Error.Fatal("[Invalid environment file]:", res.String())
+			logs.Error.Fatal("[Invalid environment file]:", res.String())
 			return
 		}
 
 		// Connect to environment database
 		database, err := borm.Connect(models.EnvironmentDatabase)
 		if err != nil {
-			util.Error.Fatal(err)
+			logs.Error.Fatal(err)
 		}
 		defer database.DB().Close()
+
+		database.RegisterMigrationQueries(
+			models.TableQuestionDifficulty.
+				Insert("difficulty_level", "difficulty_name").
+				Values(
+					models.Fundamental, models.QuestionListDifficulties[models.Fundamental],
+					models.Beginner, models.QuestionListDifficulties[models.Beginner],
+					models.Intermediare, models.QuestionListDifficulties[models.Intermediare],
+					models.Advanced, models.QuestionListDifficulties[models.Advanced],
+					models.Expert, models.QuestionListDifficulties[models.Expert],
+				),
+		)
 
 		// Migrate environment database relations
 		if err := database.MigrateRelations(); err != nil {
-			util.Error.Fatal(err)
+			logs.Error.Fatal(err)
 		}
 		defer database.DB().Close()
 
-		util.Info.Println("[Migration finished]")
+		logs.Info.Println("[Migration finished]")
 	},
 }
 
 func init() {
-	RelationsCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "Defines the path to the environment files containing the necessary environment variables if not already supplied in the environment")
-	RelationsCmd.Flags().BoolP("ignore-existing", "i", false, "Doesn't throw errors if the ENVIRONMENT_DATABASE relation already exists.")
-	RelationsCmd.Flags().BoolP("recreate-existing", "r", false, "Drop and recreate the relation if already exists.")
-	RelationsCmd.MarkFlagsMutuallyExclusive("ignore-existing", "recreate-existing")
+	commandutil.ConsumeFlagConfiguration(MigrationFlagsToken, RelationsCmd)
+	commandutil.ConsumeFlagConfiguration(environment.EnvironmentFilesFlagToken, EnvironmentCmd)
 }

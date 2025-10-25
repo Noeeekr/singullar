@@ -18,7 +18,7 @@ func New(router http.Handler, addr string) *Server {
 	}
 }
 
-func (s *Server) WithErrLogger(logger *log.Logger) *Server {
+func (s *Server) RegisterErrorLogger(logger *log.Logger) *Server {
 	s.ErrorLog = logger
 	return s
 }

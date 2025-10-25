@@ -16,19 +16,3 @@ const (
 )
 
 var TypeUserRole *borm.Enum = EnvironmentDatabase.RegisterEnum(UserRoleName, string(UNKNOWN), string(STUDENT), string(TEACHER), string(SUPERVISOR), string(ADMIN))
-
-// var roleTypeQueries = &TypeQueries{
-// 	Create: transactions.NewRequest(fmt.Sprintf(`
-// 			DO $$
-// 			BEGIN
-// 				IF NOT EXISTS (SELECT * FROM pg_type WHERE typname = '%s') THEN
-// 					CREATE TYPE %s AS ENUM ( '%s','%s','%s','%s','%s' );
-// 				END IF;
-// 			END $$;
-// 		`, UserRolesTypeName, UserRolesTypeName,
-// 		Admin, Student, Supervisor, Teacher, Unknown,
-// 	)),
-// 	Drop: transactions.NewRequest(fmt.Sprintf(`
-// 		DROP TYPE IF EXISTS %s CASCADE;
-// 	`, UserRolesTypeName)),
-// }

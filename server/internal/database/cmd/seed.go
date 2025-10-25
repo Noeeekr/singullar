@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"github.com/Noeeekr/borm"
+	"github.com/Noeeekr/singullar/server/common/environment"
+	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/Noeeekr/singullar/server/internal/database/seeder"
-	"github.com/Noeeekr/singullar/server/util"
-	"github.com/Noeeekr/singullar/server/util/environment"
 	"github.com/spf13/cobra"
 )
 
@@ -28,13 +28,13 @@ var seedCmd *cobra.Command = &cobra.Command{
 
 		files, _ := cmd.Flags().GetStringArray("environmentFiles")
 		if err := environment.Parse(files...); err != nil {
-			util.Error.Fatal(err.String())
+			logs.Error.Fatal(err.String())
 		}
 
 		if err := seedInstitution(email, psswd); err != nil {
-			util.Error.Fatal(err)
+			logs.Error.Fatal(err)
 		}
-		util.Info.Println("[Finished seeding]")
+		logs.Info.Println("[Finished seeding]")
 	},
 }
 
@@ -56,17 +56,17 @@ func seedInstitution(email, password string) error {
 
 	admin, err := InsertInstitution(ops, institutionRequest)
 	if err != nil {
-		util.Error.Fatal(err)
+		logs.Error.Fatal(err)
 	}
 
 	teachers, studentIds, err := InsertUsers(ops, admin.InstitutionId)
 	if err != nil {
-		util.Error.Fatal(err)
+		logs.Error.Fatal(err)
 	}
 
 	err = InsertNotifications(ops, teachers, studentIds)
 	if err != nil {
-		util.Error.Fatal(err)
+		logs.Error.Fatal(err)
 	}
 	return ops.CommitTransaction()
 }
