@@ -10,6 +10,9 @@ import (
 )
 
 var RelationsCmd *cobra.Command = &cobra.Command{
+	FParseErrWhitelist: cobra.FParseErrWhitelist{
+		UnknownFlags: true,
+	},
 	Use:   "relations [-f ...ENVIRONMENT_FILES] [--ignore-existing] [--recreate-existing] [ production | environment ]",
 	Args:  cobra.MinimumNArgs(1),
 	Short: "Migrates the tables and roles to the ENVIRONMENT_DATABASE specified in the file",
@@ -71,5 +74,5 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 
 func init() {
 	commandutil.ConsumeFlagConfiguration(MigrationFlagsToken, RelationsCmd)
-	commandutil.ConsumeFlagConfiguration(environment.EnvironmentFilesFlagToken, EnvironmentCmd)
+	commandutil.ConsumeFlagConfiguration(environment.EnvironmentFilesFlagToken, RelationsCmd)
 }
