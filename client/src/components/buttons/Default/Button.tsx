@@ -5,15 +5,15 @@ import { styled } from "@mui/material"
 
 // Components
 import Box from "@mui/material/Box"
-import Stack from "@mui/material/Stack"
+import Stack, { StackProps } from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 
-import type { ButtonLayoutProps, ButtonProps } from './Button'
+import type { ButtonLayoutProps, ButtonProps } from '.'
 
 /**
  * Holds the icon, the text, and the arrow of each Link / Group
  */
-export const DefaultButtonLayout = styled(({ children, isMobile, ...props }: ButtonLayoutProps) => (
+export const DefaultButtonLayout = styled(({ children, isMobile, ...props }: ButtonLayoutProps & StackProps) => (
     <Stack direction="row" component="li" {...props} >
         { children }
     </Stack>
@@ -71,7 +71,7 @@ const Button = ({
                         justifyContent: "center",
 
                         opacity: 0.7,
-                        padding: "0.4rem",
+                        padding: "0.5rem",
                     }}
                 >
                     {

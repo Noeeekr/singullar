@@ -5,7 +5,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import ButtonSolid from '@components/buttons/Button/Solid';
+import ButtonSolid from '@components/buttons/Default/Solid';
 
 // Features
 import { useContext, useEffect, useState, useCallback } from "react";

@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack"
 import useContextAwareFetch from "@hooks/useContextAwareFetch"
 import { useContext, useEffect } from "react"
 import { QuestionFilterContext } from "./Filters"
-import { SERVER_ADDR } from "../../../../../configs"
+import { SERVER_ADDR } from "../../../../../../configs"
 
 import type { Question } from "@models/server"
 

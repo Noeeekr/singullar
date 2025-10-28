@@ -10,6 +10,8 @@ import { SERVER_ADDR } from "../../../configs";
 import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
 
+import PopupButton from "@components/buttons/Popup";
+
 const Dashboard = (): JSX.Element => {
     const { response, isLoading, error, send } = useContextAwareFetch<Institution, {}>(
         `${SERVER_ADDR}/api/dashboard`,
@@ -37,13 +39,13 @@ const Dashboard = (): JSX.Element => {
                         ? <ErrorBubble err={error} />
                         : <>
                             <Typography variant="body2">
-                                <span style={{fontWeight: "bold"}}>Nome da instituição:</span> {response.name}
+                                <span style={{ fontWeight: "bold" }}>Nome da instituição:</span> {response.name}
                             </Typography>
                             <Typography variant="body2">
-                                <span style={{fontWeight: "bold"}}>Plataforma ID:</span> {response.id * 1_000_000}
+                                <span style={{ fontWeight: "bold" }}>Plataforma ID:</span> {response.id * 1_000_000}
                             </Typography>
                             <Typography variant="body2">
-                                <span style={{fontWeight: "bold"}}>Data de criação:</span> {new Date(response.created_at).toLocaleDateString()}
+                                <span style={{ fontWeight: "bold" }}>Data de criação:</span> {new Date(response.created_at).toLocaleDateString()}
                             </Typography>
                         </>
                 }
@@ -56,10 +58,24 @@ const Dashboard = (): JSX.Element => {
                         : <></>
                 }
             </div>
-            <Divider/>
+            <Divider />
             <Typography variant="h5" component="h4" fontWeight="bold">
                 Curriculo Escolar
             </Typography>
+            <div>
+                PopupButton
+                <div style={{ background: "rgb(230,0,0, 0.05)", padding: 20, border: "solid 1px rgb(0,0,0,0.05)" }}>
+                    <PopupButton
+                        variant="side"
+                        element={<div>ELeme</div>}
+                        id="schooldata"
+                        type="popup"
+                        title="title"
+                    >
+                        Contentzao
+                    </PopupButton>
+                </div>
+            </div>
         </Stack>
     )
 }

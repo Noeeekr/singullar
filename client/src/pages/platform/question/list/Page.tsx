@@ -13,10 +13,10 @@ import { useForm } from "react-hook-form";
 import { useTheme } from "@mui/material";
 
 import type { FilterOptions } from "./components/QuestionList";
-import SolidButton from "@components/buttons/Button/Solid";
+import SolidButton from "@components/buttons/Default/Solid";
 import { useState } from "react";
 import { useAppSelector } from "@slices/store";
-import { ROLE_ADMIN } from "../../../models/server";
+import { ROLE_ADMIN } from "../../../../models/server";
 
 const QuestionsPage = (): JSX.Element => {
     const user = useAppSelector((store) => store.user.user)

@@ -9,7 +9,7 @@ import { styled } from "@mui/material/styles"
 
 import { useMemo, createContext, useState, useCallback, JSX } from "react"
 import { useForm, UseFormSetValue } from "react-hook-form"
-import SolidButton from "@components/buttons/Button/Solid"
+import SolidButton from "@components/buttons/Default/Solid"
 
 export type FormStateSectionProps<OverridableProps = {}> = OverridableProps & {
     complete?: boolean

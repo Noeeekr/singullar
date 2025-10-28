@@ -1,7 +1,7 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material';
-import { ButtonProps } from './Button';
+import { ButtonProps } from '.';
 
 interface SolidButtonProps extends ButtonProps {
     disabled?: boolean

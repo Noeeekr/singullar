@@ -1,6 +1,6 @@
 // Components
 import { Divider, Stack, StackProps, useMediaQuery, useTheme } from '@mui/material'
-import type { PopupButtonProps } from '../../buttons/Popup'
+import type { PopupButtonProps } from '../../buttons/Popup/Popup'
 import type { ButtonGroupProps } from '../../buttons/ButtonGroup'
 import type { LinkButtonProps } from '../../buttons/Link'
 
@@ -8,8 +8,8 @@ import ButtonGroup from '../../buttons/ButtonGroup'
 import { Fragment } from 'react/jsx-runtime'
 import SectionTitle from '@components/headers/sectionHeader/SectionTitle'
 import LinkButton from '../../buttons/Link'
-import PopupButton from '../../buttons/Popup'
-import Button, { ButtonEffectsProps, ButtonsProps } from '@components/buttons/Button/Button'
+import PopupButton from '../../buttons/Popup/Popup'
+import Button, { ButtonEffectsProps, ButtonsProps } from '@components/buttons/Default'
 
 export interface SideMenuButtons extends ButtonGroupProps {}
 
@@ -41,7 +41,7 @@ const SideMenuButtons = ({
                                 case "link":
                                     return <LinkButton key={item.title} {...item as LinkButtonProps} />;
                                 case "popup":
-                                    return <PopupButton key={item.title} {...item as PopupButtonProps} />;
+                                    return <PopupButton key={item.title} {...item as PopupButtonProps} iconVariant="large"/>;
                                 case "group":
                                     return <ButtonGroup key={item.title} isOpen={isOpen} {...item as ButtonGroupProps} />;
                                 case "button":

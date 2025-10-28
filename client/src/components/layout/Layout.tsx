@@ -20,7 +20,6 @@ const Layout = (): JSX.Element => {
     const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
 
     const [isOpen, setIsOpen] = useState(false)
-
     return (
         <Box
             display="grid"

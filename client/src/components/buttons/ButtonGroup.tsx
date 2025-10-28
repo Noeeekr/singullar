@@ -3,7 +3,7 @@
 import Box from "@mui/material/Box"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
-import { DefaultButtonLayout } from '@components/buttons/Button/Default'
+import { DefaultButtonLayout } from '@components/buttons/Default/Button'
 
 // Icons
 import { FaCaretUp } from "react-icons/fa";
@@ -16,8 +16,8 @@ import { useCallback } from "react"
 import { cloneElement } from "react"
 
 // Types
-import type { PopupButtonProps } from "./Popup"
-import type { ButtonProps, ButtonsProps } from './Button/Button';
+import type { PopupButtonProps } from "./Popup/Popup"
+import type { ButtonProps, ButtonsProps } from './Default';
 import type { LinkButtonProps } from './Link';
 import SideMenuButtons from "@components/layout/sidemenu/SideMenuButtons"
 

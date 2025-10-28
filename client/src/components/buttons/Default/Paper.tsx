@@ -5,7 +5,7 @@ import Box from "@mui/material/Box"
 import { styled, useTheme } from "@mui/material";
 import { cloneElement } from "react";
 
-import type { ButtonProps } from "./Button";
+import type { ButtonProps } from ".";
 
 const PaperButtonLayout = styled(Stack)(() => ({
     display: 'flex',

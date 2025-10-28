@@ -12,25 +12,31 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } 
 
 import { lazy, Suspense } from "react";
 
-const ProtectedRoutes = lazy(() => import("./components/layout/ProtectedRoutes"))
-const Layout = lazy(() => import("./components/layout/Layout"))
 const Home = lazy(() => import("./components/Home"))
+const Layout = lazy(() => import("./components/layout/Layout"))
+
+const RouteGuard = lazy(() => import("./components/layout/RouteGuard"))
+const PgAuthentication = lazy(() => import("./pages/auth/Auth"))
+
+const PgDashboard = lazy(() => import("./pages/admin/dashboard/Page"))
 
 const PgStudentsSearch = lazy(() => import("./pages/admin/students/Search"))
 const PgStudentsCreate = lazy(() => import("./pages/admin/students/pages/Create"))
-const PgClassesSearch = lazy(() => import("./pages/admin/classes/Page"))
+
 const PgClass = lazy(() => import("./pages/admin/classes/class/Page"))
+const PgClassesSearch = lazy(() => import("./pages/admin/classes/Page"))
 const PgClassesCreate = lazy(() => import("./pages/admin/classes/create/Page"))
+
 const PgTeachersSearch = lazy(() => import("./pages/admin/teachers/Search"))
-const PgAuthentication = lazy(() => import("./pages/auth/Auth"))
-const PgDashboard = lazy(() => import("./pages/admin/dashboard/Page"))
-const PgQuestionList = lazy(() => import("./pages/platform/questions/Page"))
-const PgQuestionListCreate = lazy(() => import("./pages/platform/questions/create/Page"))
+
+const PgQuestionCreate = lazy(() => import("./pages/platform/question/create/Page"))
+const PgQuestionList = lazy(() => import("./pages/platform/question/list/Page"))
+const PgQuestionListCreate = lazy(() => import("./pages/platform/question/list/create/Page"))
 
 const routerRoutes = createRoutesFromElements(
   <>
     <Route path="/"
-      element={<Suspense fallback={<div>Loading Route Guard</div>}><ProtectedRoutes /></Suspense>}
+      element={<Suspense fallback={<div>Loading Route Guard</div>}><RouteGuard /></Suspense>}
     >
       <Route path="auth"
         element={<Suspense fallback={<div>Loading Authentication Page</div>}><PgAuthentication /></Suspense>}
@@ -42,6 +48,9 @@ const routerRoutes = createRoutesFromElements(
         <Route index element={<div>Home root page</div>} />
         <Route path="platform">
           <Route path="question">
+            <Route path="create"
+              element={<Suspense fallback={<div> Loading Questions Page</div>}><PgQuestionCreate /></Suspense>}
+            />
             <Route path="list">
               <Route index
                 element={<Suspense fallback={<div>Loading Questions Page</div>}><PgQuestionList /></Suspense>}

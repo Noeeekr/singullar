@@ -2,7 +2,6 @@ import {
     useMemo,
     useState,
     useEffect,
-    useCallback,
 } from 'react'
 import { useTheme } from '@mui/material/styles'
 import { NotificationContext } from '../../../context/notificationsContext'
@@ -10,8 +9,7 @@ import { NotificationContext } from '../../../context/notificationsContext'
 import { useAppSelector } from '../../../slices/store'
 
 // COMPONENTS
-import NavigationPopup from '../../buttons/PopupIcon'
-import MenuIcon from './NavbarIconButton'
+import MenuIcon from './Icon'
 
 import {
     Box,
@@ -21,24 +19,16 @@ import {
 } from '@mui/material'
 
 // DATA
-import { admin_navbar_popup_data, AdminNavbarPopupIds } from '../sidemenu/data/admin_routes'
-import { supervisor_navbar_popup_data, SupervisorNavbarPopupId } from '../sidemenu/data/supervisor_routes'
-import { teacher_navbar_popup_data, TeacherNavbarPopupId } from '../sidemenu/data/teacher_routes'
-import { StudentNavbarPopupIds, students_navbar_popup_data } from '../sidemenu/data/student_routes'
-import type { ButtonProps } from '@components/buttons/Button/Button'
-import { PopupButtonProps } from '@components/buttons/Popup'
+import { admin_navbar_popup_data } from '../sidemenu/data/admin_routes'
+import { supervisor_navbar_popup_data } from '../sidemenu/data/supervisor_routes'
+import { teacher_navbar_popup_data } from '../sidemenu/data/teacher_routes'
+import { students_navbar_popup_data } from '../sidemenu/data/student_routes'
+import Popup from '@components/buttons/Popup'
 
 interface IAppNavBarProps {
     menuButtonCallback: () => void,
     children?: JSX.Element[],
     showMenu?: boolean
-}
-
-// Types 
-export interface NavigationPopupProps extends PopupButtonProps {
-    variant: "side" | "bubble",
-    id: TeacherNavbarPopupId | StudentNavbarPopupIds | SupervisorNavbarPopupId | AdminNavbarPopupIds,
-    element: JSX.Element,
 }
 
 /**
@@ -64,7 +54,7 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
             notifications: [{}],
             help: [{}],
         })
-    },[])
+    }, [])
 
     const role = useAppSelector((state) => state.user.user?.role)
 
@@ -80,16 +70,6 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                 return teacher_navbar_popup_data
         }
     }, [role])
-
-    const [isOpen, setIsOpen] = useState<string>("")
-
-    // could become a switch
-    /**
-    *   Closes other popups when opening a new one
-    */
-    const toggleIsOpen = useCallback((key: string) => {
-        setIsOpen((isOpen) => key === isOpen ? "" : key)
-    }, [])
 
     const {
         children = [],
@@ -150,35 +130,32 @@ const AppNavbar = (props: IAppNavBarProps): JSX.Element => {
                         >
                             {
                                 !isMobile && datas != null && datas.map((data, i) => {
-
                                     if (i === (datas.length - 1)) {
                                         return (
-                                            <NavigationPopup
+                                            <Popup
+                                                id={data.id}
+                                                type="popup"
                                                 isCorner={true}
                                                 variant={data.variant}
                                                 title={data.title}
-                                                id={data.id}
-                                                isOpen={isOpen}
-                                                onClickCb={toggleIsOpen}
-                                                icon={data.icon?.component}
+                                                icon={data.icon}
                                                 key={data.title + data.id + data.variant}
                                             >
-                                                { data.element }
-                                            </NavigationPopup>
+                                                {data.element}
+                                            </Popup>
                                         )
                                     }
                                     return (
-                                        <NavigationPopup
+                                        <Popup
+                                            id={data.id}
+                                            type="popup"
                                             variant={data.variant}
                                             title={data.title}
-                                            id={data.id}
-                                            isOpen={isOpen}
-                                            onClickCb={toggleIsOpen}
-                                            icon={data.icon?.component}
+                                            icon={data.icon}
                                             key={data.title + data.id + data.variant}
                                         >
                                             {data.element}
-                                        </NavigationPopup>
+                                        </Popup>
                                     )
                                 })
                             }

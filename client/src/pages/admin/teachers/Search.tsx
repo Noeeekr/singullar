@@ -1,5 +1,5 @@
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
-import ButtonSolid from "@components/buttons/Button/Solid";
+import ButtonSolid from "@components/buttons/Default/Solid";
 import ButtonLink from "@components/buttons/Link";
 import SearchTeachers from "./components/Search";
 

@@ -1,6 +1,6 @@
 // Components
 import { Link } from 'react-router-dom'
-import Button from './Button';
+import Button from './Default';
 
 // Features
 import { useLocation} from "react-router-dom"
@@ -8,7 +8,7 @@ import { useAppDispatch } from '../../slices/store';
 import { incrementUrlVisitedCount } from '../../slices/userSlice'
 
 // Types
-import type { ButtonsProps } from "@components/buttons/Button"
+import type { ButtonsProps } from "@components/buttons/Default"
 
 export interface LinkButtonProps extends ButtonsProps {
     href: string

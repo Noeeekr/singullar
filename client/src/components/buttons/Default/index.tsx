@@ -1,39 +1,40 @@
 import { StackProps } from "@mui/material";
 
-import DefaultButton from "./Default";
+import DefaultButton from "./Button";
 import PaperButton from "./Paper";
 import SolidButton from "./Solid";
 
 export interface ButtonIconProps {
-    component: JSX.Element
-    display?: boolean,
-    size?: number,
+    icon?: {
+        component: JSX.Element
+        display?: boolean,
+        size?: number,
+        style?: object
+    }
 }
-
 export interface ButtonEffectsProps {
-    enableSelectEffect?: boolean,
-    enableHoverEffect?: boolean,
-    enableNotificationEffect?: boolean,
+    effects?: {
+        enableSelectEffect?: boolean,
+        enableHoverEffect?: boolean,
+        enableNotificationEffect?: boolean,
+    }
 }
-export interface ButtonLayoutProps extends StackProps {
+export interface ButtonLayoutProps extends ButtonEffectsProps {
     isMobile?: boolean
-    effects?: ButtonEffectsProps
 }
-export interface ButtonProps extends ButtonLayoutProps {
+export interface ButtonProps extends ButtonLayoutProps, ButtonIconProps, StackProps {
     title: string,
-    isMobile?: boolean
 
     showDescription?: boolean,
     description?: string,
 
-    icon?: ButtonIconProps
     type?: string,
 }
 export interface ButtonsProps extends ButtonProps {
     variant?: "paper" | "button" | "solid";
 }
 
-function Buttons(props: ButtonsProps): JSX.Element {
+function Button(props: ButtonsProps): JSX.Element {
     switch (props.variant) {
         case "button":
             return <DefaultButton {...props} />
@@ -46,4 +47,4 @@ function Buttons(props: ButtonsProps): JSX.Element {
     }
 }
 
-export default Buttons;
+export default Button;

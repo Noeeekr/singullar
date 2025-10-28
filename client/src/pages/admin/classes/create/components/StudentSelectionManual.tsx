@@ -1,6 +1,6 @@
 import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
 import SectionTitle from "@components/headers/sectionHeader/SectionTitle";
-import ButtonSolid from "@components/buttons/Button/Solid";
+import ButtonSolid from "@components/buttons/Default/Solid";
 
 import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";

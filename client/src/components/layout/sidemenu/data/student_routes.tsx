@@ -9,9 +9,9 @@ import { IoIosHelpCircleOutline, IoIosNotificationsOutline } from 'react-icons/i
 import { VscAccount } from 'react-icons/vsc';
 
 // components;
-import NotificationPopupContent from '../../../popups/NotificationPopupContent'
-import MyAccountPopupContent from '../../../popups/PopupContentMyAccount'
-import QuickAccessPopupContent from '../../../popups/PopupContentQuickAccess'
+import NotificationPopupContent from '../../../popups/content/NotificationPopupContent'
+import MyAccountPopupContent from '../../../popups/content/PopupContentMyAccount'
+import QuickAccessPopupContent from '../../../popups/content/PopupContentQuickAccess'
 
 // Data
 import {
@@ -21,7 +21,7 @@ import {
 
 import type { LinkButtonProps } from '@components/buttons/Link';
 import { SideMenuButtons } from '../SideMenuButtons';
-import { ButtonsProps } from '@components/buttons/Button';
+import { ButtonsProps } from '@components/buttons/Default';
 import { NavigationPopupProps } from '@components/layout/navbar/AppNavbar';
 
 const students_sidemenu_data_myaccount: (LinkButtonProps | ButtonsProps)[] = [

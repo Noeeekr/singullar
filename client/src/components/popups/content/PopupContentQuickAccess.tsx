@@ -1,6 +1,6 @@
 import { LinkButtonProps } from '@components/buttons/Link';
-import SectionTitle from '../headers/sectionHeader/SectionTitle'
-import SideMenuItems, { SideMenuButtons } from '../layout/sidemenu/SideMenuButtons'
+import SectionTitle from '../../headers/sectionHeader/SectionTitle'
+import SideMenuItems, { SideMenuButtons } from '../../layout/sidemenu/SideMenuButtons'
 
 import {
     Box,
@@ -24,7 +24,6 @@ const QuickAccessPopupContent = (props: { menus: (LinkButtonProps | SideMenuButt
                 </SectionTitle>
                 <SideMenuItems
                     title=""
-                    showIcon={true}
                     showDescription={true}
                     menus={menus}
                 />

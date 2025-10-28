@@ -6,15 +6,15 @@ import {
     Stack,
 } from '@mui/material'
 
-import useSignout from '../../hooks/useSignout'
+import useSignout from '../../../hooks/useSignout'
 
 // COMPONENTS
-import UserProfile from '../UserProfile'
-import Divider from '../Divider'
-import SideMenuItems from '../layout/sidemenu/SideMenuButtons'
-import Button from '@components/buttons/Button/Default'
+import UserProfile from '../../UserProfile'
+import Divider from '../../Divider'
+import SideMenuItems from '../../layout/sidemenu/SideMenuButtons'
+import Button from '@components/buttons/Default'
 import { LinkButtonProps } from '@components/buttons/Link'
-import { ButtonProps } from '@components/buttons/Button/Button'
+import { ButtonProps } from '@components/buttons/Default'
 
 const MyAccountPopupContent = (props: { menus: (LinkButtonProps | ButtonProps)[] }) => {
     const { menus } = props;
@@ -40,7 +40,6 @@ const MyAccountPopupContent = (props: { menus: (LinkButtonProps | ButtonProps)[]
                     gap={1}
                     fontWeight={400}
                     fontSize={13.5}
-                    showIcon={true}
                     effects={{ enableHoverEffect: true}}
                     menus={menus.slice(0, -1)}
                 />

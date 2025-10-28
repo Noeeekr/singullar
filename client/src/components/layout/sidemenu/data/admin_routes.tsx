@@ -8,9 +8,9 @@ import { GoPerson, GoLock, GoDiscussionDuplicate } from 'react-icons/go';
 import { TbSmartHome, TbSpeakerphone, TbGridDots } from 'react-icons/tb';
 
 // components;
-import NotificationPopupContent from '../../../popups/NotificationPopupContent'
-import MyAccountPopupContent from '../../../popups/PopupContentMyAccount'
-import QuickAccessPopupContent from '../../../popups/PopupContentQuickAccess'
+import NotificationPopupContent from '../../../popups/content/NotificationPopupContent'
+import MyAccountPopupContent from '../../../popups/content/PopupContentMyAccount'
+import QuickAccessPopupContent from '../../../popups/content/PopupContentQuickAccess'
 
 // Data
 import {
@@ -18,11 +18,11 @@ import {
     sidemenu_data_quickaccess,
     sidemenu_data_utilities,
 } from './any_role_routes'
-import { ButtonProps } from '@components/buttons/Button/Button';
+import { ButtonProps } from '@components/buttons/Default';
 import { LinkButtonProps } from '@components/buttons/Link';
 
 import { SideMenuButtons } from '../SideMenuButtons';
-import { NavigationPopupProps } from '@components/layout/navbar/AppNavbar';
+import { PopupButtonProps } from '@components/buttons/Popup/Popup';
 /**
  * This must reflect all the id's fields present in navbar pop-up data 
  **/
@@ -69,7 +69,7 @@ const admin_sidemenu_data_myaccount: (ButtonProps | LinkButtonProps)[] = [
     },
 ];
 
-export const admin_navbar_popup_data: NavigationPopupProps[] = [
+export const admin_navbar_popup_data: PopupButtonProps[] = [
     {
         id: "notifications",
         title: "Notificações",

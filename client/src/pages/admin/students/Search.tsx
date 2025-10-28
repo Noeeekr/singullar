@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import SectionHeader from "@components/headers/sectionHeader/SectionHeader";
 import SectionTitle from "@components/headers/sectionHeader/SectionTitle";
 import Grid from "@mui/material/Grid2";
-import Button from "@components/buttons/Button/Solid";
+import Button from "@components/buttons/Default/Solid";
 import LinkButton from "@components/buttons/Link";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";

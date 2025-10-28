@@ -52,6 +52,9 @@ export const routes: Routes = {
                             "create": { PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR] },
                         },
                     },
+                    "create": {
+                        PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR],
+                    },
                     "*": {}
                 }
             }
@@ -88,7 +91,7 @@ class RouteGuard {
         for (let i = 1; i < paths.length; i++) {
             let currentRoute = route[paths[i]]
 
-            // There are no further routes registered.
+            // No further routes registered, no wildcard registered.
             if (currentRoute == undefined) return false;
             // Found the deepest route needed. Trigger role validation and liberate if allowed
             if (paths.length == i + 1) return this.validateRole(currentRoute.PermitedRoles, targetRole);
