@@ -1,13 +1,13 @@
-import { 
-    useCallback, 
-    useState 
+import {
+    useCallback,
+    useState
 } from "react"
-import { 
-    DefaultResponse 
-} from "../models/server/server"
+import {
+    DefaultResponse
+} from "../models/server"
 
-import { 
-    useNavigate 
+import {
+    useNavigate
 } from "react-router-dom"
 
 import {
@@ -17,11 +17,12 @@ import {
     useAppDispatch
 } from "@slices/store"
 
-export type Response<ResponseData, RequestBody = null> = {
+export type Response<ResponseData, RequestBody = void> = {
     response: ResponseData | null,
     isLoading: boolean,
     error: string,
-    send: (body: RequestBody) => void,
+    status: number,
+    send: (body?: RequestBody) => void
 }
 
 // useContextAwareFetch is a wrapper around fetch that checks the responses from server for specific events in each call. It returns a JSON
@@ -33,11 +34,12 @@ function useContextAwareFetch<ResponseData, RequestBody = null>(
     const [response, setResponse] = useState<ResponseData | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string>("");
+    const [status, setStatus] = useState(0);
 
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
 
-    const send = useCallback(async (body: RequestBody | never) => {
+    const send = useCallback(async (body?: RequestBody) => {
         setResponse(null)
         setIsLoading(true)
         setError("")
@@ -46,25 +48,27 @@ function useContextAwareFetch<ResponseData, RequestBody = null>(
                 init.body = JSON.stringify(body);
             }
             const response = await fetch(input, init)
+            setStatus(response.status)
             if (response.status == 401) {
                 dispatch(actionUpdateUser(null))
                 navigate("/auth")
                 return
             }
+
             const responseBody: DefaultResponse<ResponseData> = await response.json()
             if (responseBody.data != null) {
                 setResponse(responseBody.data)
             } else {
                 setError(responseBody.error)
             }
-        } catch(e) {
-                setError("Falha ao processar a requisição")
+        } catch (e) {
+            setError("Falha ao processar a requisição")
         } finally {
             setIsLoading(false)
         }
-    }, [init, input, navigate, dispatch]); 
+    }, [init, input, navigate, dispatch]);
 
-    return { response, isLoading, error, send }
+    return { response, isLoading, error, send, status }
 }
 
 export default useContextAwareFetch;

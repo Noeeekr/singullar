@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material';
 import { ButtonProps } from '.';
 
-interface SolidButtonProps extends ButtonProps {
+export interface SolidButtonProps extends ButtonProps {
     disabled?: boolean
 }
 
@@ -34,7 +34,7 @@ const SolidButton = styled(({ title, disabled, onClick, ...props }: SolidButtonP
     transition: "transform 150ms linear",
     '&:hover': disabled === true ? {} : {
         "-moz-osx-font-smoothing": "grayscale",
-        "-webkit-font-smoothing": "antialiased",
+        WebkitFontSmoothing: "antialiased",
 
         transform: "scale(1.1) translateZ(0)",    
     },

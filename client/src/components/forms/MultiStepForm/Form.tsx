@@ -7,116 +7,125 @@ import Header from "./Header"
 import { Fragment } from "react"
 
 // Features
-import { useMemo, useState, useCallback, createContext } from "react"
+import { useMemo, useState } from "react"
 
 // Models
-import type { StackProps } from "@mui/material/Stack"
 import type { JSX, Context } from "react"
+import SolidButton from "@components/buttons/Default/Solid"
 
+export interface Updater<Value> {
+    update: (values: Value) => void
+}
+export type MultiStepFormSectionContent<SectionValue> = ({ update }: Updater<SectionValue>) => JSX.Element
+export interface MultiStepFormSectionProps<Section> {
+    // Components
+    content: MultiStepFormSectionContent<Section>,
 
+    // Static values
+    title: string
+    context: Context<Section>
+    defaultValues: Section
+}
+export type MultiStepFormSections<Sections extends unknown[]> = MultiStepFormSectionProps<Sections[number]>[]
 /**
- * @type "FormState" refers to the type which contains all underlying sections types.
- */
-export interface FormContextDefaultValues<FormState> {
-    isLastSection: boolean,
-    setActiveSection: (modifier: (n: number) => number) => void,
-    formState: FormState,
+
+    []Sections => [](A | B | C | D)
+    [
+        A,
+        B,
+        C,
+        D,
+    ]
+
+*/
+export interface MultiStepFormProps<Sections extends {}> {
+    sections: MultiStepFormSectionProps<Sections>[],
+    onSubmit: () => void,
 }
 
-export type FormContextSectionValues<FormState extends SectionState, SectionState> = (FormContextDefaultValues<FormState> & SectionState) | undefined
-
-/**
- * @param SectionContext A context that enables passing values to external components like in "header" component.
- */
-export interface FormSection<FormState extends SectionState, SectionState> {
-    title: string,
-
-    content: () => JSX.Element,
-    header?: (context: FormContextSectionValues<FormState, SectionState>) => JSX.Element,
-
-    SectionContext?: Context<FormContextSectionValues<FormState, SectionState>>,
-
-    defaultValues?: SectionState,
+export interface RenderDelayerProps {
+    element: () => JSX.Element
 }
-
-/**
- * @type "FormState" is used to define the type of values passed through context in the field "FormState" and its default values.
- * @type "Section" is used to allow each section to have its own underlying type
- */
-export interface FormProps<Section extends FormSection<FormState, any>, FormState> extends StackProps {
-    sections: Section[]
+export interface AdvanceStepButtonProps<SectionContextValue> {
+    setActiveStep?: (value: number | ((prev: number) => number)) => void
+    action: (context: SectionContextValue) => boolean
+    context: Context<SectionContextValue>
 }
+export type SectionUnionArray<T> = MultiStepFormSectionProps<T>[];
 
-export const staticValues: FormContextSectionValues<{}, any> = {
-    setActiveSection: (_: (_: number) => number) => {},
-    isLastSection: false,
-    formState: {},
-}
+// // Helper to compute the Intersection (A & B & C) from a tuple of types [A, B, C, ...]
+// type Intersect<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 
-function RenderDelayer<FormState extends SectionsState, SectionsState = any>({ render, context }: { context?: FormContextSectionValues<FormState, SectionsState>, render: ((context: FormContextSectionValues<FormState, SectionsState>) => JSX.Element) | undefined }): JSX.Element {
+// // Helper to extract the context types from the array of section props (gets [A, B, C])
+// type ContextsTuple<T extends MultiStepFormSectionProps<any>[]> = {
+//     [K in keyof T]: T[K] extends MultiStepFormSectionProps<infer C> ? C : never
+// };
+
+// // The type for the final combined state object (A & B & C)
+// type CombinedState<T extends MultiStepFormSectionProps<any>[]> = Intersect<ContextsTuple<T>[number]>;
+
+function RenderDelayer({ element }: RenderDelayerProps): JSX.Element {
     return (
         <Fragment>
-            {
-                render ?
-                    render(context)
-                    : <></>
-            }
+            {element()}
         </Fragment>
     )
 }
+export default function<Sections extends MultiStepFormSectionProps<any>[]>({ 
+    sections 
+}: { 
+    sections: Sections
+} ): JSX.Element {
+    const [activeStep, setActiveStep] = useState(0)
+    const [form, setForm] = useState<Sections>({} as Sections)
+    const [disabled, setDisabled] = useState(true)
 
-/**
- * Generic Form Interface
- *   @summary 
- *   Can be used to create N sections that get N independent contexts that all merge into one giant context.  
- *   Sections can provide components to the interface outside it's scope and still talk with the main section component through context without rerendering everything.
- *  
- *  Note: I cannot even call this complex-atrocity-fault-intolerant-unchecked-enormous-multi-state-machine "bad code", this is apex coding right here. There is even room for improvement. May create the millionest react lib just from the premise of this.
- *
- *  @type "SectionsState" refers to the union type with all the sections types, used to specify all allowed section types. 
- *  @type "FormState" is meant to be used to specify the union of all types into a shared state.
- * 
- *  @param sections refers to the sections the form will load.
- */
-export default function <SectionsState, FormState extends SectionsState>({ sections, ...props }: FormProps<FormSection<FormState, SectionsState>, FormState>): JSX.Element {
-    const [activeSection, setActiveSection] = useState(0)
+    const {
+        context: SectionContext,
+        defaultValues,
+        content,
+        title,
+    }: MultiStepFormSectionProps<Sections> = useMemo(() => {
+        return sections[activeStep]
+    }, [activeStep])
 
-    const { SectionContext = createContext<SectionsState | undefined>(undefined), defaultValues, header, title, content } = useMemo(() => {
-        return sections[activeSection]
-    }, [activeSection, sections])
-
-    const addValidation = useCallback((setter: (n: number) => void) => {
-        return (modifier: (n: number) => number) => {
-            const num = modifier(activeSection)
-            if (num == sections.length) return;
-            if (num == 0) return;
-            setter(num)
+    const updater = (values: Sections) => {
+        for (const key in values) {
+            if (values[key] === undefined) {
+                setDisabled(true)
+                return
+            }
         }
-    }, [])
-
-    const providerValues: FormContextSectionValues<FormState, SectionsState> = useMemo(() => {
-        if (defaultValues) return {
-            ...defaultValues,
-            isLastSection: activeSection == sections.length - 1,
-            formState: {} as FormState,
-            setActiveSection: addValidation(setActiveSection)
-        }
-        return undefined
-    }, [])
+        setDisabled(false)
+        setForm(formState => ({ ...formState, ...values }))
+    }
 
     return (
-        <Stack gap={2} {...props}>
-            <Header headers={[]} activeStep={activeSection} />
-            <SectionContext.Provider value={providerValues}>
+        <Stack marginY={2}>
+            <Header headers={[]} activeStep={activeStep} />
+            <SectionContext.Provider value={defaultValues as Sections}>
                 <Stack>
                     <TitleContainer direction="row">
                         <Typography variant="h5" fontWeight="bold" content="h6">{title}</Typography>
                         <Stack direction="row" gap={2}>
-                            <RenderDelayer context={providerValues} render={header} />
+                            {
+                                // Add + 1 (delete later (comment))
+                                activeStep + 1 == sections.length
+                                    ? <SolidButton
+                                        title="Criar questão"   
+                                        disabled={disabled}
+                                        onClick={() => console.log("submit", form) /* onSubmit(form) */ }
+                                    />
+                                    : <SolidButton
+                                        title="Continuar"
+                                        disabled={disabled}
+                                        onClick={() => { setDisabled(true), setActiveStep(prev => prev+1) }}
+                                    />
+                            }
                         </Stack>
                     </TitleContainer>
                     <SectionContainer>
-                        <RenderDelayer render={content} />
+                        <RenderDelayer element={() => content({ update: updater })} />
                     </SectionContainer>
                 </Stack>
             </SectionContext.Provider>

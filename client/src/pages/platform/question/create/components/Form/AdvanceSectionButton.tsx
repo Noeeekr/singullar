@@ -1,10 +1,9 @@
 import type { FirstSectionContextProps } from "./FirstSection"
-import type { FormContextSectionValues } from "@components/forms/MultiStepForm/Form"
-import type { FormContextProps } from "./Form"
 
 import SolidButton from "@components/buttons/Default/Solid"
 
-export default function({ context }: { context: FormContextSectionValues<FormContextProps, FirstSectionContextProps>}): JSX.Element {
+export default function(): JSX.Element {
+    const context: any = {}
     return(
         <SolidButton 
             title="Continuar"

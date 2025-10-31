@@ -12,7 +12,7 @@ import { SupervisorNavbarPopupId } from '@components/layout/sidemenu/data/superv
 import Popup, { PopupsProps } from '@components/popups'
 import Icon from './Icon'
 import { Stack, StackProps, Typography } from '@mui/material'
-import styled from '@emotion/styled'
+import { styled } from '@mui/material'
 
 export interface PopupButtonProps extends ButtonProps, PopupsProps {
     id: AdminNavbarPopupIds | StudentNavbarPopupIds | TeacherNavbarPopupId | SupervisorNavbarPopupId

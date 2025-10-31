@@ -1,22 +1,31 @@
-import AdvanceSectionButton from "./AdvanceSectionButton"
 import MultiStepForm from "@components/forms/MultiStepForm"
 import FirstSection, { FirstSectionContext } from "./FirstSection"
-
-import type { FormSection } from "@components/forms/MultiStepForm/Form"
-import type { FirstSectionContextProps } from "./FirstSection"
-export type FormContextProps = FirstSectionContextProps
+import SecondSection, { SecondSectionContext } from "./SecondSection"
 
 export default function(): JSX.Element {
-    const sections: FormSection<FormContextProps, FirstSectionContextProps>[] = [
+
+    const sections = [
         {
             content: FirstSection,
-            header: (context) => AdvanceSectionButton({ context: context }),
             
             title: "Informações Básicas",
             
-            SectionContext: FirstSectionContext,
-            defaultValues: { title: "Titulo da sessão 1" }
-        }
+            context: FirstSectionContext,
+            defaultValues: { 
+                questionTitle: "Contexto não iniciado",
+                difficultyLevel: undefined,
+            }
+        },
+        {
+            content:SecondSection,
+            
+            title: "Conteúdo da questão",
+
+            context: SecondSectionContext,
+            defaultValues: { 
+                questionDescription: "Contexto não iniciado",
+            }
+        },
     ]
 
     return(

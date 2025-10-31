@@ -88,9 +88,7 @@ const CreateStudent = (): JSX.Element => {
           title="Adicionar estudantes"
           subtitle="Defina as informações necessárias para adicionar os estudantes"
         >
-          <ButtonSolid sx={{ margin: "0 0 0 auto" }} disabled={true}>
-            Enviar formulário
-          </ButtonSolid>
+          <ButtonSolid title="Enviar Formulário" sx={{ margin: "0 0 0 auto" }} disabled={true} />
         </SectionHeader>
         <Stack gap={2} direction="row" sx={{ alignItems: "center" }}>
           <Grid
@@ -163,12 +161,11 @@ const CreateStudent = (): JSX.Element => {
               sx={{ margin: "0 0 auto auto", maxWidth: "250px" }}
             >
               <ButtonSolid
+                title="Adicionar Estudante"
                 onClick={() => {
                   submitButton.current?.click();
                 }}
-              >
-                Adicionar Estudante
-              </ButtonSolid>
+              />
             </Grid>
           </Grid>
         </Stack>
@@ -178,9 +175,9 @@ const CreateStudent = (): JSX.Element => {
           style={{ pointerEvents: "none", opacity: 0 }}
         />
       </form>
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px"}}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {Object.entries(students).map((std_info) => (
-          <div style={{ minHeight: '70px', width: '100%', display: 'flex', boxShadow: '0px  5px 5px 1px rgb(0,0,0,0.1)'}}>
+          <div style={{ minHeight: '70px', width: '100%', display: 'flex', boxShadow: '0px  5px 5px 1px rgb(0,0,0,0.1)' }}>
             <div
               style={{
                 width: '100%',
@@ -192,15 +189,15 @@ const CreateStudent = (): JSX.Element => {
                 backgroundColor: 'white',
               }}
             >
-                <p style={{ width: '50%', textWrap: 'nowrap', textOverflow: "ellipsis", margin: 'auto 10px auto auto', boxSizing: 'border-box', overflow: 'hidden' }}>{std_info[0]}</p>
-                <p style={{ width: '50%', textOverflow: "ellipsis", margin: 'auto 10px auto auto', boxSizing: 'border-box', overflow: 'hidden' }}>{std_info[1]}</p>
+              <p style={{ width: '50%', textWrap: 'nowrap', textOverflow: "ellipsis", margin: 'auto 10px auto auto', boxSizing: 'border-box', overflow: 'hidden' }}>{std_info[0]}</p>
+              <p style={{ width: '50%', textOverflow: "ellipsis", margin: 'auto 10px auto auto', boxSizing: 'border-box', overflow: 'hidden' }}>{std_info[1]}</p>
             </div>
-            <div style={{ 
+            <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-                  backgroundColor: "rgba(255,100,100,1)",
-                  borderRadius: '0px 10px 10px 0px'
+              backgroundColor: "rgba(255,100,100,1)",
+              borderRadius: '0px 10px 10px 0px'
             }}>
               <p
                 style={{

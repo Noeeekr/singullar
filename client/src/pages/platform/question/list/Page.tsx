@@ -25,6 +25,7 @@ const QuestionsPage = (): JSX.Element => {
     const [isHidden, setIsHidden] = useState(false);
 
     const { watch } = useForm<FilterOptions>({ defaultValues: {} })
+    
     return (
         <Stack direction="column" gap={3} paddingBottom={4}>
             <SectionHeader title="Banco de questões">

@@ -7,26 +7,58 @@ import Stack from "@mui/material/Stack"
 import Grid from "@mui/material/Grid2"
 
 // Features
-import { createContext } from "react"
-import { staticValues } from "@components/forms/MultiStepForm/Form"
+import { createContext, useContext, useEffect } from "react"
 
 // Models
-import { type FormContextSectionValues } from "@components/forms/MultiStepForm/Form"
-import type { FormContextProps } from "./Form"
 import { useForm } from "react-hook-form"
 
 export interface FirstSectionContextProps {
-    title: string
-    difficultyLevel: number
+    questionTitle?: string
+    difficultyLevel?: number
 }
 
-export const FirstSectionContext = createContext<FormContextSectionValues<FormContextProps, FirstSectionContextProps>>({
-    ...staticValues,
-    title: "",
+export const FirstSectionContext = createContext<FirstSectionContextProps>({
+    questionTitle: "",
+    difficultyLevel: 0,
 })
 
-export default function (): JSX.Element {
-    const { register } = useForm<FirstSectionContextProps>()
+/**
+    Updater({ sectionContext, onUpdate }) => {
+        const sectionState = = useContex(context)
+        update(formState => { ...formState, ...sectionState })
+    }
+    Context Provider (Section)
+        <Updater context={context} onUpdate={update} /> 
+        (Generic::Injected) { section.Header }     
+        (Generic::Injected) { section.Content }
+        (Generic::Injected) { section.Footer } (onClick:Advance)
+
+    *Each section is independent
+    *Their result is saved in a shared context
+    *OnSubmit sends the shared context value
+*/
+export default function ({
+    update
+}: {
+    update: (values: FirstSectionContextProps) => void
+}): JSX.Element {
+    const { register, getValues, watch, formState: { isValid, defaultValues } } = useForm<FirstSectionContextProps>({
+        defaultValues: {
+            difficultyLevel: undefined,
+            questionTitle: undefined,
+        }
+    })
+
+    const questionTitle = watch("questionTitle")
+    const difficultyLevel = watch("difficultyLevel")
+    
+    useEffect(() => {
+        if (isValid) {
+            update(getValues())
+        } else {
+            update(defaultValues as FirstSectionContextProps)
+        }
+    }, [difficultyLevel, questionTitle, isValid])
 
     return (
         <Grid container spacing={2}>
@@ -38,7 +70,10 @@ export default function (): JSX.Element {
                             Insira o titulo da questão
                         </InputLabel>
                         <OutlinedInput
-                            {...register("title")}
+                            {...register("questionTitle", {
+                                minLength: 8,
+                                required: true,
+                            })}
                             id="create-question-title-outlined-input"
                             label="Insira o título da questão"
                         />
@@ -53,7 +88,11 @@ export default function (): JSX.Element {
                             Dificuldade da questão
                         </InputLabel>
                         <OutlinedInput
-                            {...register("difficultyLevel")}
+                            {...register("difficultyLevel", {
+                                required: true,
+                                validate: (value) => value !== undefined && (Boolean(value) || value >= 0),
+                            })}
+                            type="number"
                             id="create-question-difficulty-outlined-input"
                             label="Dificuldade da questão"
                         />
