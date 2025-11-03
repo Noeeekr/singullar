@@ -76,7 +76,7 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
 }: { 
     sections: Sections
 } ): JSX.Element {
-    const [activeStep, setActiveStep] = useState(0)
+    const [activeStep, setActiveStep] = useState(1)
     const [form, setForm] = useState<Sections>({} as Sections)
     const [disabled, setDisabled] = useState(true)
 

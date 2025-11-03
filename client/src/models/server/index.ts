@@ -29,4 +29,4 @@ export type { Institution } from "./institution"
 export type { DefaultResponse } from "./response"
 
 // Question related models
-export type { Question } from "./question"
+export type { Question, QuestionListDifficulty } from "./question"

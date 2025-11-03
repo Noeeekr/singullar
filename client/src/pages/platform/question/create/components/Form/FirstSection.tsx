@@ -7,10 +7,14 @@ import Stack from "@mui/material/Stack"
 import Grid from "@mui/material/Grid2"
 
 // Features
-import { createContext, useContext, useEffect } from "react"
+import { createContext, useEffect } from "react"
 
 // Models
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
+import useContextAwareFetch from "@hooks/useContextAwareFetch"
+import { SERVER_ADDR } from "@components/../configs"
+import { QuestionListDifficulty } from "@models/server"
+import { MenuItem, Select } from "@mui/material"
 
 export interface FirstSectionContextProps {
     questionTitle?: string
@@ -42,16 +46,30 @@ export default function ({
 }: {
     update: (values: FirstSectionContextProps) => void
 }): JSX.Element {
-    const { register, getValues, watch, formState: { isValid, defaultValues } } = useForm<FirstSectionContextProps>({
+    const { register, getValues, watch, control, formState: { isValid, defaultValues } } = useForm<FirstSectionContextProps>({
         defaultValues: {
             difficultyLevel: undefined,
             questionTitle: undefined,
         }
     })
 
+    const { response, isLoading, error, send, status } = useContextAwareFetch<QuestionListDifficulty[]>(
+        `${SERVER_ADDR}/api/question/list/difficulties`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+        }
+    )
+
     const questionTitle = watch("questionTitle")
     const difficultyLevel = watch("difficultyLevel")
-    
+
+    useEffect(() => {
+        send()
+    }, [])
     useEffect(() => {
         if (isValid) {
             update(getValues())
@@ -87,14 +105,23 @@ export default function ({
                         <InputLabel htmlFor="create-question-difficulty-outlined-input">
                             Dificuldade da questão
                         </InputLabel>
-                        <OutlinedInput
-                            {...register("difficultyLevel", {
-                                required: true,
-                                validate: (value) => value !== undefined && (Boolean(value) || value >= 0),
-                            })}
-                            type="number"
-                            id="create-question-difficulty-outlined-input"
-                            label="Dificuldade da questão"
+                        <Controller
+                            name="difficultyLevel"
+                            rules={{ required: true, validate: (v) => v != undefined}}
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    {...field}
+                                    id="create-question-difficulty-outlined-input"
+                                    label="Dificuldade da questão"
+                                    value={field.value ? field.value : ""}
+                                >
+                                    <MenuItem value={undefined}>Selecione a dificuldade</MenuItem>
+                                    {response?.map((difficulty) => (
+                                        <MenuItem key={difficulty.difficulty_level} value={difficulty.difficulty_level}>{difficulty.difficulty_name}</MenuItem>
+                                    ))}
+                                </Select>
+                            )}
                         />
                     </FormControl>
                 </Stack>
