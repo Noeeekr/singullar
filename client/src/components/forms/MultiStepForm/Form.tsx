@@ -17,27 +17,17 @@ export interface Updater<Value> {
     update: (values: Value) => void
 }
 export type MultiStepFormSectionContent<SectionValue> = ({ update }: Updater<SectionValue>) => JSX.Element
-export interface MultiStepFormSectionProps<Section> {
+export interface MultiStepFormSectionProps<SectionValue> {
     // Components
-    content: MultiStepFormSectionContent<Section>,
+    content: MultiStepFormSectionContent<SectionValue>,
 
     // Static values
     title: string
-    context: Context<Section>
-    defaultValues: Section
+    context: Context<SectionValue>
+    defaultValues: SectionValue
 }
 export type MultiStepFormSections<Sections extends unknown[]> = MultiStepFormSectionProps<Sections[number]>[]
-/**
 
-    []Sections => [](A | B | C | D)
-    [
-        A,
-        B,
-        C,
-        D,
-    ]
-
-*/
 export interface MultiStepFormProps<Sections extends {}> {
     sections: MultiStepFormSectionProps<Sections>[],
     onSubmit: () => void,
@@ -51,7 +41,6 @@ export interface AdvanceStepButtonProps<SectionContextValue> {
     action: (context: SectionContextValue) => boolean
     context: Context<SectionContextValue>
 }
-export type SectionUnionArray<T> = MultiStepFormSectionProps<T>[];
 
 // // Helper to compute the Intersection (A & B & C) from a tuple of types [A, B, C, ...]
 // type Intersect<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
@@ -71,13 +60,19 @@ function RenderDelayer({ element }: RenderDelayerProps): JSX.Element {
         </Fragment>
     )
 }
+
 export default function<Sections extends MultiStepFormSectionProps<any>[]>({ 
-    sections 
+    sections, 
+    onSubmit,
+    initialSection = 0,
 }: { 
-    sections: Sections
+    sections: Sections,
+    onSubmit: (formData: Sections[number]["defaultValues"]) => void
+    initialSection?: number
 } ): JSX.Element {
-    const [activeStep, setActiveStep] = useState(1)
-    const [form, setForm] = useState<Sections>({} as Sections)
+    type SectionValues = Sections[number]["defaultValues"]
+    const [activeStep, setActiveStep] = useState(sections.length <= initialSection || 0 > initialSection ? 0 : initialSection)
+    const [form, setForm] = useState<SectionValues>({} as SectionValues)
     const [disabled, setDisabled] = useState(true)
 
     const {
@@ -89,21 +84,34 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
         return sections[activeStep]
     }, [activeStep])
 
-    const updater = (values: Sections) => {
-        for (const key in values) {
-            if (values[key] === undefined) {
-                setDisabled(true)
-                return
-            }
-        }
+    console.log(form)
+    /**
+     * Updater function enables advancing for next section if given a value different than null.
+     * If it gets null then it sets the form values of this section to its default values to prevent form to be sending the previous updates. Which is preferred to be zero values.
+     * @param values The values to be appended to form final state
+     * @returns void
+     */
+    const updater = (values: Sections | null) => {
+        if (values == null) {
+            setDisabled(true)
+            setForm(formState => ({ ...formState, ...defaultValues }))
+            return
+        } 
         setDisabled(false)
         setForm(formState => ({ ...formState, ...values }))
     }
 
+    const handleSubmit = () => {
+        onSubmit(form)
+    }
+    const handleContinue = () => {
+        setDisabled(true)
+        setActiveStep(prev => prev+1)
+    }
     return (
-        <Stack marginY={2}>
+        <Stack marginY={2} component="section">
             <Header headers={[]} activeStep={activeStep} />
-            <SectionContext.Provider value={defaultValues as Sections}>
+            <SectionContext.Provider value={defaultValues as SectionValues}>
                 <Stack>
                     <TitleContainer direction="row">
                         <Typography variant="h5" fontWeight="bold" content="h6">{title}</Typography>
@@ -114,12 +122,12 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
                                     ? <SolidButton
                                         title="Criar questão"   
                                         disabled={disabled}
-                                        onClick={() => console.log("submit", form) /* onSubmit(form) */ }
+                                        onClick={handleSubmit}
                                     />
                                     : <SolidButton
                                         title="Continuar"
                                         disabled={disabled}
-                                        onClick={() => { setDisabled(true), setActiveStep(prev => prev+1) }}
+                                        onClick={handleContinue}
                                     />
                             }
                         </Stack>

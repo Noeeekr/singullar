@@ -44,16 +44,16 @@ export const FirstSectionContext = createContext<FirstSectionContextProps>({
 export default function ({
     update
 }: {
-    update: (values: FirstSectionContextProps) => void
+    update: (values: FirstSectionContextProps | null) => void
 }): JSX.Element {
-    const { register, getValues, watch, control, formState: { isValid, defaultValues } } = useForm<FirstSectionContextProps>({
+    const { register, getValues, watch, control, formState: { isValid } } = useForm<FirstSectionContextProps>({
         defaultValues: {
             difficultyLevel: undefined,
             questionTitle: undefined,
         }
     })
 
-    const { response, isLoading, error, send, status } = useContextAwareFetch<QuestionListDifficulty[]>(
+    const { response, send } = useContextAwareFetch<QuestionListDifficulty[]>(
         `${SERVER_ADDR}/api/question/list/difficulties`,
         {
             method: "GET",
@@ -74,7 +74,7 @@ export default function ({
         if (isValid) {
             update(getValues())
         } else {
-            update(defaultValues as FirstSectionContextProps)
+            update(null)
         }
     }, [difficultyLevel, questionTitle, isValid])
 

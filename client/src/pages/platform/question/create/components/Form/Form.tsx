@@ -1,8 +1,6 @@
 import MultiStepForm from "@components/forms/MultiStepForm"
-import FirstSection, { FirstSectionContext } from "./FirstSection"
-import SecondSection, { SecondSectionContext } from "./SecondSection"
-
-export default function(): JSX.Element {
+import FirstSection, { FirstSectionContext, FirstSectionContextProps } from "./FirstSection"
+import SecondSection, { SecondSectionContext, SecondSectionContextProps } from "./SecondSection"
 
     const sections = [
         {
@@ -12,8 +10,8 @@ export default function(): JSX.Element {
             
             context: FirstSectionContext,
             defaultValues: { 
-                questionTitle: "Contexto não iniciado",
-                difficultyLevel: undefined,
+                questionTitle: undefined as string | undefined,
+                difficultyLevel: undefined as number | undefined,
             }
         },
         {
@@ -23,14 +21,17 @@ export default function(): JSX.Element {
 
             context: SecondSectionContext,
             defaultValues: { 
-                questionDescription: "Contexto não iniciado",
+                questionDescription: undefined as undefined | string,
+                alternatives: [] as string[] | undefined
             }
         },
     ]
 
+export default function(): JSX.Element {
+    const onSubmit = (formData: FirstSectionContextProps & SecondSectionContextProps) => {
+        console.log(formData)
+    }
     return(
-        <div>
-            <MultiStepForm sections={sections} />
-        </div>
+        <MultiStepForm sections={sections} onSubmit={onSubmit}/>
     )
 }
