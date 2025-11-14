@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common"
@@ -42,17 +41,8 @@ var startCmd *cobra.Command = &cobra.Command{
 
 		// Execute migrations if enable-migrations is present
 		shouldMigrate, _ := cmd.Flags().GetBool("enable-migrations")
-		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
-		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
 		if shouldMigrate {
-			flags := []string{}
-			if ignoreExisting {
-				flags = append(flags, "--ignore-existing")
-			}
-			if recreateExisting {
-				flags = append(flags, "--recreate-existing")
-			}
-			if res := Migrate(mode, flags...); res != nil {
+			if res := Migrate(mode); res != nil {
 				logs.Info.Fatal(res.String())
 			}
 		}
@@ -108,11 +98,6 @@ func start(domain, port, mode string) error {
 }
 
 func Migrate(mode string, flags ...string) *common.Response {
-	os.Args = make([]string, len(flags)+2)
-	os.Args = append(os.Args, "/api")
-	os.Args = append(os.Args, mode)
-	os.Args = append(os.Args, flags...)
-
 	err := migrate.EnvironmentCmd.Execute()
 	if err != nil {
 		return common.NewResponse().WithDescription(err.Error()).WithStatus(common.StatusInternalError)

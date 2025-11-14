@@ -1,6 +1,8 @@
 package commandutil
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 type FlagRegister func(*cobra.Command)
 

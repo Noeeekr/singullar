@@ -30,7 +30,10 @@ type AuthClaims struct {
 
 type ServerResponse map[string]any
 
-const USER_COOKIE_ID = "user"
+const (
+	// REQUEST_USER_TOKEN refers to the token used to store the user struct
+	REQUEST_USER_TOKEN string = "user"
+)
 
 func NewServerResponse(data any, err ...string) *ServerResponse {
 	return &ServerResponse{

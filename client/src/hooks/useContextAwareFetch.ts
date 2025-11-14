@@ -25,6 +25,14 @@ export type Response<ResponseData, RequestBody = void> = {
     send: (body?: RequestBody) => void
 }
 
+export const defaultResponse: RequestInit = {
+    headers: {
+        "Content-Type": "application/json",
+    },
+    credentials: 'include',
+    cache: 'no-cache',
+}
+
 // useContextAwareFetch is a wrapper around fetch that checks the responses from server for specific events in each call. It returns a JSON
 // useContextAwareFetch will cause unecessary rerenders if its arguments are non-memoized objects
 function useContextAwareFetch<ResponseData, RequestBody = null>(

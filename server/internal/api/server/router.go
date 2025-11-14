@@ -42,19 +42,16 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 	r.GET("/api/subjects", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetSubjects)
 	r.GET("/api/dashboard", middlewares.Authenticate(models.SUPERVISOR, models.ADMIN), handlers.GetDashboard)
 	r.GET("/api/institution", middlewares.Authenticate(models.STUDENT, models.ADMIN, models.TEACHER, models.SUPERVISOR), handlers.GetInstitution)
+	r.GET("/api/question/list/difficulties", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.ADMIN, models.SUPERVISOR), handlers.GetQuestionListDifficulties)
+	r.GET("/api/question/list", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.SUPERVISOR, models.ADMIN), handlers.GetQuestionList)
 	r.POST("/api/students", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetStudents)
 	r.POST("/api/users", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetUsers)
 	r.POST("/api/classes", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.ADMIN, models.SUPERVISOR), handlers.GetClasses)
+
 	// Create data
 	r.POST("/api/user/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateUser) // Institution admin creates users
 	r.POST("/api/class/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateClass)
-
+	r.POST("/api/question/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateQuestion)
 	// r.POST("/api/class/create", middlewares.Authenticate, handlers.CreateClass)
-
 	return r, nil
 }
-
-// People interested ask devs for a institution
-// It is created with a admin user..
-// Then the admin can log to do admin stuff, like creating users for teachers, supervisors, students, etc...
-// Then users can login

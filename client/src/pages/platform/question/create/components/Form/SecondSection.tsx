@@ -12,10 +12,10 @@ import { useForm } from "react-hook-form"
 import CircularButton from "@components/buttons/Circular"
 
 export interface SecondSectionContextProps {
-    questionDescription?: string
-    questionQuestion?: string
+    question_description?: string
+    question_short_description?: string
+    question_correct_alternative?: string
     alternatives?: string[]
-    correctAlternative?: string
 }
 export interface SecondSectionProps {
     update: (values: SecondSectionContextProps | null) => void
@@ -25,6 +25,8 @@ export const SecondSectionContext = createContext<SecondSectionContextProps>({})
 
 export interface AlternativeDisplayerProps extends StackProps {
     onDelete: (title: string) => void
+    onSelection: (title: string) => void
+    isSelected?: boolean
     title: string
     decorativeIconIndex: number
 }
@@ -32,28 +34,31 @@ export interface AlternativeDisplayerProps extends StackProps {
 const AlternativeCreatorDisplayer = ({
     title,
     onDelete,
+    isSelected,
+    onSelection,
     decorativeIconIndex,
     ...props
 }: AlternativeDisplayerProps): JSX.Element => {
     return (
         <Stack {...props} direction="row" alignItems="center" justifyContent="space-between">
             <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
-                <CircularButton 
+                <CircularButton
                     sx={(theme) => ({
                         width: 40,
                         height: 40,
                         paddingTop: 0.2,
-                        borderColor: "rgb(170,170,170)",
-                        backgroundColor: "rgb(249,249,249)",
-                        color: "rgb(90,90,90)",
+                        borderColor: isSelected ? "white" : "rgb(170,170,170)",
+                        backgroundColor: isSelected ? theme.palette.primary.purpleDark : "rgb(249,249,249)",
+                        color: isSelected ? "white" : "rgb(90,90,90)",
                         "&:hover": {
                             borderColor: theme.palette.primary.purpleLight,
                             backgroundColor: theme.palette.primary.purpleLight,
                             color: "white",
                         },
                     })}
+                    onClick={() => onSelection(title)}
                 >
-                    { String.fromCharCode(('a'.charCodeAt(0) + decorativeIconIndex)).toUpperCase() }
+                    {String.fromCharCode(('a'.charCodeAt(0) + decorativeIconIndex)).toUpperCase()}
                 </CircularButton>
                 <Typography
                     variant="body2"
@@ -62,7 +67,20 @@ const AlternativeCreatorDisplayer = ({
                     {title}
                 </Typography>
             </Stack>
-            <SolidButton title="Remover alternativa" onClick={() => onDelete(title)} />
+            <SolidButton
+                sx={{
+                    backgroundColor: "rgb(240,170,170)",
+                    border: "solid 1px rgb(200,50,50)",
+
+                    transition: "transform 200ms ease-in-out, background-color 200ms ease-in-out, border 200ms ease-in-out",
+                    "&:hover": {
+                        backgroundColor: "rgb(210,130,130)",
+                        border: "solid 1px rgb(150,20,20)",
+                    }
+                }}
+                title="Remover alternativa"
+                onClick={() => onDelete(title)}
+            />
         </Stack>
     )
 }
@@ -99,20 +117,34 @@ const AlternativeCreator = ({
     )
 }
 export default function ({ update }: SecondSectionProps): JSX.Element {
-    const { register, watch, getValues, setValue, formState: { isValid } } = useForm<SecondSectionContextProps>()
+    const { register, watch, getValues, setValue, formState: { isValid } } = useForm<SecondSectionContextProps>({
+
+    })
     const [alternativeAmount, setAlternativeAmount] = useState(0)
-    const questionDescription = watch("questionDescription")
-    const questionQuestion = watch("questionQuestion")
+    const questionDescription = watch("question_description")
+    const correctAlternative = watch("question_correct_alternative")
+    const questionShortDescription = watch("question_short_description")
     const alternatives = watch("alternatives")
 
     useEffect(() => {
-        if (isValid) {
+        if (isValid && alternatives?.length && correctAlternative != undefined) {
             update(getValues())
-        } else {
-            update(null)
+            return
         }
-    }, [questionDescription, questionQuestion, isValid])
+        console.log("TRIGGERED CLEAR", getValues())
+        update(null)
+    }, [questionDescription, questionShortDescription, alternatives, correctAlternative, isValid])
+    
+    useEffect(() => {
+        if (!alternatives?.some((alternative) => alternative == correctAlternative)) {
+            setValue("question_correct_alternative", undefined)
+        } 
+    }, [alternatives?.length])
 
+    const handleAlternativeSelection = (title: string) => {
+        setValue("question_correct_alternative", title)
+    }
+    
     const handleAlternativeAddition = (title: string) => {
         let s = getValues("alternatives")
         if (s == undefined) s = [];
@@ -127,6 +159,7 @@ export default function ({ update }: SecondSectionProps): JSX.Element {
         if (s.length == 0) s = undefined
         setValue("alternatives", s)
     }
+
     return (
         <Stack direction="column" gap={2}>
             <Grid container spacing={2}>
@@ -136,7 +169,7 @@ export default function ({ update }: SecondSectionProps): JSX.Element {
                         <FormControl>
                             <TextArea
                                 label="Insira o conteúdo da questão"
-                                {...register("questionDescription", {
+                                {...register("question_description", {
                                     minLength: 8,
                                     required: true,
                                 })}
@@ -152,7 +185,7 @@ export default function ({ update }: SecondSectionProps): JSX.Element {
                                 Insira a pergunta da questão
                             </InputLabel>
                             <OutlinedInput
-                                {...register("questionQuestion", {
+                                {...register("question_short_description", {
                                     minLength: 8,
                                     required: true,
                                 })}
@@ -182,7 +215,16 @@ export default function ({ update }: SecondSectionProps): JSX.Element {
             }
             {
                 alternatives?.map((alternative, i) => {
-                    return <AlternativeCreatorDisplayer key={i} decorativeIconIndex={i} title={alternative} onDelete={handleAlternativeDelete} />
+                    return <AlternativeCreatorDisplayer
+                        key={i}
+
+                        title={alternative}
+                        decorativeIconIndex={i}
+
+                        isSelected={correctAlternative == alternative}
+                        onSelection={handleAlternativeSelection}
+                        onDelete={handleAlternativeDelete}
+                    />
                 })
             }
         </Stack>

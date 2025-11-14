@@ -17,14 +17,11 @@ import { QuestionListDifficulty } from "@models/server"
 import { MenuItem, Select } from "@mui/material"
 
 export interface FirstSectionContextProps {
-    questionTitle?: string
-    difficultyLevel?: number
+    question_title?: string
+    question_difficulty_level?: number
 }
 
-export const FirstSectionContext = createContext<FirstSectionContextProps>({
-    questionTitle: "",
-    difficultyLevel: 0,
-})
+export const FirstSectionContext = createContext<FirstSectionContextProps>({})
 
 /**
     Updater({ sectionContext, onUpdate }) => {
@@ -48,8 +45,8 @@ export default function ({
 }): JSX.Element {
     const { register, getValues, watch, control, formState: { isValid } } = useForm<FirstSectionContextProps>({
         defaultValues: {
-            difficultyLevel: undefined,
-            questionTitle: undefined,
+            question_difficulty_level: undefined,
+            question_title: undefined,
         }
     })
 
@@ -64,18 +61,19 @@ export default function ({
         }
     )
 
-    const questionTitle = watch("questionTitle")
-    const difficultyLevel = watch("difficultyLevel")
+    const questionTitle = watch("question_title")
+    const difficultyLevel = watch("question_difficulty_level")
 
     useEffect(() => {
         send()
     }, [])
+
     useEffect(() => {
         if (isValid) {
             update(getValues())
-        } else {
-            update(null)
+            return
         }
+        update(null)
     }, [difficultyLevel, questionTitle, isValid])
 
     return (
@@ -88,7 +86,7 @@ export default function ({
                             Insira o titulo da questão
                         </InputLabel>
                         <OutlinedInput
-                            {...register("questionTitle", {
+                            {...register("question_title", {
                                 minLength: 8,
                                 required: true,
                             })}
@@ -106,7 +104,7 @@ export default function ({
                             Dificuldade da questão
                         </InputLabel>
                         <Controller
-                            name="difficultyLevel"
+                            name="question_difficulty_level"
                             rules={{ required: true, validate: (v) => v != undefined}}
                             control={control}
                             render={({ field }) => (
@@ -118,7 +116,7 @@ export default function ({
                                 >
                                     <MenuItem value={undefined}>Selecione a dificuldade</MenuItem>
                                     {response?.map((difficulty) => (
-                                        <MenuItem key={difficulty.difficulty_level} value={difficulty.difficulty_level}>{difficulty.difficulty_name}</MenuItem>
+                                        <MenuItem key={difficulty.question_difficulty_level} value={difficulty.question_difficulty_level}>{difficulty.question_difficulty_name}</MenuItem>
                                     ))}
                                 </Select>
                             )}

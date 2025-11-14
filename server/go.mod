@@ -13,12 +13,12 @@ require (
 )
 
 require (
+	github.com/Noeeekr/borm v0.0.0-20251028014145-123151b9f895 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 )
 
 require (
-	github.com/Noeeekr/borm v0.0.0-20251024174512-f2b914392b50
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect

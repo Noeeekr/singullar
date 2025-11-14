@@ -18,18 +18,17 @@ const (
 var MigrationFlagsToken = commandutil.RegisterConfigurationToken()
 
 var EnvironmentCmd *cobra.Command = &cobra.Command{
+	FParseErrWhitelist: cobra.FParseErrWhitelist{
+		UnknownFlags: true,
+	},
 	Use:   "environment [-e ...ENVIRONMENT_FILES] { production | development }",
 	Short: "Migrates the database and users of that specific environment",
 	Args:  cobra.MinimumNArgs(1),
 	Long:  "Migrates the database and users of that specific environment.",
 	Run: func(cmd *cobra.Command, args []string) {
-		if args[0] == "production" {
-			environment.Settings().SetApplicationMode(environment.PRODUCTION)
-		} else {
-			environment.Settings().SetApplicationMode(environment.DEVELOPMENT)
-		}
+		ConfigureMigration(cmd, args)
 
-		// Get connection logs.information
+		// Connect to postgres
 		postgresConnection, res := connections.ScanEnvironmentForConnection(connections.POSTGRES)
 		if res != nil {
 			logs.Error.Fatal(res.String())
@@ -76,7 +75,12 @@ var EnvironmentCmd *cobra.Command = &cobra.Command{
 	},
 }
 
-func Configure(cmd *cobra.Command) {
+func ConfigureMigration(cmd *cobra.Command, args []string) {
+	if args[0] == "production" {
+		environment.Settings().SetApplicationMode(environment.PRODUCTION)
+	} else {
+		environment.Settings().SetApplicationMode(environment.DEVELOPMENT)
+	}
 	ignoreExisting, _ := cmd.Flags().GetBool(IgnoreExistingFlagName)
 	if ignoreExisting {
 		borm.Settings().Migrations().IgnoreExisting()
@@ -89,7 +93,7 @@ func Configure(cmd *cobra.Command) {
 		logs.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
 	}
 
-	path, _ := cmd.Flags().GetStringArray("environmentFiles")
+	path, _ := cmd.Flags().GetStringArray(environment.EnvironmentFilesFlagName)
 	if err := environment.Parse(path...); err != nil {
 		logs.Error.Fatal("[Invalid environment file]: ", err.String())
 	}

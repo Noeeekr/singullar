@@ -4,7 +4,7 @@ import TitleContainer from "./TitleContainer"
 import Typography from "@mui/material/Typography"
 import Stack from "@mui/material/Stack"
 import Header from "./Header"
-import { Fragment } from "react"
+import { Fragment, useCallback } from "react"
 
 // Features
 import { useMemo, useState } from "react"
@@ -74,17 +74,12 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
     const [activeStep, setActiveStep] = useState(sections.length <= initialSection || 0 > initialSection ? 0 : initialSection)
     const [form, setForm] = useState<SectionValues>({} as SectionValues)
     const [disabled, setDisabled] = useState(true)
+    console.log(form)
 
-    const {
-        context: SectionContext,
-        defaultValues,
-        content,
-        title,
-    }: MultiStepFormSectionProps<Sections> = useMemo(() => {
+    const { context: SectionContext, defaultValues, content, title }: MultiStepFormSectionProps<Sections> = useMemo(() => {
         return sections[activeStep]
     }, [activeStep])
 
-    console.log(form)
     /**
      * Updater function enables advancing for next section if given a value different than null.
      * If it gets null then it sets the form values of this section to its default values to prevent form to be sending the previous updates. Which is preferred to be zero values.
@@ -93,21 +88,25 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
      */
     const updater = (values: Sections | null) => {
         if (values == null) {
+            setForm(formState => {
+                return ({ ...formState, ...defaultValues })
+            })
             setDisabled(true)
-            setForm(formState => ({ ...formState, ...defaultValues }))
             return
         } 
         setDisabled(false)
         setForm(formState => ({ ...formState, ...values }))
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
         onSubmit(form)
-    }
-    const handleContinue = () => {
+    }, [onSubmit, form])
+
+    const handleContinue = useCallback(() => {
         setDisabled(true)
-        setActiveStep(prev => prev+1)
-    }
+        setActiveStep(prev => ++prev)
+    }, [setDisabled, setActiveStep])
+
     return (
         <Stack marginY={2} component="section">
             <Header headers={[]} activeStep={activeStep} />

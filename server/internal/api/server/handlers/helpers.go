@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Noeeekr/singullar/server/internal/api/types"
+	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,8 +35,15 @@ func (h *Handlers) clientError(ctx *gin.Context, message string) {
 	})
 }
 
+// Is always success if done after an authentication middleware
+func (h *Handlers) GetRequestUserInformation(ctx *gin.Context) (*models.Users, bool) {
+	unsignedRequestUser, found := ctx.Get(types.REQUEST_USER_TOKEN)
+	user := unsignedRequestUser.(models.Users)
+	return &user, found
+}
+
 // Handles the client message and returns true if error happens is in incorrect format.
-func (h *Handlers) BadJsonRequest(ctx *gin.Context, err error) bool {
+func (h *Handlers) HandleBadJsonRequest(ctx *gin.Context, err error) bool {
 	if err != nil {
 		h.LogErr.Println(err.Error())
 		h.clientError(ctx, "Dados em formato incorreto")

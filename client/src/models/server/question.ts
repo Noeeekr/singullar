@@ -1,8 +1,8 @@
 import { DefaultFields } from ".";
 
 export interface QuestionListDifficulty {
-    difficulty_level: number
-    difficulty_name: string
+    question_difficulty_level: number
+    question_difficulty_name: string
 }
 
 export interface Question extends DefaultFields {

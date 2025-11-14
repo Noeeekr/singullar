@@ -10,10 +10,10 @@ import (
 )
 
 func (h *Handlers) GetSubjects(ctx *gin.Context) {
-	unsignedUser, _ := ctx.Get(types.USER_COOKIE_ID)
+	unsignedUser, _ := ctx.Get(types.REQUEST_USER_TOKEN)
 	user := unsignedUser.(models.Users)
 
-	subjects, err := h.operations.SelectSubjects(user.InstitutionId)
+	subjects, err := h.databaseOperations.SelectSubjects(user.InstitutionId)
 	if err != nil {
 		if err == borm.ErrNotFound {
 			ctx.JSON(http.StatusFound, types.NewServerResponse([]models.Subjects{}))

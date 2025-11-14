@@ -19,12 +19,12 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// Configure migration settings
 		borm.Settings().Migrations().Enable()
-		ignoreExisting, _ := cmd.Flags().GetBool("ignore-existing")
+		ignoreExisting, _ := cmd.Flags().GetBool(IgnoreExistingFlagName)
 		if ignoreExisting {
 			borm.Settings().Migrations().IgnoreExisting()
 			logs.Info.Println("[Ignore existing flag]: Existing relations won't stop the operations neither throw errors..")
 		}
-		recreateExisting, _ := cmd.Flags().GetBool("recreate-existing")
+		recreateExisting, _ := cmd.Flags().GetBool(RecreateExistingFlagName)
 		if recreateExisting {
 			borm.Settings().Migrations().RecreateExisting()
 			logs.Info.Println("[Recreate existing flag]: Existing relations will be dropped and recreated...")
@@ -37,7 +37,7 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 			environment.Settings().SetApplicationMode(environment.DEVELOPMENT)
 		}
 
-		path, _ := cmd.Flags().GetStringArray("environmentFiles")
+		path, _ := cmd.Flags().GetStringArray(environment.EnvironmentFilesFlagName)
 		if res := environment.Parse(path...); res != nil {
 			logs.Error.Fatal("[Invalid environment file]:", res.String())
 			return
@@ -50,21 +50,26 @@ var RelationsCmd *cobra.Command = &cobra.Command{
 		}
 		defer database.DB().Close()
 
-		database.RegisterMigrationQueries(
-			models.TableQuestionDifficulty.
-				Insert("difficulty_level", "difficulty_name").
-				Values(
-					models.Fundamental, models.QuestionListDifficulties[models.Fundamental],
-					models.Beginner, models.QuestionListDifficulties[models.Beginner],
-					models.Intermediare, models.QuestionListDifficulties[models.Intermediare],
-					models.Advanced, models.QuestionListDifficulties[models.Advanced],
-					models.Expert, models.QuestionListDifficulties[models.Expert],
-				),
+		// Set population queries
+		database.RegisterMigrationQueries(models.TableQuestionDifficulty.
+			Insert("difficulty_name", "difficulty_level").
+			Values(
+				"Fundamental", 1,
+				"Iniciante", 2,
+				"Intermediario", 3,
+				"Intermediario+", 4,
+				"Intermediario++", 5,
+				"Avançado", 6,
+				"Avançado+", 7,
+				"Avançado++", 8,
+				"Profissional", 9,
+				"Expert", 10,
+			),
 		)
 
 		// Migrate environment database relations
 		if err := database.MigrateRelations(); err != nil {
-			logs.Error.Fatal(err)
+			logs.Error.Fatal(err.Error())
 		}
 		defer database.DB().Close()
 

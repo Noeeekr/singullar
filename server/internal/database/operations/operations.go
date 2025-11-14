@@ -85,6 +85,46 @@ func (ops *Operations) InsertClassStudents(classId int, studentsIds *[]int) erro
 			Values(values...),
 	)
 }
+func (ops *Operations) InsertQuestion(institutionId int, question *models.CreateQuestionRequest) (*models.Questions, error) {
+	var questions []*models.Questions = []*models.Questions{}
+	err := ops.StartTransaction()
+	if err != nil {
+		return nil, err
+	}
+
+	err = ops.currentTransction.Do(
+		models.TableQuestions.
+			Insert("question_institution_id", "created_at", "updated_at", "question_title", "question_description", "question_short_description", "question_difficulty_level", "question_correct_alternative").
+			// Listen, I know questionDifficultyLevel needs to be checked agaisn't database to see if it as existing one and not an custom number, but wtv, it's not worth it.
+			Values(institutionId, time.Now(), time.Now(), question.QuestionTitle, question.QuestionDescription, question.QuestionShortDescription, question.QuestionDifficultyLevel, question.QuestionCorrectAlternative).
+			Returning("id", "question_institution_id", "created_at", "updated_at", "question_title", "question_description", "question_short_description", "question_difficulty_level", "question_correct_alternative").
+			Scanner(scan.Questions(&questions)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	createdQuestion := questions[0]
+
+	values := make([]any, len(question.Alternatives)*3)
+	offset := 0
+	for i, alternative := range question.Alternatives {
+		values[i] = createdQuestion.Id
+		values[i+1] = alternative
+		values[i+2] = question.QuestionCorrectAlternative == alternative
+		offset += 3
+	}
+	err = ops.currentTransction.Do(
+		models.TableQuestionAlternatives.
+			Insert("question_id", "alternative", "is_correct").
+			Values(values...),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return createdQuestion, ops.currentTransction.Commit()
+}
 func (ops *Operations) InsertClass(request *models.CreateClasses) (*models.Classes, error) {
 	var classes []*models.Classes = []*models.Classes{}
 	err := ops.currentTransction.Do(
