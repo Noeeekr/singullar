@@ -45,6 +45,12 @@ export const routes: Routes = {
     "home": { PermitedRoles: [ANY_AUTHENTICATED_ROLE] },
     "platform": {
         Routes: {
+            "subjects": {
+                PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR],
+                Routes: {
+                    "*": { PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR]},
+                },
+            },
             "question": {
                 Routes: {
                     "list": {
@@ -55,7 +61,7 @@ export const routes: Routes = {
                     "create": {
                         PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR],
                     },
-                    "*": {}
+                    "*": { PermitedRoles: [ANY_AUTHENTICATED_ROLE] }
                 }
             }
         }

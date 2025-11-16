@@ -131,7 +131,6 @@ export default function ({ update }: SecondSectionProps): JSX.Element {
             update(getValues())
             return
         }
-        console.log("TRIGGERED CLEAR", getValues())
         update(null)
     }, [questionDescription, questionShortDescription, alternatives, correctAlternative, isValid])
     

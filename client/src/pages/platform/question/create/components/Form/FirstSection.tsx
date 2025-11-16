@@ -11,7 +11,7 @@ import { createContext, useEffect } from "react"
 
 // Models
 import { Controller, useForm } from "react-hook-form"
-import useContextAwareFetch from "@hooks/useContextAwareFetch"
+import useContextAwareFetch, { defaultRequestInit } from "@hooks/useContextAwareFetch"
 import { SERVER_ADDR } from "@components/../configs"
 import { QuestionListDifficulty } from "@models/server"
 import { MenuItem, Select } from "@mui/material"
@@ -23,21 +23,6 @@ export interface FirstSectionContextProps {
 
 export const FirstSectionContext = createContext<FirstSectionContextProps>({})
 
-/**
-    Updater({ sectionContext, onUpdate }) => {
-        const sectionState = = useContex(context)
-        update(formState => { ...formState, ...sectionState })
-    }
-    Context Provider (Section)
-        <Updater context={context} onUpdate={update} /> 
-        (Generic::Injected) { section.Header }     
-        (Generic::Injected) { section.Content }
-        (Generic::Injected) { section.Footer } (onClick:Advance)
-
-    *Each section is independent
-    *Their result is saved in a shared context
-    *OnSubmit sends the shared context value
-*/
 export default function ({
     update
 }: {
@@ -52,13 +37,7 @@ export default function ({
 
     const { response, send } = useContextAwareFetch<QuestionListDifficulty[]>(
         `${SERVER_ADDR}/api/question/list/difficulties`,
-        {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-        }
+        defaultRequestInit,
     )
 
     const questionTitle = watch("question_title")

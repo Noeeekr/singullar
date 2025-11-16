@@ -122,77 +122,76 @@ export interface CustomTextAreaProps {
     label: string
 }
 
-export default forwardRef<HTMLTextAreaElement, CustomTextAreaProps>(
-    ({
-        // !**** Foward ref omits refs. But react hook form (RHF) inserts a ref, and we already have one 
-        // So in the end we merge both in a function that calls them. That's why the error
-        ref: rhfRef,         // The ref from RHF's register
-        onChange: rhfOnChange, // The onChange from RHF's register
-        onBlur: rhfOnBlur,     // The onBlur from RHF's register
-        
-        onUserChange,
-        onUserBlur,
-        
-        label,
-        ...props
-    }, parentRef) => {
-        const [isFocused, setIsFocused] = useState(false)
+export default forwardRef<HTMLTextAreaElement, CustomTextAreaProps>(({
+    // !**** Foward ref omits refs. But react hook form (RHF) inserts a ref, and we already have one 
+    // So in the end we merge both in a function that calls them. That's why the error
+    ref: rhfRef,         // The ref from RHF's register
+    onChange: rhfOnChange, // The onChange from RHF's register
+    onBlur: rhfOnBlur,     // The onBlur from RHF's register
 
-        const ref = useRef<HTMLTextAreaElement>(null)
+    onUserChange,
+    onUserBlur,
 
-        const refs = mergeRefs(ref, rhfRef, parentRef)
+    label,
+    ...props
+}: CustomTextAreaProps, parentRef) => {
+    const [isFocused, setIsFocused] = useState(false)
 
-        const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            if (onUserChange) onUserChange(e);
-            if (rhfOnChange) rhfOnChange(e);
-        }
+    const ref = useRef<HTMLTextAreaElement>(null)
 
-        const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
-            setIsFocused(false);
-            if (onUserBlur) onUserBlur(e);
-            if (rhfOnBlur) rhfOnBlur(e);
-        }
+    const refs = mergeRefs(ref, rhfRef, parentRef)
 
-        return (
-            <Box position="relative" width="100%">
-                <Label
-                    isFocused={isFocused}
-                    isEmpty={Boolean(ref.current?.value)}
-                >
-                    {label}
-                </Label>
-                <FieldSet
-                    height={ref.current?.clientHeight}
-                    isFocused={isFocused}
-                    isEmpty={Boolean(ref.current?.value)}
-                >
-                    <TextArea
-                        aria-placeholder="Insira a descrição da questão"
-                        ref={refs}
-                        rows={6}
-
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        isFocused={isFocused}
-                        isEmpty={Boolean(ref.current?.value)}
-                        {...props}
-                    />
-                    <legend style={{
-                        position: "relative",
-                        top: -50,
-                        left: -10,
-
-                        fontSize: 12,
-                        height: 0,
-                        color: "transparent",
-                    }}>
-                        Insira o conteúdo da questão
-                    </legend>
-                </FieldSet>
-            </Box>
-        )
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        if (onUserChange) onUserChange(e);
+        if (rhfOnChange) rhfOnChange(e);
     }
+
+    const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+        setIsFocused(false);
+        if (onUserBlur) onUserBlur(e);
+        if (rhfOnBlur) rhfOnBlur(e);
+    }
+
+    return (
+        <Box position="relative" width="100%">
+            <Label
+                isFocused={isFocused}
+                isEmpty={Boolean(ref.current?.value)}
+            >
+                {label}
+            </Label>
+            <FieldSet
+                height={ref.current?.clientHeight}
+                isFocused={isFocused}
+                isEmpty={Boolean(ref.current?.value)}
+            >
+                <TextArea
+                    aria-placeholder="Insira a descrição da questão"
+                    ref={refs}
+                    rows={6}
+
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    isFocused={isFocused}
+                    isEmpty={Boolean(ref.current?.value)}
+                    {...props}
+                />
+                <legend style={{
+                    position: "relative",
+                    top: -50,
+                    left: -10,
+
+                    fontSize: 12,
+                    height: 0,
+                    color: "transparent",
+                }}>
+                    Insira o conteúdo da questão
+                </legend>
+            </FieldSet>
+        </Box>
+    )
+}
 )
 // onSelect={(e) => {
 //     e.target.style.border = "solid 2px " + theme.palette.primary.purpleDark

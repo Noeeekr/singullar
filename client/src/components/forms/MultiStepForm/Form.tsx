@@ -3,7 +3,7 @@ import SectionContainer from "./SectionContainer"
 import TitleContainer from "./TitleContainer"
 import Typography from "@mui/material/Typography"
 import Stack from "@mui/material/Stack"
-import Header from "./Header"
+import Header, { SectionHeader } from "./Header"
 import { Fragment, useCallback } from "react"
 
 // Features
@@ -62,10 +62,12 @@ function RenderDelayer({ element }: RenderDelayerProps): JSX.Element {
 }
 
 export default function<Sections extends MultiStepFormSectionProps<any>[]>({ 
+    headers = [],
     sections, 
     onSubmit,
     initialSection = 0,
 }: { 
+    headers?: SectionHeader[],
     sections: Sections,
     onSubmit: (formData: Sections[number]["defaultValues"]) => void
     initialSection?: number
@@ -74,7 +76,6 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
     const [activeStep, setActiveStep] = useState(sections.length <= initialSection || 0 > initialSection ? 0 : initialSection)
     const [form, setForm] = useState<SectionValues>({} as SectionValues)
     const [disabled, setDisabled] = useState(true)
-    console.log(form)
 
     const { context: SectionContext, defaultValues, content, title }: MultiStepFormSectionProps<Sections> = useMemo(() => {
         return sections[activeStep]
@@ -100,6 +101,10 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
 
     const handleSubmit = useCallback(() => {
         onSubmit(form)
+        return
+        setDisabled(true)
+        setForm({})
+        setActiveStep(0)
     }, [onSubmit, form])
 
     const handleContinue = useCallback(() => {
@@ -108,8 +113,8 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
     }, [setDisabled, setActiveStep])
 
     return (
-        <Stack marginY={2} component="section">
-            <Header headers={[]} activeStep={activeStep} />
+        <Stack marginY={2} component="section" gap={2}>
+            <Header headers={headers} activeStep={activeStep} />
             <SectionContext.Provider value={defaultValues as SectionValues}>
                 <Stack>
                     <TitleContainer direction="row">

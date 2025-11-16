@@ -21,6 +21,9 @@ export {
 
 // Class related models
 export type { Class } from "./class"
+export interface Subject {
+    name: string
+}
 
 // Institution related models
 export type { Institution } from "./institution"

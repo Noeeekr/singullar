@@ -9,6 +9,7 @@ import {
 const ErrorBubble = (
     { err }: { err: string }
 ): JSX.Element => {
+    if (err == "") return <></>
     return (
         <Box
             sx={{

@@ -112,7 +112,7 @@ const lightTheme = createTheme({
             styleOverrides: {
                 root: { // ALREADY  SET
                     color: 'rgb(38, 41, 48)',
-                    fontFamily: 'inter, system-ui, Arial, sans-serif',
+                    fontFamily: 'Inter, system-ui',
                 },
                 body1: { // ALREADY  SET
                     fontSize: 12

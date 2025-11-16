@@ -17,15 +17,26 @@ import {
     useAppDispatch
 } from "@slices/store"
 
-export type Response<ResponseData, RequestBody = void> = {
+export interface ResponseObject<ResponseData> {
     response: ResponseData | null,
-    isLoading: boolean,
     error: string,
     status: number,
-    send: (body?: RequestBody) => void
+}
+export interface OnResponseCallbackProps<ResponseData, RequestBody> extends ResponseObject<ResponseData> {
+    body?: RequestBody
 }
 
-export const defaultResponse: RequestInit = {
+export type OnResponseCallback<ResponseData, RequestBody> = (props: OnResponseCallbackProps<ResponseData, RequestBody>) => void
+
+export interface ResponseUtilities<ResponseData, RequestBody = void> extends ResponseObject<ResponseData> {
+    isLoading: boolean,
+
+    send: (body?: RequestBody) => void,
+    registerOnResponseCallback: (cb: OnResponseCallback<ResponseData, RequestBody>) => void
+}
+
+export const defaultRequestInit: RequestInit = {
+    method: "GET",
     headers: {
         "Content-Type": "application/json",
     },
@@ -33,16 +44,22 @@ export const defaultResponse: RequestInit = {
     cache: 'no-cache',
 }
 
+function appendRequestBodyIfNecessary<RequestBody>(init: RequestInit | undefined, body: RequestBody) {
+    if (init && init.method != "GET") {
+        init.body = JSON.stringify(body)
+    }
+}
 // useContextAwareFetch is a wrapper around fetch that checks the responses from server for specific events in each call. It returns a JSON
 // useContextAwareFetch will cause unecessary rerenders if its arguments are non-memoized objects
 function useContextAwareFetch<ResponseData, RequestBody = null>(
     input: string | URL | globalThis.Request,
     init?: RequestInit,
-): Response<ResponseData, RequestBody> {
+): ResponseUtilities<ResponseData, RequestBody> {
     const [response, setResponse] = useState<ResponseData | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string>("");
     const [status, setStatus] = useState(0);
+    const [onResponseCallbacks, setOnResponseCallbacks] = useState<OnResponseCallback<ResponseData, RequestBody>[]>([])
 
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
@@ -52,23 +69,29 @@ function useContextAwareFetch<ResponseData, RequestBody = null>(
         setIsLoading(true)
         setError("")
         try {
-            if (init != null && init.method != "GET") {
-                init.body = JSON.stringify(body);
-            }
-            const response = await fetch(input, init)
-            setStatus(response.status)
-            if (response.status == 401) {
+            appendRequestBodyIfNecessary(init, body)
+            const res = await fetch(input, init)
+
+            setStatus(res.status)
+            if (res.status == 401) {
                 dispatch(actionUpdateUser(null))
                 navigate("/auth")
                 return
             }
 
-            const responseBody: DefaultResponse<ResponseData> = await response.json()
+            const responseBody: DefaultResponse<ResponseData> = await res.json()
             if (responseBody.data != null) {
                 setResponse(responseBody.data)
             } else {
                 setError(responseBody.error)
             }
+
+            onResponseCallbacks.forEach((cb) => cb({
+                body: body,
+                error: responseBody.error,
+                status,
+                response: responseBody.data
+            }))
         } catch (e) {
             setError("Falha ao processar a requisição")
         } finally {
@@ -76,7 +99,21 @@ function useContextAwareFetch<ResponseData, RequestBody = null>(
         }
     }, [init, input, navigate, dispatch]);
 
-    return { response, isLoading, error, send, status }
+    const registerOnResponseCallback = (cb: OnResponseCallback<ResponseData, RequestBody>) => {
+        setOnResponseCallbacks((callbacks) => {
+            callbacks.push(cb)
+            return callbacks
+        })
+    }
+
+    return {
+        response,
+        isLoading,
+        error,
+        send,
+        status,
+        registerOnResponseCallback,
+    }
 }
 
 export default useContextAwareFetch;
