@@ -64,11 +64,11 @@ const FooterLinks = (): JSX.Element => {
                             key={link.label}
                             style={{
                                 fontSize: 15,
-                                color: 'black',
+                                color: 'white',
                                 paddingBottom: '3px',
-                                textDecoration: 'underline',
                                 borderBottom: isMobile ? 'none' : 'solid 1px white',
                                 textAlign: isMobile ? 'center' : 'start',
+                                fontFamily: "system-ui",
                             }}
                         >
                             {link.label}

@@ -373,7 +373,7 @@ func Classes(classes *[]*models.Classes) borm.ReturnScanner {
 func Subjects(subjects *[]*models.Subjects) borm.ReturnScanner {
 	return Scanner[models.Subjects](func(row *sql.Rows) error {
 		subject := models.Subjects{}
-		err := row.Scan(&subject.Id, &subject.SubjectName, &subject.InstitutionId)
+		err := row.Scan(&subject.SubjectName, &subject.InstitutionId)
 		if err != nil {
 			return borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}

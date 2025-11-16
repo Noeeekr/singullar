@@ -210,10 +210,9 @@ func (ops *Operations) SelectStudents(institutionId int, options *[]FilterStuden
 func (ops *Operations) SelectSubjects(InstitutionId int) (*[]*models.Subjects, error) {
 	subjects := []*models.Subjects{}
 	query := models.TableSubjects.
-		Select("s.id, s.subject_name", "s.institution_id").As("s").
-		InnerJoin(models.TableInstitutions, "i").On("i.id", "s.institution_id").
+		Select("subject_name", "institution_id").
 		Scanner(scan.Subjects(&subjects))
-	query.Where(query.Field("s.institution_id").IsEqual(InstitutionId))
+	query.Where(query.Field("institution_id").IsEqual(InstitutionId))
 	if err := ops.Commiter.Do(query); err != nil {
 		return nil, err
 	}

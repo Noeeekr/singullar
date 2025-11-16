@@ -85,6 +85,35 @@ func (ops *Operations) InsertClassStudents(classId int, studentsIds *[]int) erro
 			Values(values...),
 	)
 }
+func (ops *Operations) InsertSubject(institutionId int, subject *models.CreateSubjectsRequest) (*models.Subjects, error) {
+	subjects := []*models.Subjects{}
+	query := models.TableSubjects.
+		Select("subject_name", "institution_id").
+		Scanner(scan.Subjects(&subjects)).
+		ThrowErrorOnFound()
+	query.Where(query.And(
+		query.Field("institution_id").IsEqual(institutionId),
+		query.Field("subject_name").IsEqual(subject.SubjectName),
+	))
+
+	if err := ops.Do(query); err != nil {
+		return nil, err
+	}
+
+	if err := ops.StartTransaction(); err != nil {
+		return nil, err
+	}
+
+	query = models.TableSubjects.
+		Insert("subject_name", "institution_id").
+		Values(subject.SubjectName, institutionId).
+		Returning("subject_name", "institution_id").
+		Scanner(scan.Subjects(&subjects))
+	if err := ops.currentTransction.Do(query); err != nil {
+		return nil, err
+	}
+	return subjects[0], ops.currentTransction.Commit()
+}
 func (ops *Operations) InsertQuestion(institutionId int, question *models.CreateQuestionRequest) (*models.Questions, error) {
 	var questions []*models.Questions = []*models.Questions{}
 	err := ops.StartTransaction()
@@ -108,10 +137,10 @@ func (ops *Operations) InsertQuestion(institutionId int, question *models.Create
 
 	values := make([]any, len(question.Alternatives)*3)
 	offset := 0
-	for i, alternative := range question.Alternatives {
-		values[i] = createdQuestion.Id
-		values[i+1] = alternative
-		values[i+2] = question.QuestionCorrectAlternative == alternative
+	for _, alternative := range question.Alternatives {
+		values[offset] = createdQuestion.Id
+		values[offset+1] = alternative
+		values[offset+2] = question.QuestionCorrectAlternative == alternative
 		offset += 3
 	}
 	err = ops.currentTransction.Do(

@@ -29,6 +29,8 @@ const PgClass = lazy(() => import("./pages/admin/classes/class/Page"))
 const PgClassesSearch = lazy(() => import("./pages/admin/classes/Page"))
 const PgClassesCreate = lazy(() => import("./pages/admin/classes/create/Page"))
 
+const PgSubjectCreate = lazy(() => import("./pages/platform/subjects/create/Page"))
+
 const PgTeachersSearch = lazy(() => import("./pages/admin/teachers/Search"))
 
 const PgQuestionCreate = lazy(() => import("./pages/platform/question/create/Page"))
@@ -49,6 +51,10 @@ const routerRoutes = createRoutesFromElements(
       >
         <Route index element={<div>Home root page</div>} />
         <Route path="platform">
+          <Route path="subjects">
+            <Route path="create"
+              element={<DefaultSuspense children={<PgSubjectCreate/>}/>}/>
+          </Route>
           <Route path="question">
             <Route path="create"
               element={<DefaultSuspense><PgQuestionCreate /></DefaultSuspense>}
@@ -103,7 +109,7 @@ const routerRoutes = createRoutesFromElements(
           </Route>
           <Route path="*" element={<div>Any path admin page</div>} />
         </Route>
-        <Route path="*" element={<div>Rot</div>} />
+        <Route path="*" element={<div>Em construção</div>} />
       </Route>
     </Route>
     <Route path="*" element={<div>Any path home page</div>} />

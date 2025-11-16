@@ -184,7 +184,6 @@ const Internal = (): JSX.Element => {
                         color="primary"
                         sx={{
                             fontWeight: "bold",
-                            fontFamily: "Verdana",
                             borderRadius: 20,
                             textTransform: 'Capitalize',
                             transition: 'all 180ms ease-in-out',

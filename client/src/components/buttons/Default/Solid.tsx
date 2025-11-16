@@ -1,18 +1,23 @@
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Button from "@mui/material/Button";
+import Stack from '@mui/material/Stack';
+
 import { styled } from '@mui/material';
-import { ButtonProps } from '.';
+
+import type { ButtonProps } from '.';
 
 export interface SolidButtonProps extends ButtonProps {
     disabled?: boolean
 }
 
-const SolidButton = styled(({ title, disabled, onClick, ...props }: SolidButtonProps) => (
-    <Stack {...props} onClick={disabled ? () => {}: onClick}>
-        <Typography variant="subtitle2" component="p" color={props.color ? String(props.color) : "white"} sx={{ margin: 0, padding: 0 }}>
-            { title }
-        </Typography>
-    </Stack>  
+const SolidButton = styled(({ button, title, ...props }: SolidButtonProps) => (
+    <Button {...button} color="primary">
+        <Stack {...props} textTransform="capitalize">
+            <Typography variant="subtitle2" component="p" color={props.color ? String(props.color) : "white"} sx={{ margin: 0, padding: 0 }}>
+                {title}
+            </Typography>
+        </Stack>
+    </Button>
 ))(({ theme, disabled }) => ({
     display: 'flex',
     justifyContent: "center",
@@ -36,7 +41,7 @@ const SolidButton = styled(({ title, disabled, onClick, ...props }: SolidButtonP
         "-moz-osx-font-smoothing": "grayscale",
         WebkitFontSmoothing: "antialiased",
 
-        transform: "scale(1.1) translateZ(0)",    
+        transform: "scale(1.1) translateZ(0)",
     },
 
     cursor: disabled === true ? 'not-allowed' : "pointer",

@@ -22,7 +22,9 @@ export {
 // Class related models
 export type { Class } from "./class"
 export interface Subject {
-    name: string
+    id: number
+    subject_name: string
+    institution_id: number
 }
 
 // Institution related models

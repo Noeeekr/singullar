@@ -1,4 +1,4 @@
-import { StackProps } from "@mui/material";
+import { ButtonBaseProps as MuiButtonProps, StackProps } from "@mui/material";
 
 import DefaultButton from "./Button";
 import PaperButton from "./Paper";
@@ -29,6 +29,8 @@ export interface ButtonProps extends ButtonLayoutProps, ButtonIconProps, StackPr
     description?: string,
 
     type?: string,
+
+    button?: MuiButtonProps
 }
 export interface ButtonsProps extends ButtonProps {
     variant?: "paper" | "button" | "solid";

@@ -31,10 +31,10 @@ export default () => {
             <Stack gap={0.5} marginTop={2}>
                 {
                     error
-                        ? <ErrorBubble err={error} />
+                        ? <ErrorBubble message={error} />
                         : response?.length
-                            ? <></>
-                            : <ErrorBubble err="Nenhuma matéria encontrada" />
+                            ? response.map((subject) => <Display title="Matéria">{subject.subject_name}</Display>)
+                            : <ErrorBubble message="Nenhuma matéria encontrada" />
                 }
                 <Stack alignItems="center" justifyContent="center">
                     <Typography variant="body2" fontWeight="300" fontSize={13}>

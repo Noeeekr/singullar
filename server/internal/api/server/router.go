@@ -38,17 +38,22 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 	r.POST("/api/auth/", handlers.SignIn) // Validate through database, create validation cookie
 	r.GET("/api/auth/", handlers.SignOut) // Delete validation cookie
 
-	// Get data
+	// Select data related
+	// Institution data related routes
 	r.GET("/api/subjects", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetSubjects)
 	r.GET("/api/dashboard", middlewares.Authenticate(models.SUPERVISOR, models.ADMIN), handlers.GetDashboard)
 	r.GET("/api/institution", middlewares.Authenticate(models.STUDENT, models.ADMIN, models.TEACHER, models.SUPERVISOR), handlers.GetInstitution)
+	// Question data related routes
 	r.GET("/api/question/list/difficulties", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.ADMIN, models.SUPERVISOR), handlers.GetQuestionListDifficulties)
 	r.GET("/api/question/list", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.SUPERVISOR, models.ADMIN), handlers.GetQuestionList)
+	// User data related routes
 	r.POST("/api/students", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetStudents)
 	r.POST("/api/users", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetUsers)
+	// Class data related rotues
 	r.POST("/api/classes", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.ADMIN, models.SUPERVISOR), handlers.GetClasses)
 
-	// Create data
+	// Create data related
+	r.POST("/api/subjects/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateSubject)
 	r.POST("/api/user/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateUser) // Institution admin creates users
 	r.POST("/api/class/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateClass)
 	r.POST("/api/question/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateQuestion)
