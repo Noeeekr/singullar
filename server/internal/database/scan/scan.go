@@ -338,7 +338,9 @@ func Institutions(institutions *[]*models.Institutions) borm.ReturnScanner {
 func Questions(questions *[]*models.Questions) borm.ReturnScanner {
 	return Scanner[models.Questions](func(r *sql.Rows) error {
 		question := models.Questions{}
-		err := r.Scan(&question.Id, &question.QuestionInstitutionId, &question.CreatedAt, &question.UpdatedAt, &question.QuestionTitle, &question.QuestionDescription, &question.QuestionShortDescription, &question.QuestionDifficultyLevel, &question.QuestionCorrectAlternative)
+		err := r.Scan(&question.Id, &question.QuestionInstitutionId, &question.CreatedAt, &question.UpdatedAt,
+			&question.QuestionTitle, &question.QuestionDescription, &question.QuestionShortDescription,
+			&question.QuestionDifficultyLevel, &question.QuestionCorrectAlternative, &question.QuestionSubjectId)
 		if err != nil {
 			return borm.ErrorDescription(borm.ErrBadConnection, "Error while scanning rows", err.Error())
 		}
@@ -373,7 +375,7 @@ func Classes(classes *[]*models.Classes) borm.ReturnScanner {
 func Subjects(subjects *[]*models.Subjects) borm.ReturnScanner {
 	return Scanner[models.Subjects](func(row *sql.Rows) error {
 		subject := models.Subjects{}
-		err := row.Scan(&subject.SubjectName, &subject.InstitutionId)
+		err := row.Scan(&subject.Id, &subject.SubjectName, &subject.InstitutionId)
 		if err != nil {
 			return borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}

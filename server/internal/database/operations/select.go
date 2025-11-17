@@ -210,11 +210,46 @@ func (ops *Operations) SelectStudents(institutionId int, options *[]FilterStuden
 func (ops *Operations) SelectSubjects(InstitutionId int) (*[]*models.Subjects, error) {
 	subjects := []*models.Subjects{}
 	query := models.TableSubjects.
-		Select("subject_name", "institution_id").
+		Select("id", "subject_name", "institution_id").
 		Scanner(scan.Subjects(&subjects))
 	query.Where(query.Field("institution_id").IsEqual(InstitutionId))
 	if err := ops.Commiter.Do(query); err != nil {
 		return nil, err
 	}
 	return &subjects, nil
+}
+
+func (ops *Operations) SelectQuestions(InstitutionId int, filters *[]*models.GetQuestionRequest) (*[]*models.Questions, error) {
+	questions := &[]*models.Questions{}
+	query := models.TableQuestions.
+		Select("id", "question_institution_id", "created_at", "updated_at", "question_title",
+			"question_description", "question_short_description", "question_difficulty_level",
+			"question_correct_alternative", "question_subject_id").
+		Scanner(scan.Questions(questions))
+
+	composed_conditionals := make([]*borm.ConditionalQuery, len(*filters))
+	for i, filter := range *filters {
+		conditions := []*borm.ConditionalQuery{}
+		if filter.QuestionTitle != nil {
+			conditions = append(conditions, query.Field("question_title").IsLike("%"+*filter.QuestionTitle+"%", false))
+		}
+		if filter.QuestionDifficultyLevel != nil {
+			conditions = append(conditions, query.Field("question_difficulty_level").IsEqual(*filter.QuestionDifficultyLevel))
+		}
+		if filter.QuestionSubjectId != nil {
+			conditions = append(conditions, query.Field("question_subject_id").IsEqual(*filter.QuestionSubjectId))
+		}
+
+		composed_conditionals[i] = query.Compose(query.And(conditions...))
+	}
+	// WHERE (a = a0, b = b0, c = c0) OR (a = a1, b = b1, c = c1) OR ...
+	query.Where(query.And(
+		query.Field("question_institution_id").IsEqual(InstitutionId),
+		query.Compose(query.Or(composed_conditionals...)),
+	))
+
+	if err := ops.Do(query); err != nil {
+		return nil, err
+	}
+	return questions, nil
 }

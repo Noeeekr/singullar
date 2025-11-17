@@ -88,7 +88,7 @@ func (ops *Operations) InsertClassStudents(classId int, studentsIds *[]int) erro
 func (ops *Operations) InsertSubject(institutionId int, subject *models.CreateSubjectsRequest) (*models.Subjects, error) {
 	subjects := []*models.Subjects{}
 	query := models.TableSubjects.
-		Select("subject_name", "institution_id").
+		Select("id", "subject_name", "institution_id").
 		Scanner(scan.Subjects(&subjects)).
 		ThrowErrorOnFound()
 	query.Where(query.And(
@@ -107,7 +107,7 @@ func (ops *Operations) InsertSubject(institutionId int, subject *models.CreateSu
 	query = models.TableSubjects.
 		Insert("subject_name", "institution_id").
 		Values(subject.SubjectName, institutionId).
-		Returning("subject_name", "institution_id").
+		Returning("id", "subject_name", "institution_id").
 		Scanner(scan.Subjects(&subjects))
 	if err := ops.currentTransction.Do(query); err != nil {
 		return nil, err
@@ -123,12 +123,13 @@ func (ops *Operations) InsertQuestion(institutionId int, question *models.Create
 
 	err = ops.currentTransction.Do(
 		models.TableQuestions.
-			Insert("question_institution_id", "created_at", "updated_at", "question_title", "question_description", "question_short_description", "question_difficulty_level", "question_correct_alternative").
+			Insert("question_institution_id", "created_at", "updated_at", "question_title", "question_description", "question_short_description", "question_difficulty_level", "question_correct_alternative", "question_subject_id").
 			// Listen, I know questionDifficultyLevel needs to be checked agaisn't database to see if it as existing one and not an custom number, but wtv, it's not worth it.
-			Values(institutionId, time.Now(), time.Now(), question.QuestionTitle, question.QuestionDescription, question.QuestionShortDescription, question.QuestionDifficultyLevel, question.QuestionCorrectAlternative).
-			Returning("id", "question_institution_id", "created_at", "updated_at", "question_title", "question_description", "question_short_description", "question_difficulty_level", "question_correct_alternative").
+			Values(institutionId, time.Now(), time.Now(), question.QuestionTitle, question.QuestionDescription, question.QuestionShortDescription, question.QuestionDifficultyLevel, question.QuestionCorrectAlternative, question.QuestionSubjectId).
+			Returning("id", "question_institution_id", "created_at", "updated_at", "question_title", "question_description", "question_short_description", "question_difficulty_level", "question_correct_alternative", "question_subject_id").
 			Scanner(scan.Questions(&questions)),
 	)
+
 	if err != nil {
 		return nil, err
 	}

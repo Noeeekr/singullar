@@ -13,6 +13,7 @@ type CreateSubjects struct {
 
 // Request with database populated fields
 type Subjects struct {
+	ID
 	CreateSubjects
 }
 
