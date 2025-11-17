@@ -18,11 +18,12 @@ import { SERVER_ADDR } from "../../../../../../configs"
 
 // Models
 import type { StackProps } from "@mui/material/Stack"
-import type { QuestionListDifficulty } from "@models/server"
+import type { QuestionListDifficulty, Subject } from "@models/server"
+import { QuestionRequest } from "./Search"
 
 export interface QuestionFilters {
     question_name?: string
-    question_subject?: string
+    question_subject_id?: string
     question_difficulty_level?: number
 }
 
@@ -30,19 +31,23 @@ export interface QuestionFilterProps extends StackProps {
     onParentClick: (cb: () => void) => void
 }
 
-export const QuestionFilterContext = createContext<QuestionFilters>({})
+export const QuestionFilterContext = createContext<QuestionRequest>({})
 
 export default function ({ children, onParentClick, ...props }: QuestionFilterProps): JSX.Element {
-    const { register, getValues, control } = useForm<QuestionFilters>()
-    const [formValue, setFormValue] = useState<QuestionFilters>({})
+    const { register, control, getValues } = useForm<QuestionFilters>({ defaultValues: {
+        question_difficulty_level: undefined,
+        question_name: undefined,
+        question_subject_id: undefined,
+    }})
+    const [formValue, setFormValue] = useState<QuestionRequest>({ filters: [] })
 
     useEffect(() => {
         if (onParentClick) onParentClick(() => () => {
-            setFormValue(getValues())
+            setFormValue({ filters: [getValues()] })
         })
     }, [])
 
-    const { response, send } = useContextAwareFetch<QuestionListDifficulty[]>(
+    const { response: difficulties, send: sendDifficultiesRequest } = useContextAwareFetch<QuestionListDifficulty[]>(
         `${SERVER_ADDR}/api/question/list/difficulties`,
         {
             method: "GET",
@@ -53,8 +58,21 @@ export default function ({ children, onParentClick, ...props }: QuestionFilterPr
         }
     )
 
+
+    const { response: subjects, send: sendSubjectsRequest } = useContextAwareFetch<Subject[]>(
+        `${SERVER_ADDR}/api/subjects`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+        }
+    )
+
     useEffect(() => {
-        send()
+        sendDifficultiesRequest()
+        sendSubjectsRequest()
     }, [])
 
     return (
@@ -78,8 +96,8 @@ export default function ({ children, onParentClick, ...props }: QuestionFilterPr
                                         label="Dificuldade da questão"
                                         value={field.value ? field.value : ""}
                                     >
-                                        <MenuItem value={undefined}>Selecione a dificuldade</MenuItem>
-                                        {response?.map((difficulty) => (
+                                        <MenuItem value={""}>Selecione a dificuldade</MenuItem>
+                                        {difficulties?.map((difficulty) => (
                                             <MenuItem key={difficulty.question_difficulty_level} value={difficulty.question_difficulty_level}>{difficulty.question_difficulty_name}</MenuItem>
                                         ))}
                                     </Select>
@@ -92,10 +110,21 @@ export default function ({ children, onParentClick, ...props }: QuestionFilterPr
                             <InputLabel htmlFor="questions-search-subject-outlined-input">
                                 Matéria
                             </InputLabel>
-                            <OutlinedInput
-                                label="Matéria"
-                                {...register("question_subject")}
-                                id="questions-search-subject-outlined-input"
+                            <Controller
+                                name="question_subject_id"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        {...field}
+                                        label="Matéria"
+                                        id="questions-search-subject-outlined-input"
+                                    >
+                                        <MenuItem value={undefined}>Escolha uma matéria</MenuItem>
+                                        {
+                                            subjects?.map((subject, i) => <MenuItem key={i} value={subject.id}>{subject.subject_name} </MenuItem>)
+                                        }
+                                    </Select>
+                                )}
                             />
                         </FormControl>
                     </Grid>

@@ -7,8 +7,10 @@ export interface QuestionListDifficulty {
 
 export interface Question extends DefaultFields {
     status: string // [Incomplete, Completed, Started]
-    title: string
-    description: string
-    
+    question_title: string
+    question_short_description: string
+    question_description: string
+    question_difficulty_level: number
+    question_institution_id: number
     difficulty_level: number
 }

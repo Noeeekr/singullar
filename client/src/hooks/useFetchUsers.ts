@@ -2,8 +2,8 @@ import { SERVER_ADDR } from "../configs";
 
 import useContextAwareFetch from "./useContextAwareFetch";
 
-import type { Response } from "./useContextAwareFetch";
-import type { User, UserRoles } from "../models/server/server";
+import type { ResponseUtilities } from "./useContextAwareFetch";
+import type { User, UserRoles } from "@models/server";
 
 interface UserRequest {
 	"accepted_roles"?:   UserRoles[]
@@ -15,7 +15,7 @@ interface UserFilter {
 }
 
 // Role argument must be memoized or declared outside components to avoid unnecessary re-renders.
-function useFetchUsers(): Response<User[], UserRequest> {
+function useFetchUsers(): ResponseUtilities<User[], UserRequest> {
     return useContextAwareFetch<User[], UserRequest>(
         `${SERVER_ADDR}/api/users`,
         {

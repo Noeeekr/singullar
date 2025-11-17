@@ -149,7 +149,7 @@ const CreatePage = (): JSX.Element => {
                             }}>
                                 {
                                     error != ""
-                                        ? <ErrorBubble err={`Ocorreu um erro ao procurar os usuários. Por favor tente novamente mais tarde.`} />
+                                        ? <ErrorBubble message="Ocorreu um erro ao procurar os usuários. Por favor tente novamente mais tarde." />
                                         : <></>
                                 }
                                 {

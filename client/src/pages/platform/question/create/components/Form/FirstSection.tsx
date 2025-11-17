@@ -1,7 +1,6 @@
 // Components
 import OutlinedInput from "@mui/material/OutlinedInput"
 import FormControl from "@mui/material/FormControl"
-import Typography from "@mui/material/Typography"
 import InputLabel from "@mui/material/InputLabel"
 import Stack from "@mui/material/Stack"
 import Grid from "@mui/material/Grid2"
@@ -13,11 +12,13 @@ import { createContext, useEffect } from "react"
 import { Controller, useForm } from "react-hook-form"
 import useContextAwareFetch, { defaultRequestInit } from "@hooks/useContextAwareFetch"
 import { SERVER_ADDR } from "@components/../configs"
-import { QuestionListDifficulty } from "@models/server"
+import { QuestionListDifficulty, Subject } from "@models/server"
 import { MenuItem, Select } from "@mui/material"
+import BoldTitle from "@components/titles/BoldTitle"
 
 export interface FirstSectionContextProps {
     question_title?: string
+    question_subject_id?: number
     question_difficulty_level?: number
 }
 
@@ -35,7 +36,7 @@ export default function ({
         }
     })
 
-    const { response, send } = useContextAwareFetch<QuestionListDifficulty[]>(
+    const { response: difficulties, send: sendDifficultiesRequest } = useContextAwareFetch<QuestionListDifficulty[]>(
         `${SERVER_ADDR}/api/question/list/difficulties`,
         defaultRequestInit,
     )
@@ -43,8 +44,21 @@ export default function ({
     const questionTitle = watch("question_title")
     const difficultyLevel = watch("question_difficulty_level")
 
+    const { response: subjects, send: sendSubjectsRequest } = useContextAwareFetch<Subject[]>(
+        `${SERVER_ADDR}/api/subjects`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+        }
+    )
+    
+    console.log(subjects)
     useEffect(() => {
-        send()
+        sendDifficultiesRequest()
+        sendSubjectsRequest()
     }, [])
 
     useEffect(() => {
@@ -57,9 +71,9 @@ export default function ({
 
     return (
         <Grid container spacing={2}>
-            <Grid size={6}>
+            <Grid size={12}>
                 <Stack gap={1}>
-                    <Typography fontWeight="bold" color="grey" component="p">TITULO</Typography>
+                    <BoldTitle>Titulo</BoldTitle>
                     <FormControl>
                         <InputLabel htmlFor="create-question-title-outlined-input">
                             Insira o titulo da questão
@@ -77,14 +91,42 @@ export default function ({
             </Grid>
             <Grid size={6}>
                 <Stack gap={1}>
-                    <Typography fontWeight="bold" color="grey" component="p">DIFICULDADE</Typography>
+                    <BoldTitle>Matéria</BoldTitle>
+                    <FormControl>
+                        <InputLabel htmlFor="questions-search-subject-outlined-input">
+                            Matéria
+                        </InputLabel>
+                        <Controller
+                            name="question_subject_id"
+                            control={control}
+                            rules={{ required: true }}
+                            render={({ field }) => (
+                                <Select
+                                    required={true}
+                                    {...field}
+                                    label="Matéria"
+                                    id="questions-search-subject-outlined-input"
+                                >
+                                    <MenuItem value={undefined}>Escolha uma matéria</MenuItem>
+                                    {
+                                        subjects?.map((subject) => <MenuItem value={subject.id}>{subject.subject_name} </MenuItem>)
+                                    }
+                                </Select>
+                            )}
+                        />
+                    </FormControl>
+                </Stack>
+            </Grid>
+            <Grid size={6}>
+                <Stack gap={1}>
+                    <BoldTitle>Dificuldade</BoldTitle>
                     <FormControl>
                         <InputLabel htmlFor="create-question-difficulty-outlined-input">
                             Dificuldade da questão
                         </InputLabel>
                         <Controller
                             name="question_difficulty_level"
-                            rules={{ required: true, validate: (v) => v != undefined}}
+                            rules={{ required: true, validate: (v) => v != undefined }}
                             control={control}
                             render={({ field }) => (
                                 <Select
@@ -94,7 +136,7 @@ export default function ({
                                     value={field.value ? field.value : ""}
                                 >
                                     <MenuItem value={undefined}>Selecione a dificuldade</MenuItem>
-                                    {response?.map((difficulty) => (
+                                    {difficulties?.map((difficulty) => (
                                         <MenuItem key={difficulty.question_difficulty_level} value={difficulty.question_difficulty_level}>{difficulty.question_difficulty_name}</MenuItem>
                                     ))}
                                 </Select>

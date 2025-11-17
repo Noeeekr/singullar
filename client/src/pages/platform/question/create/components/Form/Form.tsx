@@ -23,9 +23,9 @@ const sections = [
 
         context: FirstSectionContext,
         defaultValues: {
-            question_title: undefined as string | undefined,
-            question_difficulty_level: undefined as number | undefined,
-        }
+            question_title: undefined,
+            question_difficulty_level: undefined,
+        } as FirstSectionContextProps
     },
     {
         content: SecondSection,
@@ -37,7 +37,7 @@ const sections = [
             question_short_description: undefined as undefined | string,
             question_description: undefined as undefined | string,
             alternatives: [] as string[] | undefined
-        }
+        } as SecondSectionContextProps
     },
 ]
 
@@ -82,7 +82,7 @@ export default function (): JSX.Element {
     return (
         <div>
             <MultiStepForm sections={sections} onSubmit={onSubmit} headers={headers} />
-            <ErrorBubble err={error} />
+            <ErrorBubble message={error} />
             {
                 operationHistory.length == 0
                     ? <></>

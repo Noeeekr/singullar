@@ -14,7 +14,11 @@ import { PopupProps } from '.'
 // Icons
 const CloseRounded = lazy(() => import("@mui/icons-material/CloseRounded"))
 
-const ShadowBackground = styled(Box)(({ isOpen }: { isOpen: boolean }) => ({
+export interface ShadowBackgroundProps extends BoxProps {
+    isOpen?: boolean
+}
+
+const ShadowBackground = styled(({ isOpen, ...props }: ShadowBackgroundProps) => <Box {...props}></Box>)(({ isOpen }: { isOpen: boolean }) => ({
     position: 'absolute',
     top: '0',
     left: '0',
@@ -30,7 +34,11 @@ const ShadowBackground = styled(Box)(({ isOpen }: { isOpen: boolean }) => ({
     pointerEvents: isOpen ? 'all' : 'none',
 }))
 
-const SidePopupWrapper = styled(({ children, ...props }: BoxProps & { isOpen?: boolean }) => <>
+export interface SidePopupWrapperProps extends BoxProps {
+    isOpen?: boolean
+}
+
+const SidePopupWrapper = styled(({ children, isOpen, ...props }:SidePopupWrapperProps) => <>
     <Box {...props}>
         {children}
     </Box>
@@ -59,13 +67,8 @@ const SidePopup = ({
 }: PopupProps & BoxProps) => {
     return (
         <>
-            <ShadowBackground
-                isOpen={isOpen || false}
-                onClick={onClose}
-            />
-            <SidePopupWrapper
-                isOpen={isOpen}
-            >
+            <ShadowBackground onClick={onClose} isOpen={isOpen ? isOpen : false}/>
+            <SidePopupWrapper isOpen={isOpen}>
                 <Stack
                     direction="row"
                     justifyContent="space-between"

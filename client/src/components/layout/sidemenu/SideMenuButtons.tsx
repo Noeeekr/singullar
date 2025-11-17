@@ -32,7 +32,7 @@ const SideMenuButtons = ({
     return (
         <Fragment>
             { Boolean(title) && !isOpen && <Divider /> }
-                <Stack component="ul" sx={{ WebkitUserSelect: 'none', userSelect: 'none', msUserSelect: 'none' }} gap={props.gap ? props.gap : 0.5} {...props}>
+                <Stack component="ul" sx={{ WebkitUserSelect: 'none', userSelect: 'none', msUserSelect: 'none' }} gap={props.gap ? props.gap : 0.5}>
                 { isOpen && title && <SectionTitle sx={{ fontSize: 14 }}>{title}</SectionTitle> }
                     {
                         menus && menus.map((item) => {

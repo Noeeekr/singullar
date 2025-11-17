@@ -15,7 +15,13 @@ export interface MultiStepFormHeaderProps extends StepperProps {
     headers: SectionHeader[]
 }
 
-const Icon = styled(Check)<{ ownerState: { completed?: boolean, active?: boolean } }>(({ theme }) => ({
+export interface IconProps {
+    ownerState: { completed?: boolean, active?: boolean }
+}
+
+const Icon = styled(({ ownerState, ...props }: IconProps) => (
+    <Check {...props} />
+))(({ theme }) => ({
     backgroundColor: "rgba(0,0,0,0.1)",
     padding: "0.2rem",
     borderRadius: "50%",
@@ -48,7 +54,7 @@ export default function ({ headers, ...props }: MultiStepFormHeaderProps): JSX.E
                 headers.map(({ label, icon }) => (
                     <Step>
                         <StepLabel slots={{ stepIcon: icon ? icon : Icon }}>
-                            { label }
+                            {label}
                         </StepLabel>
                     </Step>
                 ))

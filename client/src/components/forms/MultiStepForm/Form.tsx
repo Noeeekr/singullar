@@ -101,7 +101,6 @@ export default function<Sections extends MultiStepFormSectionProps<any>[]>({
 
     const handleSubmit = useCallback(() => {
         onSubmit(form)
-        return
         setDisabled(true)
         setForm({})
         setActiveStep(0)

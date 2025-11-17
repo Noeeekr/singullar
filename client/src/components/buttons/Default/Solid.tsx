@@ -10,9 +10,12 @@ export interface SolidButtonProps extends ButtonProps {
     disabled?: boolean
 }
 
-const SolidButton = styled(({ button, title, ...props }: SolidButtonProps) => (
-    <Button {...button} color="primary">
-        <Stack {...props} textTransform="capitalize">
+const SolidButton = styled(({ button, title, onClick, disabled, ...props }: SolidButtonProps) => (
+    <Button {...button} disabled={disabled} color="primary">
+        <Stack {...props} onClick={(e) => {
+            if (disabled) return;
+            if (onClick) onClick(e)
+        }} textTransform="capitalize">
             <Typography variant="subtitle2" component="p" color={props.color ? String(props.color) : "white"} sx={{ margin: 0, padding: 0 }}>
                 {title}
             </Typography>
@@ -38,7 +41,7 @@ const SolidButton = styled(({ button, title, ...props }: SolidButtonProps) => (
 
     transition: "transform 150ms linear",
     '&:hover': disabled === true ? {} : {
-        "-moz-osx-font-smoothing": "grayscale",
+        MozOsxFontSmoothing: "grayscale",
         WebkitFontSmoothing: "antialiased",
 
         transform: "scale(1.1) translateZ(0)",

@@ -6,7 +6,13 @@ import Step from "@mui/material/Step"
 // Features
 import { styled } from "@mui/material"
 
-const Icon = styled(Check)<{ ownerState: { completed?: boolean, active?: boolean } }>(({ theme }) => ({
+export interface IconProps {
+    ownerState: { active: boolean, completed: boolean }
+}
+
+const Icon = styled(({ ownerState, ...props }: IconProps) => (
+    <Check {...props} />
+))(({ theme }) => ({
     backgroundColor: "rgba(0,0,0,0.1)",
     padding: "0.2rem",
     borderRadius: "50%",
@@ -34,7 +40,7 @@ const Icon = styled(Check)<{ ownerState: { completed?: boolean, active?: boolean
 
 export default function ({ ...props }: StepperProps): JSX.Element {
     return (
-        <Stepper alternativeLabel { ...props }>
+        <Stepper alternativeLabel {...props}>
             <Step>
                 <StepLabel slots={{ stepIcon: Icon }}>
                     Informações básicas

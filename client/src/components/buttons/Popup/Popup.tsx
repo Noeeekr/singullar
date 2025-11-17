@@ -38,6 +38,7 @@ const PopupButton = ({
     fontWeight,
     fontSize,
     iconVariant,
+    isCorner,
     ...props
 }: PopupButtonProps) => {
     const [isOpen, setIsOpen] = useState(false)

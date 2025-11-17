@@ -45,6 +45,7 @@ export default function ({ }: { title: string }): JSX.Element {
     useEffect(() => {
         send()
     }, [])
+    
     return (
         <Grid container spacing={2}>
             <Grid size={6}>

@@ -10,7 +10,7 @@ import {
 import type { PopupIconLabelProps, PopupIconProps } from "../../popups"
 import { cloneElement } from 'react'
 
-const Label = styled(({ children, title, ...props }: PopupIconLabelProps & StackProps) => (
+const Label = styled(({ children, isCorner, title, ...props }: PopupIconLabelProps & StackProps) => (
     <Box {...props}>
         <Typography
             color="primary.main"

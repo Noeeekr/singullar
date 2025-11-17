@@ -33,7 +33,7 @@ export default () => {
                     error
                         ? <ErrorBubble message={error} />
                         : response?.length
-                            ? response.map((subject) => <Display title="Matéria">{subject.subject_name}</Display>)
+                            ? response.map((subject, i) => <Display key={i} title="Matéria">{subject.subject_name}</Display>)
                             : <ErrorBubble message="Nenhuma matéria encontrada" />
                 }
                 <Stack alignItems="center" justifyContent="center">
