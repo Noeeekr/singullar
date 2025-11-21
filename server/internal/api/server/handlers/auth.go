@@ -20,7 +20,7 @@ import (
 //	borm.ErrNotFound
 //	bcrypt.ErrMismatchedPasswords
 func (h *Handlers) checkUserPassword(email string, password string) (*models.Users, common.ResponseStatus, error) {
-	user, err := h.databaseOperations.SelectUserByEmail(email)
+	user, err := h.databaseManager.SelectUserByEmail(email)
 	if err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			return nil, common.StatusNotFound, err

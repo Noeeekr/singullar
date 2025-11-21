@@ -7,8 +7,8 @@ import (
 	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common/environment"
 	"github.com/Noeeekr/singullar/server/common/logs"
+	"github.com/Noeeekr/singullar/server/internal/database/manager"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
-	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -48,10 +48,10 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 		if err != nil {
 			logs.Error.Fatal(err)
 		}
-		ops := operations.New(commiter)
+		databaseManager := manager.New(commiter)
 
 		// CHECK IF USER EXISTS
-		if _, err := ops.SelectUserByEmail(email); err == nil {
+		if _, err := databaseManager.SelectUserByEmail(email); err == nil {
 			fmt.Println("User with specified email already exists, please choose other.")
 			return
 		} else if !errors.Is(err, borm.ErrNotFound) {
@@ -60,14 +60,14 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 		}
 
 		// CREATE INSTITUTION
-		institution := operations.CreateInstitutionRequest(name, string(psswd), email)
+		institution := manager.CreateInstitutionRequest(name, string(psswd), email)
 
-		err = ops.StartTransaction()
+		operator, err := databaseManager.NewTransactionOperator()
 		if err != nil {
 			logs.Error.Fatal(err)
 		}
 
-		users, err := ops.InsertInstitutions(institution)
+		users, err := operator.InsertInstitutions(institution)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -82,7 +82,7 @@ var InstitutionCmd *cobra.Command = &cobra.Command{
 			}
 		}
 
-		err = ops.CommitTransaction()
+		err = operator.Commit()
 		if err != nil {
 			fmt.Println(err)
 			return

@@ -1,4 +1,4 @@
-package operations
+package manager
 
 import (
 	"errors"
@@ -19,7 +19,7 @@ type FilterClassesOptions struct {
 	CreationYear *time.Time           `json:"creation_year"`
 }
 
-func (ops *Operations) SelectClasses(institutionId int, filters ...*FilterClassesOptions) (*[]*models.Classes, error) {
+func (ops *DatabaseManager) SelectClasses(institutionId int, filters ...*FilterClassesOptions) (*[]*models.Classes, error) {
 	classes := &[]*models.Classes{}
 
 	query := models.TableClasses.
@@ -38,7 +38,7 @@ func (ops *Operations) SelectClasses(institutionId int, filters ...*FilterClasse
 	}
 	return classes, nil
 }
-func (ops *Operations) SelectNotificationsByTargetId(id int) (*[]*models.Notifications, error) {
+func (ops *DatabaseManager) SelectNotificationsByTargetId(id int) (*[]*models.Notifications, error) {
 	var notifications []*models.Notifications
 	query := models.TableNotificationContents.
 		Select("n.created_at", "n.updated_at", "n.deleted_at", "u.id", "u.name", "n.id", "n.title", "n.description").As("n").
@@ -51,7 +51,7 @@ func (ops *Operations) SelectNotificationsByTargetId(id int) (*[]*models.Notific
 }
 
 // Returns ErrNotFound, ErrSyntax, ErrFailedTransaction
-func (ops *Operations) SelectUserByEmail(emails ...string) ([]*models.Users, error) {
+func (ops *DatabaseManager) SelectUserByEmail(emails ...string) ([]*models.Users, error) {
 	var users []*models.Users
 	var emailList []any = make([]any, len(emails))
 	for i, v := range emails {
@@ -68,7 +68,7 @@ func (ops *Operations) SelectUserByEmail(emails ...string) ([]*models.Users, err
 	return users, nil
 }
 
-func (ops *Operations) SelectUsersById(institutionId int, ids ...int) ([]*models.Users, error) {
+func (ops *DatabaseManager) SelectUsersById(institutionId int, ids ...int) ([]*models.Users, error) {
 	var users []*models.Users
 	var idList []any = make([]any, len(ids))
 	for i, v := range ids {
@@ -91,7 +91,7 @@ func (ops *Operations) SelectUsersById(institutionId int, ids ...int) ([]*models
 	return users, nil
 }
 
-func (ops *Operations) SelectInstitutionByName(name string) (*models.Institutions, error) {
+func (ops *DatabaseManager) SelectInstitutionByName(name string) (*models.Institutions, error) {
 	var insts []*models.Institutions
 	query := models.TableInstitutions.
 		Select("i.created_at", "i.updated_at", "i.deleted_at", "i.name", "i.id").As("i").
@@ -103,7 +103,7 @@ func (ops *Operations) SelectInstitutionByName(name string) (*models.Institution
 	}
 	return insts[0], nil
 }
-func (ops *Operations) SelectInstitutionById(id int) (*models.Institutions, error) {
+func (ops *DatabaseManager) SelectInstitutionById(id int) (*models.Institutions, error) {
 	var insts []*models.Institutions = []*models.Institutions{}
 	query := models.TableInstitutions.
 		Select("i.created_at", "i.updated_at", "i.deleted_at", "i.name", "i.id").As("i").
@@ -126,7 +126,7 @@ type SelectUsersFilterOptions struct {
 }
 
 // Returns an empty array if no users were found. Hashed Password is returned and must be removed
-func (ops *Operations) SelectUsers(institutionId int, request *SelectUsersOptions) ([]*models.Users, error) {
+func (ops *DatabaseManager) SelectUsers(institutionId int, request *SelectUsersOptions) ([]*models.Users, error) {
 	users := []*models.Users{}
 	query := models.TableUsers.
 		Select("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
@@ -178,7 +178,7 @@ type FilterStudentOptions struct {
 }
 
 // Returns an empty array if no users were found. Hashed Password is returned and must be removed. Default values will be ignored in search, expect for segment.
-func (ops *Operations) SelectStudents(institutionId int, options *[]FilterStudentOptions, includePassword bool) ([]*models.Users, error) {
+func (ops *DatabaseManager) SelectStudents(institutionId int, options *[]FilterStudentOptions, includePassword bool) ([]*models.Users, error) {
 	users := []*models.Users{}
 	query := models.TableUsers.
 		SelectDistinct("u.created_at", "u.updated_at", "u.deleted_at", "u.name", "u.email", "u.password", "u.institution_id", "u.role", "u.id", "u.profile_picture", "u.segment").As("u").
@@ -207,7 +207,7 @@ func (ops *Operations) SelectStudents(institutionId int, options *[]FilterStuden
 	return users, nil
 }
 
-func (ops *Operations) SelectSubjects(InstitutionId int) (*[]*models.Subjects, error) {
+func (ops *DatabaseManager) SelectSubjects(InstitutionId int) (*[]*models.Subjects, error) {
 	subjects := []*models.Subjects{}
 	query := models.TableSubjects.
 		Select("id", "subject_name", "institution_id").
@@ -219,7 +219,7 @@ func (ops *Operations) SelectSubjects(InstitutionId int) (*[]*models.Subjects, e
 	return &subjects, nil
 }
 
-func (ops *Operations) SelectQuestions(InstitutionId int, filters *[]*models.GetQuestionRequest) (*[]*models.Questions, error) {
+func (ops *DatabaseManager) SelectQuestions(InstitutionId int, filters *[]*models.GetQuestionRequest) (*[]*models.Questions, error) {
 	questions := &[]*models.Questions{}
 	query := models.TableQuestions.
 		Select("id", "question_institution_id", "created_at", "updated_at", "question_title",

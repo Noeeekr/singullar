@@ -11,8 +11,8 @@ import (
 	"github.com/Noeeekr/singullar/server/internal/api/server/handlers"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
 	"github.com/Noeeekr/singullar/server/internal/common/commandutil"
+	"github.com/Noeeekr/singullar/server/internal/database/manager"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
-	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/gin-gonic/gin"
 
 	"github.com/Noeeekr/singullar/server/internal/database/cmd/migrate"
@@ -78,8 +78,8 @@ func start(domain, port, mode string) error {
 		return err.ParseToError()
 	}
 
-	operator := operations.New(commiter)
-	handlers := handlers.New(operator, &env)
+	manager := manager.New(commiter)
+	handlers := handlers.New(manager, &env)
 	router, err := server.PrepareRouter(handlers, &env)
 	if err != nil {
 		return err

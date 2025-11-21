@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/Noeeekr/borm"
@@ -23,7 +22,7 @@ func (h *Handlers) GetQuestionListDifficulties(ctx *gin.Context) {
 		Scanner(scan.QuestionDifficulties(&difficulties)).
 		OrderAscending("difficulty_level")
 
-	if err := h.databaseOperations.Do(query); err != nil {
+	if err := h.databaseManager.Do(query); err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusOK, types.NewServerResponse([]any{}))
 			return
@@ -47,7 +46,7 @@ func (h *Handlers) GetQuestions(ctx *gin.Context) {
 		return
 	}
 
-	questions, err := h.databaseOperations.SelectQuestions(requester.InstitutionId, filters.Filters)
+	questions, err := h.databaseManager.SelectQuestions(requester.InstitutionId, filters.Filters)
 	if err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusOK, types.NewServerResponse([]any{}))
@@ -56,6 +55,7 @@ func (h *Handlers) GetQuestions(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao procurar questões"))
 		return
 	}
+
 	ctx.JSON(http.StatusCreated, types.NewServerResponse(questions))
 }
 
@@ -67,14 +67,24 @@ func (h *Handlers) CreateQuestionList(ctx *gin.Context) {
 		return
 	}
 
-	list, err := h.databaseOperations.InsertQuestionList(requester.Id, request)
+	operator, err := h.databaseManager.NewTransactionOperator()
+	if err != nil {
+		h.internalError(ctx, "Falha ao executar transação", err)
+		return
+	}
+
+	list, err := operator.InsertQuestionList(requester.Id, request)
 	if err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusNotAcceptable, types.NewFailedResponse("Falha ao encontrar as questões selecionadas"))
 			return
 		}
-		fmt.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, types.NewFailedResponse("Falha ao criar a lista de questões"))
+		return
+	}
+
+	if err = operator.Commit(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.NewFailedResponse("Falha ao salvar mudanças"))
 		return
 	}
 
@@ -90,10 +100,22 @@ func (h *Handlers) CreateQuestion(ctx *gin.Context) {
 		return
 	}
 
-	question, err := h.databaseOperations.InsertQuestion(requester.InstitutionId, request)
+	operator, err := h.databaseManager.NewTransactionOperator()
+	if err != nil {
+		h.internalError(ctx, "Falha ao executar transação", err)
+		return
+	}
+
+	question, err := operator.InsertQuestion(requester.InstitutionId, request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao criar a questão"))
 		return
 	}
+
+	if err = operator.Commit(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.NewFailedResponse("Falha ao salvar mudanças"))
+		return
+	}
+
 	ctx.JSON(http.StatusCreated, types.NewServerResponse(question))
 }

@@ -4,8 +4,8 @@ import (
 	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common/environment"
 	"github.com/Noeeekr/singullar/server/common/logs"
+	"github.com/Noeeekr/singullar/server/internal/database/manager"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
-	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/Noeeekr/singullar/server/internal/database/seeder"
 	"github.com/spf13/cobra"
 )
@@ -49,40 +49,41 @@ func seedInstitution(email, password string) error {
 		return err
 	}
 
-	ops := operations.New(commiter)
-	if err := ops.StartTransaction(); err != nil {
+	manager := manager.New(commiter)
+	operator, err := manager.NewTransactionOperator()
+	if err != nil {
 		return err
 	}
 
-	admin, err := InsertInstitution(ops, institutionRequest)
+	admin, err := InsertInstitution(operator, institutionRequest)
 	if err != nil {
 		logs.Error.Fatal(err)
 	}
 
-	teachers, studentIds, err := InsertUsers(ops, admin.InstitutionId)
+	teachers, studentIds, err := InsertUsers(operator, admin.InstitutionId)
 	if err != nil {
 		logs.Error.Fatal(err)
 	}
 
-	err = InsertNotifications(ops, teachers, studentIds)
+	err = InsertNotifications(operator, teachers, studentIds)
 	if err != nil {
 		logs.Error.Fatal(err)
 	}
-	return ops.CommitTransaction()
+	return operator.Commit()
 }
-func InsertInstitution(ops *operations.Operations, r *models.CreateInstitutions) (*models.Users, error) {
+func InsertInstitution(operator *manager.Operator, r *models.CreateInstitutions) (*models.Users, error) {
 	// Create institution
-	admins, err := ops.InsertInstitutions(r)
+	admins, err := operator.InsertInstitutions(r)
 	if err != nil {
 		return nil, err
 	}
 	return admins[0], nil
 }
-func InsertUsers(ops *operations.Operations, institutionId int) (teachers []*models.Users, studentIds []int, err error) {
+func InsertUsers(operator *manager.Operator, institutionId int) (teachers []*models.Users, studentIds []int, err error) {
 	// Create students, teachers and supervisors
 	createdUsers := seeder.CreateUserRequests(10, institutionId)
 
-	users, err := ops.InsertManyUsers(createdUsers...)
+	users, err := operator.InsertManyUsers(createdUsers...)
 	if err != nil {
 		return teachers, studentIds, err
 	}
@@ -98,19 +99,19 @@ func InsertUsers(ops *operations.Operations, institutionId int) (teachers []*mod
 
 	return teachers, studentIds, err
 }
-func InsertNotifications(ops *operations.Operations, teachers []*models.Users, studentIds []int) error {
-	notificationRequests := []*operations.NotificationRequest{}
+func InsertNotifications(operator *manager.Operator, teachers []*models.Users, studentIds []int) error {
+	notificationRequests := []*manager.NotificationRequest{}
 	// Iterate over the teachers creations 10 notifications for each
 	for _, teacher := range teachers {
 		// Iterate over all notifications appending them to all users
 		notificationContentRequests := seeder.CreateNotificationContentRequests(10, teacher.Id)
 		for _, notificationContentRequest := range notificationContentRequests {
 			usersNotificationsRequests := seeder.CreateUsersNotificationsRequests(models.STUDENT, studentIds...)
-			notificationRequest := operations.CreateNotificationRequest(notificationContentRequest, usersNotificationsRequests)
+			notificationRequest := manager.CreateNotificationRequest(notificationContentRequest, usersNotificationsRequests)
 			notificationRequests = append(notificationRequests, notificationRequest)
 		}
 	}
-	_, err := ops.InsertNotifications(notificationRequests...)
+	_, err := operator.InsertNotifications(notificationRequests...)
 	if err != nil {
 		return err
 	}

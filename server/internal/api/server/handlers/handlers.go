@@ -12,8 +12,8 @@ import (
 	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common/logs"
 	"github.com/Noeeekr/singullar/server/internal/api/types"
+	"github.com/Noeeekr/singullar/server/internal/database/manager"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
-	"github.com/Noeeekr/singullar/server/internal/database/operations"
 	"github.com/Noeeekr/singullar/server/internal/database/scan"
 )
 
@@ -21,16 +21,16 @@ type Handlers struct {
 	LogInfo *log.Logger
 	LogErr  *log.Logger
 
-	databaseOperations *operations.Operations
+	databaseManager *manager.DatabaseManager
 
 	*types.Environment
 }
 
-func New(ops *operations.Operations, env *types.Environment) *Handlers {
+func New(manager *manager.DatabaseManager, env *types.Environment) *Handlers {
 	return &Handlers{
-		LogInfo:            logs.Info,
-		LogErr:             logs.Error,
-		databaseOperations: ops,
+		LogInfo:         logs.Info,
+		LogErr:          logs.Error,
+		databaseManager: manager,
 
 		Environment: env,
 	}
@@ -98,7 +98,7 @@ func (h *Handlers) GetDashboard(ctx *gin.Context) {
 		Select("created_at", "updated_at", "deleted_at", "name", "id").
 		Scanner(scan.Institutions(&institutions))
 	query.Where(query.Field("id").IsEqual(user.InstitutionId))
-	if err := h.databaseOperations.Do(query); err != nil {
+	if err := h.databaseManager.Do(query); err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusNotFound, types.NewServerResponse(nil, "Falha ao encontrar a instituição"))
 			return
@@ -117,7 +117,7 @@ func (h *Handlers) CreateClass(ctx *gin.Context) {
 		return
 	}
 
-	if _, err := h.databaseOperations.SelectUsersById(requester.Id, request.TeacherId); err != nil {
+	if _, err := h.databaseManager.SelectUsersById(requester.Id, request.TeacherId); err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusBadRequest, types.NewServerResponse(nil, "Professor não encontrado"))
 			return
@@ -125,11 +125,12 @@ func (h *Handlers) CreateClass(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao encontrar o professor requisitado"))
 		return
 	}
-	if h.databaseOperations.StartTransaction() != nil {
+	operator, err := h.databaseManager.NewTransactionOperator()
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao iniciar criação da classe"))
 		return
 	}
-	class, err := h.databaseOperations.InsertClass(&models.CreateClasses{
+	class, err := operator.InsertClass(&models.CreateClasses{
 		Segment:       request.Segment,
 		Series:        request.Series,
 		Name:          request.Name,
@@ -142,7 +143,7 @@ func (h *Handlers) CreateClass(ctx *gin.Context) {
 	}
 
 	if len(request.StudentsIds) == 0 {
-		err = h.databaseOperations.CommitTransaction()
+		err = operator.Commit()
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao salvar alterações"))
 			return
@@ -151,27 +152,27 @@ func (h *Handlers) CreateClass(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.databaseOperations.InsertClassStudents(class.Id, &request.StudentsIds); err != nil {
+	if err := operator.InsertClassStudents(class.Id, &request.StudentsIds); err != nil {
 		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao adicionar estudantes. Por favor, tente novamente depois"))
 		return
 	}
-	if h.databaseOperations.CommitTransaction() != nil {
+	if operator.Commit() != nil {
 		ctx.JSON(http.StatusInternalServerError, types.NewServerResponse(nil, "Falha ao salvar mudanças"))
 		return
 	}
+
 	ctx.JSON(http.StatusCreated, types.NewServerResponse(class, ""))
 }
 func (h *Handlers) CreateUser(ctx *gin.Context) {
 	var user *models.Users = &models.Users{}
 
 	// Only admins can create other users so you can use admin.InstitutionId to attribute created users ids
-
 	var request models.CreateUsers
 	if h.HandleBadJsonRequest(ctx, &request) {
 		return
 	}
 
-	_, err := h.databaseOperations.SelectUserByEmail(request.Email)
+	_, err := h.databaseManager.SelectUserByEmail(request.Email)
 	if errors.Is(err, borm.ErrNotFound) {
 		if err != nil {
 			h.internalError(ctx, "Falha ao checar se o email já está em uso.", err)
@@ -189,12 +190,21 @@ func (h *Handlers) CreateUser(ctx *gin.Context) {
 		InstitutionId: user.InstitutionId,
 	}
 
-	users, err := h.databaseOperations.InsertManyUsers(nil, userRequest)
+	operator, err := h.databaseManager.NewTransactionOperator()
+	if err != nil {
+		h.internalError(ctx, "Falha ao iniciar requisição", err)
+		return
+	}
+
+	users, err := operator.InsertManyUsers(nil, userRequest)
 	if err != nil {
 		h.internalError(ctx, "Falha ao criar o usuario.", err)
 		return
 	}
-
+	if err = operator.Commit(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, types.NewFailedResponse("Falha ao salvar mudanças"))
+		return
+	}
 	ctx.JSON(http.StatusCreated, gin.H{
 		"data":  users[0],
 		"error": nil,
@@ -214,7 +224,7 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 		return
 	}
 
-	institution, err := h.databaseOperations.SelectInstitutionById(user.InstitutionId)
+	institution, err := h.databaseManager.SelectInstitutionById(user.InstitutionId)
 	if errors.Is(err, borm.ErrNotFound) {
 		h.clientError(ctx, "Nenhuma instituição encontrada")
 		return
@@ -227,7 +237,7 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 }
 
 func (h *Handlers) GetStudents(ctx *gin.Context) {
-	var request []operations.FilterStudentOptions
+	var request []manager.FilterStudentOptions
 	if h.HandleBadJsonRequest(ctx, &request) {
 		return
 	}
@@ -238,7 +248,7 @@ func (h *Handlers) GetStudents(ctx *gin.Context) {
 	}
 
 	requestUser := unsignedRequestUser.(models.Users)
-	students, err := h.databaseOperations.SelectStudents(requestUser.InstitutionId, &request, false)
+	students, err := h.databaseManager.SelectStudents(requestUser.InstitutionId, &request, false)
 	if err != nil {
 		h.internalError(ctx, "Falha ao buscar estudantes sem turmas", err)
 		return
@@ -248,7 +258,7 @@ func (h *Handlers) GetStudents(ctx *gin.Context) {
 }
 
 func (h *Handlers) GetClasses(ctx *gin.Context) {
-	filters := []*operations.FilterClassesOptions{}
+	filters := []*manager.FilterClassesOptions{}
 	if h.HandleBadJsonRequest(ctx, &filters) {
 		ctx.JSON(http.StatusBadRequest, types.NewServerResponse(nil, "Dados em formato incorreto"))
 		return
@@ -256,7 +266,7 @@ func (h *Handlers) GetClasses(ctx *gin.Context) {
 	unsignedUser, _ := ctx.Get(types.REQUEST_USER_TOKEN)
 	user := unsignedUser.(models.Users)
 
-	classes, err := h.databaseOperations.SelectClasses(user.Id, filters...)
+	classes, err := h.databaseManager.SelectClasses(user.Id, filters...)
 	if err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusOK, types.NewServerResponse([]any{}))
@@ -269,7 +279,7 @@ func (h *Handlers) GetClasses(ctx *gin.Context) {
 }
 
 func (h *Handlers) GetUsers(ctx *gin.Context) {
-	request := &operations.SelectUsersOptions{}
+	request := &manager.SelectUsersOptions{}
 	if h.HandleBadJsonRequest(ctx, &request) {
 		return
 	}
@@ -281,7 +291,7 @@ func (h *Handlers) GetUsers(ctx *gin.Context) {
 	}
 	user := unsignedUser.(models.Users)
 
-	users, err := h.databaseOperations.SelectUsers(user.Id, request)
+	users, err := h.databaseManager.SelectUsers(user.Id, request)
 	if err != nil {
 		h.internalError(ctx, "Falha ao	 procurar usuários", err)
 		return

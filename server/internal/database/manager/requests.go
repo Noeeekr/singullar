@@ -1,4 +1,4 @@
-package operations
+package manager
 
 import "github.com/Noeeekr/singullar/server/internal/database/models"
 
