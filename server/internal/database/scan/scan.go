@@ -335,6 +335,17 @@ func Institutions(institutions *[]*models.Institutions) borm.ReturnScanner {
 		return len(*institutions) != 0, nil
 	}
 }
+func QuestionLists(lists *[]*models.QuestionLists) borm.ReturnScanner {
+	return Scanner[models.QuestionLists](func(r *sql.Rows) error {
+		list := models.QuestionLists{}
+		err := r.Scan(&list.Id, &list.CreatedAt, &list.UpdatedAt, &list.InstitutionId, &list.Title, &list.SubjectId, &list.DifficultyLevel)
+		if err != nil {
+			return borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
+		}
+		*lists = append(*lists, &list)
+		return nil
+	}).On(lists)
+}
 func Questions(questions *[]*models.Questions) borm.ReturnScanner {
 	return Scanner[models.Questions](func(r *sql.Rows) error {
 		question := models.Questions{}
@@ -342,7 +353,7 @@ func Questions(questions *[]*models.Questions) borm.ReturnScanner {
 			&question.QuestionTitle, &question.QuestionDescription, &question.QuestionShortDescription,
 			&question.QuestionDifficultyLevel, &question.QuestionCorrectAlternative, &question.QuestionSubjectId)
 		if err != nil {
-			return borm.ErrorDescription(borm.ErrBadConnection, "Error while scanning rows", err.Error())
+			return borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 		*questions = append(*questions, &question)
 		return nil
@@ -389,7 +400,7 @@ func QuestionDifficulties(difficulties *[]*models.QuestionDifficulty) borm.Retur
 		questionListDifficulty := models.QuestionDifficulty{}
 		err := r.Scan(&questionListDifficulty.DifficultyName, &questionListDifficulty.DifficultyLevel)
 		if err != nil {
-			return borm.ErrorDescription(borm.ErrBadConnection, "Error while scanning rows", err.Error())
+			return borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
 		}
 		*difficulties = append(*difficulties, &questionListDifficulty)
 		return nil

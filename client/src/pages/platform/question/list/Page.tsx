@@ -1,43 +1,37 @@
 import SectionHeader from "@components/headers/sectionHeader";
 import QuestionLists from "./components/QuestionList";
 import OutlinedInput from "@mui/material/OutlinedInput";
+import SolidButton from "@components/buttons/Default/Solid";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Typography from "@mui/material/Typography";
 import LinkButton from "@components/buttons/Link";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
+import Guard from "@components/Guard";
 import Grid from "@mui/material/Grid2";
 
+import { ROLE_ADMIN } from "../../../../models/server";
 import { useForm } from "react-hook-form";
-import { useTheme } from "@mui/material";
+import { useState } from "react";
 
 import type { FilterOptions } from "./components/QuestionList";
-import SolidButton from "@components/buttons/Default/Solid";
-import { useState } from "react";
-import { useAppSelector } from "@slices/store";
-import { ROLE_ADMIN } from "../../../../models/server";
 
 const QuestionsPage = (): JSX.Element => {
-    const user = useAppSelector((store) => store.user.user)
-    const theme = useTheme();
-
     const [isHidden, setIsHidden] = useState(false);
 
     const { watch } = useForm<FilterOptions>({ defaultValues: {} })
-    
+
     return (
         <Stack direction="column" gap={3} paddingBottom={4}>
             <SectionHeader title="Banco de questões">
-                {
-                    user?.role == ROLE_ADMIN 
-                        ? <LinkButton title="Adicionar questões" href="/platform/question/list/create" variant="solid" />
-                        : <></>
-                }
+                <Guard roles={ROLE_ADMIN}>
+                    <LinkButton title="Adicionar questões" href="/platform/question/list/create" variant="solid" />
+                </Guard>
             </SectionHeader>
-            <Divider/>
+            <Divider />
             <Stack direction="row" justifyContent="space-between">
-                <Stack direction="row" alignItems="center" gap={2}>
+                <Stack direction="row" alignItems="center" gap={1}>
                     <Typography
                         variant="h4"
                         fontWeight="bold"
@@ -47,12 +41,12 @@ const QuestionsPage = (): JSX.Element => {
                     </Typography>
                     <Typography
                         variant="body1"
-                        color={theme.palette.primary.purpleDark}
                         component="p"
-                        sx={{
+                        sx={(theme) => ({
                             cursor: "pointer",
+                            color: theme.palette.primary.purpleDark,
                             textDecoration: "underline"
-                        }}
+                        })}
                         onClick={() => setIsHidden(prev => !prev)}
                     >
                         {isHidden ? "Mostrar" : "Esconder"} filtros
@@ -60,7 +54,7 @@ const QuestionsPage = (): JSX.Element => {
                 </Stack>
                 <SolidButton title="Filtrar" />
             </Stack>
-            <form style={{ 
+            <form style={{
                 height: "auto",
                 maxHeight: isHidden ? "0px" : "300px",
                 transition: "max-height 250ms ease-in-out",
@@ -97,7 +91,7 @@ const QuestionsPage = (): JSX.Element => {
                     </Grid>
                 </Grid>
             </form>
-            <Divider/>
+            <Divider />
             <Typography variant="h4" fontWeight="bold" component="h4">Listas de questões</Typography>
             <QuestionLists filters={watch()} />
         </Stack>

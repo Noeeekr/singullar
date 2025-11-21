@@ -110,12 +110,10 @@ func (h *Handlers) GetDashboard(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, types.NewServerResponse(institutions[0]))
 }
 func (h *Handlers) CreateClass(ctx *gin.Context) {
-	var request *models.CreateClassRequest = &models.CreateClassRequest{}
+	request := &models.CreateClassRequest{}
+	requester, _ := h.GetRequestUserInformation(ctx)
 
-	unsignedUser, _ := ctx.Get(types.REQUEST_USER_TOKEN)
-	requester := unsignedUser.(models.Users)
-
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(request)) {
+	if h.HandleBadJsonRequest(ctx, request) {
 		return
 	}
 
@@ -169,7 +167,7 @@ func (h *Handlers) CreateUser(ctx *gin.Context) {
 	// Only admins can create other users so you can use admin.InstitutionId to attribute created users ids
 
 	var request models.CreateUsers
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindJSON(&request)) {
+	if h.HandleBadJsonRequest(ctx, &request) {
 		return
 	}
 
@@ -230,7 +228,7 @@ func (h *Handlers) GetInstitution(ctx *gin.Context) {
 
 func (h *Handlers) GetStudents(ctx *gin.Context) {
 	var request []operations.FilterStudentOptions
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
+	if h.HandleBadJsonRequest(ctx, &request) {
 		return
 	}
 
@@ -251,7 +249,7 @@ func (h *Handlers) GetStudents(ctx *gin.Context) {
 
 func (h *Handlers) GetClasses(ctx *gin.Context) {
 	filters := []*operations.FilterClassesOptions{}
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&filters)) {
+	if h.HandleBadJsonRequest(ctx, &filters) {
 		ctx.JSON(http.StatusBadRequest, types.NewServerResponse(nil, "Dados em formato incorreto"))
 		return
 	}
@@ -272,7 +270,7 @@ func (h *Handlers) GetClasses(ctx *gin.Context) {
 
 func (h *Handlers) GetUsers(ctx *gin.Context) {
 	request := &operations.SelectUsersOptions{}
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&request)) {
+	if h.HandleBadJsonRequest(ctx, &request) {
 		return
 	}
 

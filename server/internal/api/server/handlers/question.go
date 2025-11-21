@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/Noeeekr/borm"
@@ -42,7 +43,7 @@ func (h *Handlers) GetQuestions(ctx *gin.Context) {
 	filters := GetQuestionRequest{}
 	requester, _ := h.GetRequestUserInformation(ctx)
 
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(&filters)) {
+	if h.HandleBadJsonRequest(ctx, &filters) {
 		return
 	}
 
@@ -58,12 +59,34 @@ func (h *Handlers) GetQuestions(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, types.NewServerResponse(questions))
 }
 
+func (h *Handlers) CreateQuestionList(ctx *gin.Context) {
+	request := &models.CreateQuestionListRequest{}
+	requester, _ := h.GetRequestUserInformation(ctx)
+
+	if h.HandleBadJsonRequest(ctx, request) {
+		return
+	}
+
+	list, err := h.databaseOperations.InsertQuestionList(requester.Id, request)
+	if err != nil {
+		if errors.Is(err, borm.ErrNotFound) {
+			ctx.JSON(http.StatusNotAcceptable, types.NewFailedResponse("Falha ao encontrar as questões selecionadas"))
+			return
+		}
+		fmt.Println(err.Error())
+		ctx.JSON(http.StatusInternalServerError, types.NewFailedResponse("Falha ao criar a lista de questões"))
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, types.NewSuccessResponse(list))
+}
+
 func (h *Handlers) CreateQuestion(ctx *gin.Context) {
 	request := &models.CreateQuestionRequest{}
 
 	requester, _ := h.GetRequestUserInformation(ctx)
 
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(request)) {
+	if h.HandleBadJsonRequest(ctx, request) {
 		return
 	}
 

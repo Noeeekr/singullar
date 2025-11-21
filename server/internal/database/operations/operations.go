@@ -114,6 +114,66 @@ func (ops *Operations) InsertSubject(institutionId int, subject *models.CreateSu
 	}
 	return subjects[0], ops.currentTransction.Commit()
 }
+
+// Throw borm.ErrNotFound when no questions is found for question list
+func (ops *Operations) InsertQuestionList(institutionId int, questionList *models.CreateQuestionListRequest) (*models.QuestionLists, error) {
+	targetIds := make([]any, len(questionList.QuestionIds))
+	for i, id := range questionList.QuestionIds {
+		targetIds[i] = id
+	}
+
+	ids := []int{}
+	query := models.TableQuestions.
+		Select("id").
+		Scanner(scan.Integers(&ids))
+	query.Where(query.And(
+		query.Field("question_institution_id").IsEqual(institutionId),
+		query.Field("id").IsAny(targetIds...),
+	))
+
+	// Query for valid question ids
+	err := ops.Do(query)
+	if err != nil {
+		return nil, err
+	} else if len(ids) == 0 {
+		return nil, borm.ErrNotFound
+	}
+
+	err = ops.StartTransaction()
+	if err != nil {
+		return nil, err
+	}
+
+	lists := []*models.QuestionLists{}
+	err = ops.currentTransction.Do(
+		models.TableQuestionLists.
+			Insert("created_at", "updated_at", "institution_id", "question_list_title", "subject_id", "question_list_difficulty_level").
+			Values(time.Now(), time.Now(), institutionId, questionList.Title, questionList.SubjectId, questionList.DifficultyLevel).
+			Returning("id", "created_at", "updated_at", "institution_id", "question_list_title", "subject_id", "question_list_difficulty_level").
+			Scanner(scan.QuestionLists(&lists)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	values := make([]any, len(questionList.QuestionIds)*2)
+	{
+		offset := 0
+		for i := range len(questionList.QuestionIds) {
+			values[offset] = questionList.QuestionIds[i]
+			values[offset+1] = lists[0].Id
+			offset += 2
+		}
+	}
+	ops.currentTransction.Do(
+		models.TableQuestionListsQuestions.
+			Insert("question_id", "question_list_id").
+			Values(values...),
+	)
+
+	return lists[0], ops.currentTransction.Commit()
+}
+
 func (ops *Operations) InsertQuestion(institutionId int, question *models.CreateQuestionRequest) (*models.Questions, error) {
 	var questions []*models.Questions = []*models.Questions{}
 	err := ops.StartTransaction()

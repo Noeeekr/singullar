@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
-import { DefaultResponse } from '../models/server/server'
+import { DefaultResponse } from '../models/server'
 
 import { updateUser } from '../slices/userSlice'
 import { AppDispatch } from '../slices/store'
 import { useDispatch } from 'react-redux'
 
 import { SERVER_ADDR } from '../configs'
-import type { User } from '../models/server/server'
+import type { User } from '../models/server'
 
 const useSignIn = (): {
     signin: typeof signin, 
@@ -24,7 +24,7 @@ const useSignIn = (): {
         setSigninError(null)
 
         try {
-            const response = await fetch(`${SERVER_ADDR}/api/auth/`,{
+            const response = await fetch(`${SERVER_ADDR}/api/auth`,{
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },

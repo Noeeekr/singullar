@@ -1,5 +1,5 @@
 import type { Grid2Props } from "@mui/material/Grid2"
-import { Class } from "@models/server/server";
+import { Class } from "@models/server";
 
 export interface SelectableComponentProps<OnSelectProps = never> {
     selectable?: number,

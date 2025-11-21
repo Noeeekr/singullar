@@ -45,7 +45,7 @@ func (h *Handlers) checkUserPassword(email string, password string) (*models.Use
 // If access is not granted it returns a json
 func (h *Handlers) SignIn(ctx *gin.Context) {
 	var request types.SignInRequest
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindJSON(&request)) {
+	if h.HandleBadJsonRequest(ctx, &request) {
 		return
 	}
 

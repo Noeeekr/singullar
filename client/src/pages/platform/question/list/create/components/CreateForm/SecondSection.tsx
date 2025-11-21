@@ -1,7 +1,7 @@
 import Questions from "../../../components/Questions"
 
 export interface SecondSectionFormState {
-
+    question_list_question_ids: number[]
 } 
 
 export interface SecondSectionProps {

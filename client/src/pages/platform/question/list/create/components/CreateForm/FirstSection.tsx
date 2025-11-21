@@ -11,14 +11,15 @@ import { Controller } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { useContext, useEffect } from "react"
 import { FormContext } from "./Form"
-import useContextAwareFetch from "@hooks/useContextAwareFetch"
+import useContextAwareFetch, { defaultRequestInit } from "@hooks/useContextAwareFetch"
 import { SERVER_ADDR } from "../../../../../../../configs"
-import { QuestionListDifficulty } from "@models/server"
+import { QuestionListDifficulty, Subject } from "@models/server"
 import InputTitle from "@components/titles/BoldTitle"
 
 export interface FirstSectionFormState {
-    question_list_name: string
-    question_list_difficulty_level: number
+    question_list_title: string,
+    question_list_subject_id: number,
+    question_list_difficulty_level: number,
 }
 
 export default function ({ }: { title: string }): JSX.Element {
@@ -30,8 +31,12 @@ export default function ({ }: { title: string }): JSX.Element {
         setFormState("1", { ...getValues(), complete: true })
     }, [isValid])
 
+    const { response: subjects, send: sendSubjectRequest } = useContextAwareFetch<Subject[]>(
+        `${SERVER_ADDR}/api/subjects`,
+        defaultRequestInit,
+    )
 
-    const { response, send } = useContextAwareFetch<QuestionListDifficulty[]>(
+    const { response: difficulties, send: sendDifficultyRequest } = useContextAwareFetch<QuestionListDifficulty[]>(
         `${SERVER_ADDR}/api/question/list/difficulties`,
         {
             method: "GET",
@@ -43,12 +48,13 @@ export default function ({ }: { title: string }): JSX.Element {
     )
 
     useEffect(() => {
-        send()
+        sendDifficultyRequest()
+        sendSubjectRequest()
     }, [])
-    
+
     return (
         <Grid container spacing={2}>
-            <Grid size={6}>
+            <Grid size={{ mobile: 12, xss: 6 }}>
                 <Stack gap={1}>
                     <InputTitle>Nome da lista de questões</InputTitle>
                     <FormControl>
@@ -58,7 +64,7 @@ export default function ({ }: { title: string }): JSX.Element {
                             Nome da lista de questões
                         </InputLabel>
                         <OutlinedInput
-                            {...register("question_list_name", {
+                            {...register("question_list_title", {
                                 required: true,
                                 minLength: 8,
                                 maxLength: 225,
@@ -74,7 +80,7 @@ export default function ({ }: { title: string }): JSX.Element {
                     </FormControl>
                 </Stack>
             </Grid>
-            <Grid size={6}>
+            <Grid size={{ mobile: 12, xss: 6 }}>
                 <Stack gap={1}>
                     <InputTitle>Dificuldade da lista de questões</InputTitle>
                     <FormControl>
@@ -93,8 +99,36 @@ export default function ({ }: { title: string }): JSX.Element {
                                     value={field.value ? field.value : ""}
                                 >
                                     <MenuItem value={undefined}>Selecione a dificuldade</MenuItem>
-                                    {response?.map((difficulty) => (
+                                    {difficulties?.map((difficulty) => (
                                         <MenuItem key={difficulty.question_difficulty_level} value={difficulty.question_difficulty_level}>{difficulty.question_difficulty_name}</MenuItem>
+                                    ))}
+                                </Select>
+                            )}
+                        />
+                    </FormControl>
+                </Stack>
+            </Grid>
+            <Grid size={{ mobile: 12, xss: 6 }}>
+                <Stack gap={1}>
+                    <InputTitle>Matéria da lista de questões</InputTitle>
+                    <FormControl>
+                        <InputLabel htmlFor="create-question-subject-outlined-input">
+                            Matéria da questão
+                        </InputLabel>
+                        <Controller
+                            name="question_list_subject_id"
+                            rules={{ required: true, validate: (v) => v != undefined }}
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    {...field}
+                                    id="create-question-subject-outlined-input"
+                                    label="Matéria da questão"
+                                    value={field.value ? field.value : ""}
+                                >
+                                    <MenuItem value={undefined}>Selecione a matéria</MenuItem>
+                                    {subjects?.map((subject) => (
+                                        <MenuItem key={subject.id} value={subject.id}>{subject.subject_name}</MenuItem>
                                     ))}
                                 </Select>
                             )}

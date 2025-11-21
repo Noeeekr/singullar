@@ -1,32 +1,47 @@
 package models
 
-// Stage: Pre server field population :: Necessary fields from client (Request to API)
-type CreateQuestionListRequest struct {
-	Title           string `json:"title" binding:"required"`
-	Subject         int    `borm:"(FOREIGN KEY, subjects, id)" json:"subject" binding:"required"`
-	DifficultyLevel int    `borm:"(NAME, difficulty_level) (FOREIGN KEY, question_difficulties, difficulty_level)" json:"difficulty_level" binding:"required"`
+type QuestionListClientFields struct {
+	Title           string `borm:"(NAME, question_list_title)" json:"question_list_title" binding:"required"`
+	DifficultyLevel int    `borm:"(NAME, question_list_difficulty_level) (FOREIGN KEY, question_difficulties, difficulty_level)" json:"question_list_difficulty_level" binding:"required"`
+	SubjectId       int    `borm:"(NAME, subject_id) (FOREIGN KEY, subjects, id)" json:"question_list_subject_id" binding:"required"`
 }
 
-// Stage: Post Server field population
-type CreateQuestionList struct {
-	CreateQuestionListRequest
+// Target: Necessary client information to server validation and field population.
+// Comes from: Client
+type CreateQuestionListRequest struct {
+	QuestionListClientFields
 
-	// Defaults to zero since there are no questions added yet
-	QuestionQuantity int `borm:"(NAME, question_quantity) (DEFAULT, 0)" json:"question_quantity" binding:"required"`
+	QuestionIds []int `json:"question_list_question_ids" binding:"required"`
+}
+
+// Target: Insertion into database
+// Comes from: Client request after server field population
+type CreateQuestionList struct {
+	QuestionListClientFields
+
 	// Infered based on user information
 	InstitutionId int `borm:"(NAME, institution_id) (FOREIGN KEY, institutions, id)" json:"institution_id" binding:"required"`
 }
 
-// Stage: Post Database field population (Database return)
-type QuestionList struct {
+// Target: Client Ready Data
+// Comes From: Database return
+type QuestionLists struct {
 	ID
 	DefaultFields
 	CreateQuestionList
 }
 
-var TableQuestionList = EnvironmentDatabase.
-	RegisterTable(QuestionList{}).
-	Name("question_list").
+// Target: Client Ready Data + Extra info
+// Comes From: Database return
+type ExtendedQuestionList struct {
+	QuestionLists
+
+	QuestionQuantity int `borm:"(IGNORE)" json:"question_quantity" binding:"required"`
+}
+
+var TableQuestionLists = EnvironmentDatabase.
+	RegisterTable(QuestionLists{}).
+	Name("question_lists").
 	NeedTables(
 		TableQuestionDifficulty,
 		TableQuestions,

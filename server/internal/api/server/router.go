@@ -35,8 +35,8 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 	}))
 
 	// Auth routes
-	r.POST("/api/auth/", handlers.SignIn) // Validate through database, create validation cookie
-	r.GET("/api/auth/", handlers.SignOut) // Delete validation cookie
+	r.POST("/api/auth", handlers.SignIn) // Validate through database, create validation cookie
+	r.GET("/api/auth", handlers.SignOut) // Delete validation cookie
 
 	// Select data related
 	// Institution data related routes
@@ -58,6 +58,8 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 	r.POST("/api/user/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateUser) // Institution admin creates users
 	r.POST("/api/class/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateClass)
 	r.POST("/api/question/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateQuestion)
+	r.POST("/api/question/list/create", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.CreateQuestionList)
+
 	// r.POST("/api/class/create", middlewares.Authenticate, handlers.CreateClass)
 	return r, nil
 }

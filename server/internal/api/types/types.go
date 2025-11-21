@@ -41,3 +41,17 @@ func NewServerResponse(data any, err ...string) *ServerResponse {
 		"error": strings.Join(err, ": "),
 	}
 }
+
+func NewSuccessResponse(data any) *ServerResponse {
+	return &ServerResponse{
+		"data":  data,
+		"error": "",
+	}
+}
+
+func NewFailedResponse(err ...string) *ServerResponse {
+	return &ServerResponse{
+		"data":  nil,
+		"error": strings.Join(err, ": "),
+	}
+}

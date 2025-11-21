@@ -1,6 +1,5 @@
 import FirstSection, { FirstSectionFormState } from "./FirstSection"
 import SecondSection, { SecondSectionFormState } from "./SecondSection"
-import ThirdSection, { ThirdSectionFormState } from "./ThirdSection"
 import Typography from "@mui/material/Typography"
 import Header from "./Header"
 import Stack from "@mui/material/Stack"
@@ -10,6 +9,10 @@ import { styled } from "@mui/material/styles"
 import { useMemo, createContext, useState, useCallback, JSX } from "react"
 import { useForm, UseFormSetValue } from "react-hook-form"
 import SolidButton from "@components/buttons/Default/Solid"
+import useContextAwareFetch, { defaultRequestInit } from "@hooks/useContextAwareFetch"
+import { SERVER_ADDR } from "../../../../../../../configs"
+import { QuestionList } from "@models/server/question"
+import ErrorBubble from "@components/bubbles/ErrorBubble"
 
 export type FormStateSectionProps<OverridableProps = {}> = OverridableProps & {
     complete?: boolean
@@ -18,7 +21,6 @@ export type FormSectionKeys = keyof FormContext["formState"]
 export interface FormState {
     "1"?: FormStateSectionProps<FirstSectionFormState>
     "2"?: FormStateSectionProps<SecondSectionFormState>
-    "3"?: FormStateSectionProps<ThirdSectionFormState>
 }
 export type CallbackRegister = (cb: () => void) => void
 
@@ -52,30 +54,45 @@ const SectionContainer = styled(Stack)(() => ({
     borderTopRightRadius: 0,
 }))
 
+// **Bad code warning** The way this is designed makes it harder to have a filter button, but I wanted it anyway 
+// An improved version can be found in @components/MultiStepForm
 export default function (): JSX.Element {
-    const [activeSection, setActiveSection] = useState<FormSectionKeys>("2")
+    const [activeSection, setActiveSection] = useState<FormSectionKeys>("1")
 
-    // **Bad code warning** The way this is designed makes it harder to have a filter button, but I wanted it anyway 
-    const [childrenFunc, onParentClick] = useState<(() => void) | null>(null)
+    const [childrenFunc, setChildrenFunc] = useState<(() => void) | null>(null)
 
-    const { watch, setValue } = useForm<FormContext["formState"]>({ defaultValues: defaultValues })
+    const { watch, getValues, setValue, reset } = useForm<FormContext["formState"]>({ defaultValues: defaultValues })
+
     const section = useMemo(() => {
         // **Bad code warning** Resets the callback so other sections don't get the button because of the previous value.
-        onParentClick(null)
+        setChildrenFunc(null)
         switch (activeSection) {
             case "1":
                 return <FirstSection title="Informações Básicas" />
             case "2":
-                return <SecondSection title="Adicionar questões" parentButtonTitle="Pesquisar" onParentClick={onParentClick} />
-            case "3":
-                return <ThirdSection />
+                return <SecondSection title="Adicionar questões" parentButtonTitle="Pesquisar" onParentClick={setChildrenFunc} />
         }
     }, [activeSection])
 
+    const { error, send } = useContextAwareFetch<QuestionList, FormContext["formState"]>(
+        `${SERVER_ADDR}/api/question/list/create`,
+        { ...defaultRequestInit, method: "POST" }
+    )
+
     const handleActiveSection = useCallback(() => setActiveSection(prev => {
         const activeSection = Number(prev)
-        if (activeSection == 3) return prev
-        return `${activeSection + 1}` as FormSectionKeys
+        if (activeSection == 2) {
+            let sections = getValues()
+            let body = {}
+            for (let [_, section] of Object.entries(sections)) {
+                delete(section.complete)
+                body = { ...body, ...section }
+            }
+            send(body) 
+            reset({})
+            return prev
+        }
+        return String(activeSection + 1) as FormSectionKeys
     }), [])
 
     return (
@@ -89,7 +106,7 @@ export default function (): JSX.Element {
                 <Stack>
                     <TitleContainer direction="row">
                         <Typography variant="h5" fontWeight="bold" component="h6">{section.props?.title}</Typography>
-                        <Stack direction="row" gap={2}>
+                        <Stack direction="row" gap={1}>
                             {
                                 childrenFunc
                                     ? <SolidButton
@@ -99,8 +116,8 @@ export default function (): JSX.Element {
                                     : <></>
                             }
                             <SolidButton
-                                title={activeSection == "3" ? "Criar lista" : "Continuar"}
-                                disabled={watch("1")?.complete != true}
+                                title={activeSection == "2" ? "Criar lista" : "Continuar"}
+                                disabled={watch(activeSection)?.complete != true}
                                 onClick={handleActiveSection}
                             />
                         </Stack>
@@ -110,6 +127,7 @@ export default function (): JSX.Element {
                     </SectionContainer>
                 </Stack>
             </FormContext.Provider>
+            <ErrorBubble message={error}/>
         </Stack>
     )
 }

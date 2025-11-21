@@ -32,7 +32,7 @@ func (h *Handlers) CreateSubject(ctx *gin.Context) {
 
 	requester, _ := h.GetRequestUserInformation(ctx)
 
-	if h.HandleBadJsonRequest(ctx, ctx.ShouldBindBodyWithJSON(request)) {
+	if h.HandleBadJsonRequest(ctx, request) {
 		return
 	}
 

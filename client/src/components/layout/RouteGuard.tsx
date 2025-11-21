@@ -21,12 +21,21 @@ const ProtectedRoutes = () => {
         role = user ? user.role : null
     }
     const routeGuard = new RouteGuard(routes);
-    
+
     const navigate = useNavigate();
-    
+
     const { pathname } = useLocation();
     const { signout } = useSignOut();
-    
+
+    {
+        const paths = pathname.split("/")
+        let lastpath = paths.pop()
+        if (lastpath) {
+            lastpath = lastpath[0].toUpperCase() + lastpath.slice(1, lastpath.length)
+            document.title = lastpath + " | Singullar"
+        }
+    }
+
     const [isValidating, setIsValidating] = useState<boolean>(false);
 
     useEffect(() => {
@@ -34,8 +43,8 @@ const ProtectedRoutes = () => {
         const ok = routeGuard.validateRoute(pathname, role)
         if (!ok) {
             if (role == null) {
-                signout() 
-                navigate("/auth") 
+                signout()
+                navigate("/auth")
                 return
             }
             navigate("/home")
@@ -45,7 +54,7 @@ const ProtectedRoutes = () => {
     }, [pathname])
 
     if (isValidating) return <div>Loading Page...</div>
-    return <Outlet/>
+    return <Outlet />
 };
 
 export default ProtectedRoutes;
