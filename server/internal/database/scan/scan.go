@@ -346,6 +346,17 @@ func QuestionLists(lists *[]*models.QuestionLists) borm.ReturnScanner {
 		return nil
 	}).On(lists)
 }
+func ExtendedQuestionLists(lists *[]*models.ExtendedQuestionList) borm.ReturnScanner {
+	return Scanner[models.ExtendedQuestionList](func(r *sql.Rows) error {
+		list := models.ExtendedQuestionList{}
+		err := r.Scan(&list.Id, &list.CreatedAt, &list.UpdatedAt, &list.InstitutionId, &list.Title, &list.SubjectId, &list.SubjectName, &list.DifficultyLevel, &list.QuestionQuantity)
+		if err != nil {
+			return borm.ErrorDescription(borm.ErrUnexpected, "Error while scanning rows", err.Error())
+		}
+		*lists = append(*lists, &list)
+		return nil
+	}).On(lists)
+}
 func Questions(questions *[]*models.Questions) borm.ReturnScanner {
 	return Scanner[models.Questions](func(r *sql.Rows) error {
 		question := models.Questions{}

@@ -31,6 +31,16 @@ type Questions struct {
 	CreateQuestions
 }
 
+// Target: Client + User Specific Information
+// Comes From: Database return + Extra Query
+type ExtendedQuestions struct {
+	Questions
+
+	// Not implemented yet
+	// Incomplete | Completed | Untouched
+	Status int `borm:"(FOREIGN KEY, question_status, id)" json:"question_status"`
+}
+
 var TableQuestions = EnvironmentDatabase.
 	RegisterTable(Questions{}).
 	NeedTables(TableQuestionDifficulty, TableSubjects)

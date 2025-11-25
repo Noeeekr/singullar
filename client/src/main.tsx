@@ -35,6 +35,7 @@ const PgTeachersSearch = lazy(() => import("./pages/admin/teachers/Search"))
 
 const PgQuestionCreate = lazy(() => import("./pages/platform/question/create/Page"))
 const PgQuestionList = lazy(() => import("./pages/platform/question/list/Page"))
+const PgQuestionListSearch = lazy(() => import("./pages/platform/question/list/search/Page"))
 const PgQuestionListCreate = lazy(() => import("./pages/platform/question/list/create/Page"))
 
 const routerRoutes = createRoutesFromElements(
@@ -61,12 +62,12 @@ const routerRoutes = createRoutesFromElements(
             />
             <Route path="list">
               <Route index
+                element={<DefaultSuspense><PgQuestionListSearch /></DefaultSuspense>}
+              />
+              <Route path=":list_id"
                 element={<DefaultSuspense><PgQuestionList /></DefaultSuspense>}
               />
               <Route path="create"
-                element={<DefaultSuspense><PgQuestionListCreate /></DefaultSuspense>}
-              />
-              <Route path=":listId"
                 element={<DefaultSuspense><PgQuestionListCreate /></DefaultSuspense>}
               />
             </Route>

@@ -36,7 +36,8 @@ type QuestionLists struct {
 type ExtendedQuestionList struct {
 	QuestionLists
 
-	QuestionQuantity int `borm:"(IGNORE)" json:"question_quantity" binding:"required"`
+	SubjectName      string `borm:"(IGNORE)" json:"subject_name" binding:"required"`
+	QuestionQuantity int    `borm:"(IGNORE)" json:"question_quantity" binding:"required"`
 }
 
 var TableQuestionLists = EnvironmentDatabase.

@@ -1,4 +1,4 @@
-import Questions from "../../../components/Questions"
+import Questions from "../../../components/Search"
 
 export interface SecondSectionFormState {
     question_list_question_ids: number[]

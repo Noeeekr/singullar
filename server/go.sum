@@ -24,6 +24,10 @@ github.com/Noeeekr/borm v0.0.0-20251027005555-d22f8c1a4019 h1:1v9mXXmtYZgds2l+pL
 github.com/Noeeekr/borm v0.0.0-20251027005555-d22f8c1a4019/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
 github.com/Noeeekr/borm v0.0.0-20251028014145-123151b9f895 h1:zTvyl1Ze6Kbg1yao66bltB9TTjq1Bcw+GX757wfvpgg=
 github.com/Noeeekr/borm v0.0.0-20251028014145-123151b9f895/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
+github.com/Noeeekr/borm v0.0.0-20251114170016-5daf95972f4f h1:kCBsUSyvA07qLFZk9Tm7eXEZnE/FdVUxNx+dVt9zz5A=
+github.com/Noeeekr/borm v0.0.0-20251114170016-5daf95972f4f/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
+github.com/Noeeekr/borm v0.0.0-20251125161344-de0ed14b7651 h1:aMKqdLJl1+TWdcom3YpHZcddKR/B4fSluNgg3xKC+Ck=
+github.com/Noeeekr/borm v0.0.0-20251125161344-de0ed14b7651/go.mod h1:gJ+11eEEBWxvWTej2RISlEcG2FgyMWZoYKctFhJRQ4Q=
 github.com/bytedance/sonic v1.12.2 h1:oaMFuRTpMHYLpCntGca65YWt5ny+wAceDERTkT2L9lg=
 github.com/bytedance/sonic v1.12.2/go.mod h1:B8Gt/XvtZ3Fqj+iSKMypzymZxw/FVwgIGKzMzT9r/rk=
 github.com/bytedance/sonic/loader v0.1.1/go.mod h1:ncP89zfokxS5LZrJxl5z0UJcsk4M4yY2JpfqGeCtNLU=

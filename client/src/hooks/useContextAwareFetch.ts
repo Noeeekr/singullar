@@ -93,6 +93,7 @@ function useContextAwareFetch<ResponseData, RequestBody = null>(
                 response: responseBody.data
             }))
         } catch (e) {
+            console.log(e)
             setError("Falha ao processar a requisição")
         } finally {
             setIsLoading(false)

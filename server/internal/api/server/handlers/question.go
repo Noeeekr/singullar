@@ -11,8 +11,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handlers) GetQuestionList(ctx *gin.Context) {
-	ctx.JSON(http.StatusNotFound, types.NewServerResponse([]any{}, "Nenhuma lista de questões encontrada"))
+func (h *Handlers) GetQuestionLists(ctx *gin.Context) {
+	lists := &[]*models.ExtendedQuestionList{}
+	query := models.TableQuestionLists.
+		// Currently does not work
+		Select("ql.id", "ql.created_at", "ql.updated_at", "ql.institution_id", "ql.question_list_title", "ql.subject_id", "s.subject_name", "ql.question_list_difficulty_level", "COUNT(q.id) AS question_quantity").
+		As("ql").Scanner(scan.ExtendedQuestionLists(lists)).
+		InnerJoin(models.TableInstitutions, "i").On("i.id", "ql.institution_id").
+		LeftJoin(models.TableQuestionListsQuestions, "qlq").On("ql.id", "qlq.question_list_id").
+		LeftJoin(models.TableQuestions, "q").On("q.id", "qlq.question_id").
+		LeftJoin(models.TableSubjects, "s").On("ql.subject_id", "s.id").
+		GroupBy("ql.id", "q.id", "s.subject_name").
+		Limit(10).
+		Offset(0)
+		// Hardcoded offset for now
+	if err := h.databaseManager.Do(query); err != nil {
+		if errors.Is(err, borm.ErrNotFound) {
+			ctx.JSON(http.StatusNotFound, types.NewSuccessResponse([]any{}))
+			return
+		}
+		h.internalError(ctx, "Falha ao procurar as listas de questões", err)
+		return
+	}
+	ctx.JSON(http.StatusFound, types.NewSuccessResponse(lists))
 }
 
 func (h *Handlers) GetQuestionListDifficulties(ctx *gin.Context) {
@@ -24,7 +45,7 @@ func (h *Handlers) GetQuestionListDifficulties(ctx *gin.Context) {
 
 	if err := h.databaseManager.Do(query); err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
-			ctx.JSON(http.StatusOK, types.NewServerResponse([]any{}))
+			ctx.JSON(http.StatusOK, types.NewSuccessResponse([]any{}))
 			return
 		}
 		h.internalError(ctx, "Falha ao procurar as dificuldades da lista de questões", err)

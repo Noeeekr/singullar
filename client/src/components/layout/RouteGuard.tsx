@@ -47,6 +47,7 @@ const ProtectedRoutes = () => {
                 navigate("/auth")
                 return
             }
+            console.log("ROUTE ", pathname, "IS NOT ALLOWED")
             navigate("/home")
             return
         }

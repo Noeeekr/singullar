@@ -13,7 +13,7 @@ require (
 )
 
 require (
-	github.com/Noeeekr/borm v0.0.0-20251028014145-123151b9f895 // indirect
+	github.com/Noeeekr/borm v0.0.0-20251125161344-de0ed14b7651 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 )

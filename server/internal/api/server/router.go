@@ -45,7 +45,7 @@ func PrepareRouter(handlers *handlers.Handlers, env *types.Environment) (*gin.En
 	r.GET("/api/institution", middlewares.Authenticate(models.STUDENT, models.ADMIN, models.TEACHER, models.SUPERVISOR), handlers.GetInstitution)
 	// Question data related routes
 	r.GET("/api/question/list/difficulties", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.ADMIN, models.SUPERVISOR), handlers.GetQuestionListDifficulties)
-	r.GET("/api/question/list", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.SUPERVISOR, models.ADMIN), handlers.GetQuestionList)
+	r.POST("/api/question/list", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.SUPERVISOR, models.ADMIN), handlers.GetQuestionLists)
 	r.POST("/api/question", middlewares.Authenticate(models.STUDENT, models.TEACHER, models.SUPERVISOR, models.ADMIN), handlers.GetQuestions)
 	// User data related routes
 	r.POST("/api/students", middlewares.Authenticate(models.ADMIN, models.SUPERVISOR), handlers.GetStudents)

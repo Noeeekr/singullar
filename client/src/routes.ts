@@ -21,51 +21,46 @@ export type RouterRoles = UserRoles
     | typeof ANY_AUTHENTICATED_ROLE
     | typeof UNAUTHENTICATED_ROLE
 
+
+/**
+ * Made assuming a recursive type structure
+ */
+interface RouteConfig {
+    PermitedRoles?: RouterRoles[]
+    // Any other key in RouteConfig is treated as a subroute
+    [key: string]: RouteConfig | RouterRoles[] | undefined
+}
+
 /**
  * The structure accepted by the route guard validation object
  */
-export interface Routes {
-    [index: string]: {
-        PermitedRoles?: RouterRoles[]
-        Routes?: Routes,
-    }
-}
+export type Routes = Record<string, RouteConfig>;
 
 /**
 * Empty permited roles defaults to ANY_AUTHENTICATED_ROLE
 */
 export const routes: Routes = {
     "auth": { PermitedRoles: [UNAUTHENTICATED_ROLE] },
-    "admin": { 
-        Routes: {
-            "*": { PermitedRoles: [ROLE_ADMIN] }
-        },
-        PermitedRoles: [ROLE_ADMIN] 
+    "admin": {
+        PermitedRoles: [ROLE_ADMIN],
+        "*": { PermitedRoles: [ROLE_ADMIN] }
     },
     "home": { PermitedRoles: [ANY_AUTHENTICATED_ROLE] },
     "platform": {
-        Routes: {
-            "subjects": {
-                PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR],
-                Routes: {
-                    "*": { PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR]},
-                },
+        "subjects": {
+            PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR],
+            "*": { PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR] },
+        },
+        "question": {
+            "list": {
+                PermitedRoles: undefined,
+                "create": { PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR] },
+                "*": { PermitedRoles: [ANY_AUTHENTICATED_ROLE] }
             },
-            "question": {
-                Routes: {
-                    "list": {
-                        Routes: {
-                            "create": { PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR] },
-                        },
-                    },
-                    "create": {
-                        PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR],
-                    },
-                    "*": { PermitedRoles: [ANY_AUTHENTICATED_ROLE] }
-                }
-            }
+            "create": { PermitedRoles: [ROLE_ADMIN, ROLE_SUPERVISOR] },
+            "*": { PermitedRoles: [ANY_AUTHENTICATED_ROLE] }
         }
-    },
+    }
 }
 
 class RouteGuard {
@@ -83,44 +78,66 @@ class RouteGuard {
         }
         return false
     }
-    /**
-    * 
-    * @param pathname The current location url pathname part.
-    *  
-    * @param targetRole The roles the user contains to be checked agaisnt the allowed roles. 
-    * @returns A boolean that is [true] if the user is permited on the route and [false] if not.
-    */
     public validateRoute(pathname: string, targetRole: UserRoles | null): boolean {
-        const paths = pathname.split("/");
-        let route: Routes = this.routes
+        // Clean the pathname and split into segments
+        const paths = pathname.split("/").filter(p => p.length > 0);
 
-        for (let i = 1; i < paths.length; i++) {
-            let currentRoute = route[paths[i]]
-
-            // No further routes registered, no wildcard registered.
-            if (currentRoute == undefined) return false;
-            // Found the deepest route needed. Trigger role validation and liberate if allowed
-            if (paths.length == i + 1) return this.validateRole(currentRoute.PermitedRoles, targetRole);
-            // There are no further routes registered. Since there will be a further check that will fail, fail now instead.
-            if (currentRoute.Routes == undefined) return false;
-            // There are further routes, but the wanted route is not registered for validation.
-            if (currentRoute.Routes[paths[i + 1]] == undefined) {
-                // Tries to find a wildcard, if found, validates through wildcard's route guard
-                if (currentRoute.Routes["*"] != undefined) {
-                    return this.validateRole(currentRoute.Routes["*"].PermitedRoles, targetRole)
-                }
-                return false
-            }
-
-            // Validates if the user is allowed through this route guard
-            if (!this.validateRole(currentRoute.PermitedRoles, targetRole)) {
-                return false
-            }
-
-            // Updates the route
-            route = currentRoute.Routes
+        if (paths.length === 0) {
+            // The solicited path is not registered. 
+            // Meaning the route could not be found to validate.
+            return false;
         }
-        return true
+
+        let currentConfig: RouteConfig = this.routes;
+
+        // Traverse all path components
+        for (let i = 0; i < paths.length; i++) {
+            const segment = paths[i];
+
+            // Check if the current level has defined a role rule.
+            if (i > 0) {
+                const parentRouteNode = currentConfig;
+                // If the current level has a defined role rule then check the user role agaisnt it
+                if (parentRouteNode.PermitedRoles !== undefined) {
+                    // If the validation fails, disable user to proceed to this route
+                    if (!this.validateRole(parentRouteNode.PermitedRoles, targetRole)) {
+                        return false;
+                    }
+                }
+            }
+
+            // If rule validati on doesn't fail or doesn't exist, move to the next segment directly
+            // There is a **Noticeable** vulnerability here that the pathname could be the name of a reserved map key like
+            // "PermitedRoles" which would lead to unexpected behavior.
+            let nextConfig: RouteConfig | undefined = currentConfig[segment] as RouteConfig;
+
+            // If next segment is found, move deeper and continue the loop.
+            if (nextConfig !== undefined) {
+                currentConfig = nextConfig;
+                continue;
+            }
+
+            // If no segment match found. Check for a wildcard.
+
+            const wildcardConfig: RouteConfig | undefined = currentConfig["*"] as RouteConfig;
+
+            // If a wildcard exists, use its permissions and we are DONE for this path.
+            if (wildcardConfig !== undefined) {
+                // If a wildcard is found, it applies to this segment AND any segments that follow.
+                // We validate the wildcard's role and return immediately.
+                return this.validateRole(wildcardConfig.PermitedRoles, targetRole);
+            }
+
+            // No direct match and no wildcard match. The route is NOT defined.
+            return false;
+        }
+
+        // 6. Loop finished: We reached the end of the path.
+        // The final segment's own PermitedRoles must be validated.
+        // Example: If path is "/home", loop finds "home". Now we validate "home"'s PermitedRoles.
+
+        // `currentConfig` holds the configuration for the final segment (e.g., "platform.question.list")
+        return this.validateRole(currentConfig.PermitedRoles, targetRole);
     }
 }
 
