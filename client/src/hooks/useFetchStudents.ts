@@ -1,5 +1,5 @@
-import { User, UserSegments } from "@models/server/server"
-import useContextAwareFetch, { Response } from "./useContextAwareFetch"
+import { User, UserSegments } from "@models/server"
+import useContextAwareFetch, { useContextAwareFetchReturn } from "./useContextAwareFetch"
 import { SERVER_ADDR } from "../configs"
 
 export interface StudentFilters {
@@ -10,7 +10,7 @@ export interface StudentFilters {
     segment?: UserSegments,
 }
 
-const useFetchStudents = (): Response<User[], StudentFilters[]> => {
+const useFetchStudents = (): useContextAwareFetchReturn<User[], StudentFilters[]> => {
     return useContextAwareFetch<User[], StudentFilters[]>(
         `${SERVER_ADDR}/api/students`,
         {

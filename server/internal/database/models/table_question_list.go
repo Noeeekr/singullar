@@ -31,6 +31,15 @@ type QuestionLists struct {
 	CreateQuestionList
 }
 
+type QuestionListsFilters struct {
+	Fields []struct {
+		Title           *string `json:"title"`
+		DifficultyLevel *int    `json:"difficulty_level"`
+		SubjectId       *int    `json:"subject_id"`
+	} `json:"fields"`
+	Ids []int `json:"ids"`
+}
+
 // Target: Client Ready Data + Extra info
 // Comes From: Database return
 type ExtendedQuestionList struct {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/Noeeekr/borm"
@@ -11,20 +12,36 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type QuestionListRequest struct {
+	Filters *models.QuestionListsFilters `json:"filters"`
+	Offset  int                          `json:"offset"`
+}
+
 func (h *Handlers) GetQuestionLists(ctx *gin.Context) {
+	request := &QuestionListRequest{}
+
+	if h.HandleBadJsonRequest(ctx, request) {
+		return
+	}
+
 	lists := &[]*models.ExtendedQuestionList{}
 	query := models.TableQuestionLists.
-		// Currently does not work
 		Select("ql.id", "ql.created_at", "ql.updated_at", "ql.institution_id", "ql.question_list_title", "ql.subject_id", "s.subject_name", "ql.question_list_difficulty_level", "COUNT(q.id) AS question_quantity").
 		As("ql").Scanner(scan.ExtendedQuestionLists(lists)).
 		InnerJoin(models.TableInstitutions, "i").On("i.id", "ql.institution_id").
 		LeftJoin(models.TableQuestionListsQuestions, "qlq").On("ql.id", "qlq.question_list_id").
 		LeftJoin(models.TableQuestions, "q").On("q.id", "qlq.question_id").
-		LeftJoin(models.TableSubjects, "s").On("ql.subject_id", "s.id").
+		LeftJoin(models.TableSubjects, "s").On("ql.subject_id", "s.id")
+	query.Where(appendQuestionListFilters(query, request.Filters)).
 		GroupBy("ql.id", "q.id", "s.subject_name").
-		Limit(10).
-		Offset(0)
-		// Hardcoded offset for now
+		Offset(request.Offset).
+		Limit(10)
+
+	str := ""
+	for _, b := range query.Blocks {
+		str += b.Block + " "
+	}
+	fmt.Println("\n" + str + "\n")
 	if err := h.databaseManager.Do(query); err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusNotFound, types.NewSuccessResponse([]any{}))
@@ -55,12 +72,12 @@ func (h *Handlers) GetQuestionListDifficulties(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, types.NewServerResponse(difficulties))
 }
 
-type GetQuestionRequest struct {
+type QuestionFilters struct {
 	Filters *[]*models.GetQuestionRequest `json:"filters" binding:"required"`
 }
 
 func (h *Handlers) GetQuestions(ctx *gin.Context) {
-	filters := GetQuestionRequest{}
+	filters := QuestionFilters{}
 	requester, _ := h.GetRequestUserInformation(ctx)
 
 	if h.HandleBadJsonRequest(ctx, &filters) {
@@ -139,4 +156,36 @@ func (h *Handlers) CreateQuestion(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, types.NewServerResponse(question))
+}
+
+func appendQuestionListFilters(query *borm.Query, filters *models.QuestionListsFilters) *borm.ConditionalQuery {
+	if filters == nil {
+		return nil
+	}
+	// Appends "filter by fields" rule only if fields > 0
+	conditions := make([]*borm.ConditionalQuery, len(filters.Fields))
+	for _, filter := range filters.Fields {
+		composedCondition := []*borm.ConditionalQuery{}
+		if filter.Title != nil {
+			composedCondition = append(composedCondition, query.Field("ql.question_list_title").IsLike("%"+*filter.Title+"%", false))
+		}
+		if filter.SubjectId != nil {
+			composedCondition = append(composedCondition, query.Field("ql.subject_id").IsEqual(*filter.SubjectId))
+		}
+		if filter.DifficultyLevel != nil {
+			composedCondition = append(composedCondition, query.Field("ql.question_list_difficulty_level").IsEqual(*filter.DifficultyLevel))
+		}
+		conditions = append(conditions, query.Compose(query.And(composedCondition...)))
+	}
+
+	// Appends "filter by id" rule only if ids > 0
+	if len(filters.Ids) != 0 {
+		ids := make([]any, len(filters.Ids))
+		for i, id := range filters.Ids {
+			ids[i] = id
+		}
+		conditions = append(conditions, query.Field("ql.id").IsAny(ids...))
+	}
+
+	return query.And(conditions...)
 }

@@ -11,7 +11,7 @@ import {
 } from '../slices/store';
 import { setInstitution as ActionSetInstitution } from '../slices/institutionsSlice'
 
-import type { Institution } from '../models/server/server';
+import type { Institution } from '../models/server';
 
 import { SERVER_ADDR } from '../configs'
 

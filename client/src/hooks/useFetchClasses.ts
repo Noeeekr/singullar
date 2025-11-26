@@ -1,5 +1,5 @@
 // Features
-import useContextAwareFetch, { Response } from '@hooks/useContextAwareFetch';
+import useContextAwareFetch, { defaultRequestInit, useContextAwareFetchReturn } from '@hooks/useContextAwareFetch';
 
 // Models
 import type { Class, UserSegments } from '@models/server';
@@ -21,16 +21,10 @@ export interface useFetchClassesRequest {
     loadTeacher: boolean
 }
 
-const useFetchClasses = (): Response<Class[], SearchClassFilters[]> => {
+const useFetchClasses = (): useContextAwareFetchReturn<Class[], SearchClassFilters[]> => {
     return useContextAwareFetch<Class[], SearchClassFilters[]>(
         `${SERVER_ADDR}/api/classes`,
-        {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }
+        { ...defaultRequestInit, method: "POST" },
     )
 }
 

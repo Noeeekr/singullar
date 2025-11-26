@@ -1,41 +1,33 @@
 // Components
+import QuestionListDisplayer from "@components/displays/question/list";
+import ErrorBubble from "@components/bubbles/ErrorBubble";
 import Typography from "@mui/material/Typography"
 import Grid from "@mui/material/Grid2";
 
 // Utilities
+import useFetchQuestionLists from "@hooks/useFetchQuestionLists";
 import { useEffect } from "react"
-import { SERVER_ADDR } from "../../../../configs";
-import useContextAwareFetch, { defaultRequestInit } from "@hooks/useContextAwareFetch";
 
 // Models
+import type { FilterOptions } from "@hooks/useFetchQuestionLists";
 import type { StackProps } from "@mui/material"
-import type { QuestionList } from "@models/server/question";
 import type { JSX } from "react"
-import ErrorBubble from "@components/bubbles/ErrorBubble";
-import QuestionListDisplayer from "@components/displays/question/list";
 
-export interface FilterOptions {
-    name?: string,
-    subject?: string,
-    difficultyName?: string,
-    difficultyLevel?: number,
-}
+
 export interface SearchQuestionListFilterProps {
     filters?: FilterOptions[]
 }
+
 export interface SearchQuestionListStylingProps extends StackProps { }
 export type SearchQuestionListProps =
     SearchQuestionListFilterProps
     & SearchQuestionListStylingProps
 
 export default ({ filters }: SearchQuestionListProps): JSX.Element => {
-    const { response: lists, isLoading, error, send } = useContextAwareFetch<QuestionList[], FilterOptions[]>(
-        `${SERVER_ADDR}/api/question/list`,
-        { ...defaultRequestInit, method: "POST" }
-    )
+    const { response: lists, isLoading, error, send } = useFetchQuestionLists()
 
     useEffect(() => {
-        send(filters)
+        send()
     }, [filters])
 
     if (lists == null) {

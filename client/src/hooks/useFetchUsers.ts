@@ -2,7 +2,7 @@ import { SERVER_ADDR } from "../configs";
 
 import useContextAwareFetch from "./useContextAwareFetch";
 
-import type { ResponseUtilities } from "./useContextAwareFetch";
+import type { useContextAwareFetchReturn } from "./useContextAwareFetch";
 import type { User, UserRoles } from "@models/server";
 
 interface UserRequest {
@@ -15,7 +15,7 @@ interface UserFilter {
 }
 
 // Role argument must be memoized or declared outside components to avoid unnecessary re-renders.
-function useFetchUsers(): ResponseUtilities<User[], UserRequest> {
+function useFetchUsers(): useContextAwareFetchReturn<User[], UserRequest> {
     return useContextAwareFetch<User[], UserRequest>(
         `${SERVER_ADDR}/api/users`,
         {

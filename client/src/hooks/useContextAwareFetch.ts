@@ -28,7 +28,7 @@ export interface OnResponseCallbackProps<ResponseData, RequestBody> extends Resp
 
 export type OnResponseCallback<ResponseData, RequestBody> = (props: OnResponseCallbackProps<ResponseData, RequestBody>) => void
 
-export interface ResponseUtilities<ResponseData, RequestBody = void> extends ResponseObject<ResponseData> {
+export interface useContextAwareFetchReturn<ResponseData, RequestBody = void> extends ResponseObject<ResponseData> {
     isLoading: boolean,
 
     send: (body?: RequestBody) => void,
@@ -54,7 +54,7 @@ function appendRequestBodyIfNecessary<RequestBody>(init: RequestInit | undefined
 function useContextAwareFetch<ResponseData, RequestBody = null>(
     input: string | URL | globalThis.Request,
     init?: RequestInit,
-): ResponseUtilities<ResponseData, RequestBody> {
+): useContextAwareFetchReturn<ResponseData, RequestBody> {
     const [response, setResponse] = useState<ResponseData | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string>("");
