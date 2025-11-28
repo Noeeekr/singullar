@@ -72,19 +72,15 @@ func (h *Handlers) GetQuestionListDifficulties(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, types.NewServerResponse(difficulties))
 }
 
-type QuestionFilters struct {
-	Filters *[]*models.GetQuestionRequest `json:"filters" binding:"required"`
-}
-
 func (h *Handlers) GetQuestions(ctx *gin.Context) {
-	filters := QuestionFilters{}
+	filters := &models.QuestionFilters{}
 	requester, _ := h.GetRequestUserInformation(ctx)
 
-	if h.HandleBadJsonRequest(ctx, &filters) {
+	if h.HandleBadJsonRequest(ctx, filters) {
 		return
 	}
 
-	questions, err := h.databaseManager.SelectQuestions(requester.InstitutionId, filters.Filters)
+	questions, err := h.databaseManager.SelectQuestions(requester.InstitutionId, filters)
 	if err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusOK, types.NewServerResponse([]any{}))

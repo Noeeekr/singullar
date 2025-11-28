@@ -7,6 +7,13 @@ type GetQuestionRequest struct {
 	QuestionDifficultyLevel *int    `borm:"(NAME, question_difficulty_level) (FOREIGN KEY, question_difficulties, difficulty_level)" json:"question_difficulty_level,omitempty" binding:"required"`
 }
 
+type QuestionFilters struct {
+	// For these field, if empty, default value is acceptable
+	Fields          []GetQuestionRequest `json:"question_fields"`
+	QuestionListIds []int                `json:"question_list_ids"`
+	Offset          int                  `json:"offset"`
+}
+
 // Request populated with necessary client fields to create a question
 type CreateQuestionRequest struct {
 	QuestionTitle              string   `borm:"(NAME, question_title)" json:"question_title,omitempty" binding:"required"`

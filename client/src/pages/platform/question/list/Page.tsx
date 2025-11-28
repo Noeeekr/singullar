@@ -1,9 +1,11 @@
-import { Fragment } from "react"
-import Typography from "@mui/material/Typography"
+import QuestionListDisplayer from "@components/displays/question/list"
+import SectionHeader from "@components/headers/sectionHeader"
 import ErrorBubble from "@components/bubbles/ErrorBubble"
+import Typography from "@mui/material/Typography"
+import Divider from "@mui/material/Divider"
+import Stack from "@mui/material/Stack"
 
 // Utilities
-import QuestionListDisplayer from "@components/displays/question/list"
 import useFetchQuestionLists from "@hooks/useFetchQuestionLists"
 import { useEffect } from "react"
 import { useParams } from "react-router-dom"
@@ -27,16 +29,18 @@ export default (): JSX.Element => {
     }, [])
 
     return (
-        <Fragment>
+        <Stack component="section" gap={2}>
+            <SectionHeader title="Lista de questões" subtitle="Veja a descrição da lista de questões" />
+            <Divider/>
             {
                 list?.length
-                    ? <QuestionListDisplayer list={list[0]} />
+                    ? <QuestionListDisplayer variant="lg" list={list[0]} />
                     : error
                         ? <ErrorBubble message={error} />
                         : isLoading
                             ? <Typography> Carregando lista de questões... </Typography>
                             : <Typography> Lista de questões indisponível. </Typography>
             }
-        </Fragment>
+        </Stack>
     )
 }

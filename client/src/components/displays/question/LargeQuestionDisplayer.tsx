@@ -1,6 +1,7 @@
 import type { JSX } from "react"
-import type { QuestionDisplayerProps } from "@components/displays/question"
+import type { DisplayerProps } from "@components/displays/question"
 
-export default ({ ...props }: QuestionDisplayerProps): JSX.Element => {
-    return(<></>)
+export default <IsSelected extends boolean>({
+}: DisplayerProps<IsSelected>): JSX.Element => {
+    return (<></>)
 }

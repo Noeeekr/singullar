@@ -1,23 +1,13 @@
 // Components
-import QuestionContainer from "./Container"
-import NumberDisplay from "./DifficultyBox";
+import QuestionContainer from "./components/Container"
+import NumberDisplay from "./components/DifficultyBox";
 import Stack from "@mui/material/Stack";
 
 // Models
-import type { QuestionList } from "@models/server/question";
-import type { StackProps } from "@mui/material"
 import styled from "@emotion/styled";
-import Title from "./Title";
-import Text from "./Text";
-
-export interface QuestionListDisplayProps extends QuestionListDisplayStylingProps {
-    list: QuestionList
-}
-
-export interface QuestionListDisplayStylingProps extends StackProps { 
-    selectable?: boolean,
-    navigable?: boolean,
-}
+import Title from "./components/Title";
+import Text from "./components/Text";
+import { QuestionListDisplayProps } from ".";
 
 const Emphasis = styled("span")(({
     fontWeight: "bold",
@@ -38,11 +28,10 @@ export default function ({ list, ...props }: QuestionListDisplayProps): JSX.Elem
                 <Emphasis>Dificuldade:</Emphasis> {list.question_list_difficulty_level}
             </Text>
             <Stack direction="row" gap={1} marginY={2}>
-                {
-                    new Array(list.question_amount).map((_, i) => (
-                        <NumberDisplay key={i} level={list.question_list_difficulty_level}>{i + 1}</NumberDisplay>
-                    ))
-                }
+                <NumberDisplay
+                    amount={list.question_amount}
+                    level={list.question_list_difficulty_level}
+                />
             </Stack>
         </QuestionContainer>
     )

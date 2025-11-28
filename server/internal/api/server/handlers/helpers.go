@@ -45,7 +45,6 @@ func (h *Handlers) GetRequestUserInformation(ctx *gin.Context) (*models.Users, b
 // Handles the client message and returns true if error happens is in incorrect format.
 func (h *Handlers) HandleBadJsonRequest(ctx *gin.Context, request any) bool {
 	if err := ctx.ShouldBindBodyWithJSON(request); err != nil {
-		h.LogErr.Println(err.Error())
 		h.clientError(ctx, "Dados em formato incorreto")
 		return true
 	}

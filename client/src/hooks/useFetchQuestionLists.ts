@@ -33,6 +33,6 @@ export default (): useContextAwareFetchReturn<QuestionList[], FilterOptions> => 
     values.send = (body?: FilterOptions) => {
         if (body == undefined) body = defaultBody
         defaultSend(body)
-    }
+    }   
     return values
 }

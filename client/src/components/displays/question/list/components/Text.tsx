@@ -10,6 +10,5 @@ import type { TypographyProps } from "@mui/material/Typography"
 export default styled(({ ...props }: TypographyProps) => (
     <Typography component="p" {...props} />
 ))(({
-    fontWeight: "bold",
     textTransform: "capitalize",  
 }))

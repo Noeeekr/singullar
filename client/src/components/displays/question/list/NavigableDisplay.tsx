@@ -1,22 +1,25 @@
-import QuestionList from "./DefaultDisplay"
-
-import { Fragment, type JSX } from "react"
-import type { QuestionListDisplayProps  } from "@components/displays/question/list"
+// Components
+import Display from "./Display"
 import { Link } from "react-router-dom"
+import { Fragment } from "react"
+
+// Models
+import type { JSX } from "react"
+import type { QuestionListDisplayProps  } from "@components/displays/question/list"
 
 export interface NavigableQuestionListDisplayProps extends QuestionListDisplayProps {
     navigable?: boolean 
 }
 
-export default ({ navigable, ...props }: NavigableQuestionListDisplayProps): JSX.Element => {
+export default ({ navigable, children, ...props }: NavigableQuestionListDisplayProps): JSX.Element => {
     return(
         <Fragment>
         {
             navigable 
             ? <Link style={{textDecoration: "none"}} to={String(props.list.id)}>
-                <QuestionList navigable {...props} />
+                <Display navigable {...props} />
             </Link> 
-            : <QuestionList {...props} />
+            : <Display {...props} />
         }
         </Fragment>
     )

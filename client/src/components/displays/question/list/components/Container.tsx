@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid2"
 import { styled } from "@mui/material";
 
 // Models
-import { QuestionListDisplayStylingProps } from "./DefaultDisplay";
+import type { QuestionListDisplayStylingProps } from "..";
 
 export default styled(({ children, navigable, ...props }: QuestionListDisplayStylingProps) => (
     <Grid size={4} {...props}>{children}</Grid>

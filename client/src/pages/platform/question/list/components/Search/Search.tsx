@@ -14,7 +14,9 @@ import type { Question } from "@models/server"
 import { FormContext } from "../../create/components/CreateForm/Form"
 
 export interface QuestionRequest {
-    filters?: QuestionFilters[]
+    question_list_ids?: number[]
+    fields?: QuestionFilters[]
+    offset?: number
 }
 
 export default function (): JSX.Element {

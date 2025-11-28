@@ -34,16 +34,22 @@ export interface QuestionFilterProps extends StackProps {
 export const QuestionFilterContext = createContext<QuestionRequest>({})
 
 export default function ({ children, onParentClick, ...props }: QuestionFilterProps): JSX.Element {
-    const { register, control, getValues } = useForm<QuestionFilters>({ defaultValues: {
-        question_difficulty_level: undefined,
-        question_name: undefined,
-        question_subject_id: undefined,
-    }})
-    const [formValue, setFormValue] = useState<QuestionRequest>({ filters: [] })
+    const { register, control, getValues } = useForm<QuestionFilters>({
+        defaultValues: {
+            question_difficulty_level: undefined,
+            question_name: undefined,
+            question_subject_id: undefined,
+        }
+    })
+    const [formValue, setFormValue] = useState<QuestionRequest>({ fields: [] })
 
     useEffect(() => {
         if (onParentClick) onParentClick(() => () => {
-            setFormValue({ filters: [getValues()] })
+            setFormValue({ 
+                question_list_ids: [],
+                fields: [getValues()],
+                offset: 0,
+            })
         })
     }, [])
 

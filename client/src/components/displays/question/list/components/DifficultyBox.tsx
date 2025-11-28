@@ -5,7 +5,7 @@ import { styled } from "@mui/material";
 
 import type { BoxProps } from "@mui/material"
 
-export interface NumberDisplay extends BoxProps {
+export interface NumberDisplayProps extends BoxProps {
     level: number
 }
 
@@ -33,7 +33,7 @@ function gradientMapper(level: number): string {
     }
     return "linear-gradient(rgb(240,100,100, 0.4), rgb(130,40,40 ,0.6))"
 }
-const NumberDisplay = styled(({ children, ...props }: NumberDisplay) => (
+export const NumberDisplay = styled(({ children, ...props }: NumberDisplayProps) => (
     <Box {...props}>
         <Typography variant="body2" color={colorMapper(props.level)} fontWeight="bold">
             {children}
@@ -56,4 +56,14 @@ const NumberDisplay = styled(({ children, ...props }: NumberDisplay) => (
     overflow: "hidden",
 }))
 
-export default NumberDisplay;
+export default ({ amount, level }: NumberDisplayProps & { amount: number }) => {
+    return (
+        <>
+            {
+                new Array(amount).map((_, i) => (
+                    <NumberDisplay key={i} level={level}>{i + 1}</NumberDisplay>
+                ))
+            }
+        </>
+    )
+};

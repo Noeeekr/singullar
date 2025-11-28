@@ -219,34 +219,54 @@ func (ops *DatabaseManager) SelectSubjects(InstitutionId int) (*[]*models.Subjec
 	return &subjects, nil
 }
 
-func (ops *DatabaseManager) SelectQuestions(InstitutionId int, filters *[]*models.GetQuestionRequest) (*[]*models.Questions, error) {
+func (ops *DatabaseManager) SelectQuestions(InstitutionId int, filters *models.QuestionFilters) (*[]*models.Questions, error) {
 	questions := &[]*models.Questions{}
+	// Select question data
 	query := models.TableQuestions.
-		Select("id", "question_institution_id", "created_at", "updated_at", "question_title",
-			"question_description", "question_short_description", "question_difficulty_level",
-			"question_correct_alternative", "question_subject_id").
-		Scanner(scan.Questions(questions))
+		Select("q.id", "q.question_institution_id", "q.created_at", "q.updated_at", "q.question_title",
+			"q.question_description", "q.question_short_description", "q.question_difficulty_level",
+			"q.question_correct_alternative", "q.question_subject_id").As("q")
 
-	composed_conditionals := make([]*borm.ConditionalQuery, len(*filters))
-	for i, filter := range *filters {
+	conditions := make([]*borm.ConditionalQuery, 3)
+	conditions = append(conditions, query.Field("q.question_institution_id").IsEqual(InstitutionId))
+
+	// Filter question by question list if capable
+	if len(filters.QuestionListIds) > 0 {
+		query.
+			InnerJoin(models.TableQuestionListsQuestions, "qlq").On("qlq.question_id", "q.id").
+			InnerJoin(models.TableQuestionLists, "ql").On("ql.id", "qlq.question_list_id")
+		ids := make([]any, len(filters.QuestionListIds))
+		for i, id := range filters.QuestionListIds {
+			ids[i] = id
+		}
+		conditions = append(conditions, query.Field("qlq.question_list_id").IsAny(ids...))
+	}
+
+	// Filter question by question fields if capable
+	fieldConditions := make([]*borm.ConditionalQuery, len(filters.Fields))
+	for i, filter := range filters.Fields {
 		conditions := []*borm.ConditionalQuery{}
 		if filter.QuestionTitle != nil {
-			conditions = append(conditions, query.Field("question_title").IsLike("%"+*filter.QuestionTitle+"%", false))
+			conditions = append(conditions, query.Field("q.question_title").IsLike("%"+*filter.QuestionTitle+"%", false))
 		}
 		if filter.QuestionDifficultyLevel != nil {
-			conditions = append(conditions, query.Field("question_difficulty_level").IsEqual(*filter.QuestionDifficultyLevel))
+			conditions = append(conditions, query.Field("q.question_difficulty_level").IsEqual(*filter.QuestionDifficultyLevel))
 		}
 		if filter.QuestionSubjectId != nil {
-			conditions = append(conditions, query.Field("question_subject_id").IsEqual(*filter.QuestionSubjectId))
+			conditions = append(conditions, query.Field("q.question_subject_id").IsEqual(*filter.QuestionSubjectId))
 		}
 
-		composed_conditionals[i] = query.Compose(query.And(conditions...))
+		fieldConditions[i] = query.Compose(query.And(conditions...))
 	}
-	// WHERE (a = a0, b = b0, c = c0) OR (a = a1, b = b1, c = c1) OR ...
-	query.Where(query.And(
-		query.Field("question_institution_id").IsEqual(InstitutionId),
-		query.Compose(query.Or(composed_conditionals...)),
-	))
+	conditions = append(conditions, query.Compose(query.Or(fieldConditions...)))
+
+	// Apply filters in the following schema:
+	// 		(...) AND ((...) OR (...) OR (...))
+	query.
+		Where(query.And(conditions...)).
+		Limit(10).
+		Offset(filters.Offset).
+		Scanner(scan.Questions(questions))
 
 	if err := ops.Do(query); err != nil {
 		return nil, err
