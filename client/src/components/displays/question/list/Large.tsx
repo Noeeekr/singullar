@@ -12,7 +12,7 @@ import { styled } from "@mui/material";
 
 // Models
 import type { QuestionListDisplayProps } from ".";
-import SmallQuestionDisplayer from "../SmallQuestionDisplayer";
+import Display from "..";
 
 const Emphasis = styled("span")(({
     fontWeight: "bold",
@@ -45,7 +45,7 @@ export default function ({ list, ...props }: QuestionListDisplayProps): JSX.Elem
                 <Grid size={6}>
                     {
                         questions?.map((question, i) => (
-                            <SmallQuestionDisplayer question={question} key={i} />
+                            <Display navigable type="sm" question={question} key={i}/>
                         ))
                     }
                 </Grid>

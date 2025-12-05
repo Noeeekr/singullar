@@ -3,15 +3,14 @@ import { Divider, Paper, Stack, styled, Typography, TypographyProps } from "@mui
 import type { JSX } from "react"
 import type { 
     DisplayerProps, 
-    ToggleSelectableDisplayerProps, 
-    NonSelectableDisplayerProps
+    DisplayerStylingProps
 } from "@components/displays/question"
 
-const ContainerText = styled(({ children, isSelected, selectable, onSelected, ...props }: TypographyProps & ToggleSelectableDisplayerProps<boolean>) => (
+const ContainerText = styled(({ children, isSelected, selectable, onSelected, ...props }: TypographyProps & DisplayerStylingProps<boolean>) => (
     <Typography {...props}>
         {children}
     </Typography>
-))<NonSelectableDisplayerProps>(({ isSelected }) => ({
+))<DisplayerStylingProps<boolean>>(({ isSelected }) => ({
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -21,7 +20,12 @@ const ContainerText = styled(({ children, isSelected, selectable, onSelected, ..
     color: isSelected ? "white" : "black",
 }))
 
-const Container = styled(Paper)<NonSelectableDisplayerProps>(({ theme, selectable, isSelected }) => ({
+const Container = styled(Paper)<DisplayerStylingProps<boolean>>(({ 
+    theme, 
+    navigable, 
+    selectable, 
+    isSelected 
+}) => ({
     position: "relative",
     top: 0,
 
@@ -31,7 +35,7 @@ const Container = styled(Paper)<NonSelectableDisplayerProps>(({ theme, selectabl
     padding: 10,
     borderRadius: 10,
 
-    cursor: selectable ? "pointer" : "initial",
+    cursor: selectable || navigable ? "pointer" : "initial",
 
     transition: "all 100ms ease",
     transform: "scale(1)",
@@ -47,15 +51,16 @@ export default <IsSelected extends boolean>({
     selectable,
     onSelected,
     isSelected,
-    onClick,
+    navigable,
     question,
+    onClick,
     ...props
 }: DisplayerProps<IsSelected>): JSX.Element => {
     return (
         <Container elevation={2} isSelected={isSelected} onClick={(e) => {
             if (onSelected) onSelected(question.id, question)
             if (onClick) onClick(e)
-        }} selectable={selectable}>
+        }} selectable={selectable} navigable={navigable}>
             <Stack gap={1} {...props}>
                 <Stack direction="row" justifyContent="space-between">
                     <ContainerText width="50%" isSelected={isSelected}>

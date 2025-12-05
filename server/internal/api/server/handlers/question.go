@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/Noeeekr/borm"
@@ -37,11 +36,6 @@ func (h *Handlers) GetQuestionLists(ctx *gin.Context) {
 		Offset(request.Offset).
 		Limit(10)
 
-	str := ""
-	for _, b := range query.Blocks {
-		str += b.Block + " "
-	}
-	fmt.Println("\n" + str + "\n")
 	if err := h.databaseManager.Do(query); err != nil {
 		if errors.Is(err, borm.ErrNotFound) {
 			ctx.JSON(http.StatusNotFound, types.NewSuccessResponse([]any{}))

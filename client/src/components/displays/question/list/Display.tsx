@@ -5,14 +5,14 @@ import Medium from "./Medium";
 // Models
 import type { QuestionListDisplayProps } from ".";
 
-export interface QuestionListDisplayyVariants {
+export interface QuestionListDisplayVariants {
     variant?: "lg" | "md"
 }
 
 export default ({ 
     variant = "md", 
     ...props 
-}: QuestionListDisplayyVariants & QuestionListDisplayProps) => {
+}: QuestionListDisplayVariants & QuestionListDisplayProps) => {
     switch(variant) {
         case "lg":
             return <Large {...props} />        

@@ -8,7 +8,7 @@ import {
     Typography,
     Grid2 as Grid,
 } from '@mui/material'
-import BannerSlider from './BannerSlider';
+import BannerSlider from './banner';
 import LinkButton, { LinkButtonProps } from './buttons/Link';
 
 // Data
