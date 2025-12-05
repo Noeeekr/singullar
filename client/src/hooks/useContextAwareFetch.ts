@@ -12,7 +12,7 @@ import {
 
 import {
     updateUser as actionUpdateUser,
-} from "@slices/userSlice"
+} from "@slices/user"
 import {
     useAppDispatch
 } from "@slices/store"

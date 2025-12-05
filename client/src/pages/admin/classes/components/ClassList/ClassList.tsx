@@ -7,14 +7,14 @@ import { useCallback, useEffect, useState } from "react";
 
 // Types
 import type { ClassListProps } from "./types";
-import type { Class } from "@models/server/server";
+import type { Class } from "@models/server";
 import ErrorBubble from "@components/bubbles/ErrorBubble/ErrorBubble";
 import { useNavigate } from "react-router-dom";
 
 export default function ClassBubble(
     { classes, selectable, onSelect, navegable }: ClassListProps
 ): JSX.Element {
-    if (classes == null) return <ErrorBubble err={"Nenhuma turma encontrada"} />
+    if (classes == null) return <ErrorBubble message={"Nenhuma turma encontrada"} />
     const [selectedClasses, setSelectedClasses] = useState<Class[]>([])
     const navigate = useNavigate();
     const handleSelect = useCallback((cl: Class) => {

@@ -166,7 +166,7 @@ const StudentSelectionManual = ({ returnButtonCallback }: { returnButtonCallback
             {
                 error == ""
                     ? <></>
-                    : <ErrorBubble err={error} />
+                    : <ErrorBubble message={error} />
             }
             <Typography component="p" marginY={2}>
                 {

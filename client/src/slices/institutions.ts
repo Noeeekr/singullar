@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
-import type { Institution } from '../models/server/server';
+import type { Institution } from '@models/server';
 
 type InstitutionPayload = Institution | null
 

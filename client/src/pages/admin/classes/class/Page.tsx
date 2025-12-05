@@ -41,9 +41,9 @@ const ClassPage = ({ ...props }: StackProps): JSX.Element => {
         })
     }, [classe])
  
-    if (classRequest.error) return <ErrorBubble err={classRequest.error} />
+    if (classRequest.error) return <ErrorBubble message={classRequest.error} />
     if (classRequest.isLoading) return <Typography>Carregando Informações</Typography>
-    if (classe == null) return <ErrorBubble err="Nenhuma turma encontrada" />
+    if (classe == null) return <ErrorBubble message="Nenhuma turma encontrada" />
 
     return (
         <Stack {...props} gap={2}>
@@ -63,7 +63,7 @@ const ClassPage = ({ ...props }: StackProps): JSX.Element => {
                 <Typography variant="h5" component="p" textTransform="capitalize">Informações dos estudantes:</Typography>
                 {
                     studentRequest.error
-                        ? <ErrorBubble err={studentRequest.error} />
+                        ? <ErrorBubble message={studentRequest.error} />
                         : <></>
                 }
                 {
@@ -93,13 +93,13 @@ const ClassPage = ({ ...props }: StackProps): JSX.Element => {
                                 ))
                             }
                         </Grid>
-                        : <ErrorBubble err={"Nenhum estudante encontrado"} />
+                        : <ErrorBubble message={"Nenhum estudante encontrado"} />
                 }
                 <Divider/>
                 <Typography variant="h5" component="p" textTransform="capitalize">Informações dos professores:</Typography>
                 {
                     studentRequest.error
-                        ? <ErrorBubble err={studentRequest.error} />
+                        ? <ErrorBubble message={studentRequest.error} />
                         : <></>
                 }
                 {
@@ -128,7 +128,7 @@ const ClassPage = ({ ...props }: StackProps): JSX.Element => {
                                 ))
                             }
                         </Grid>
-                        : <ErrorBubble err={"Nenhum professor encontrado"} />
+                        : <ErrorBubble message={"Nenhum professor encontrado"} />
                 }
             </Stack>
         </Stack>

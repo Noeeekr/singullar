@@ -46,7 +46,7 @@ export default function Search(): JSX.Element {
             <SearchFilters send={send} />
             {
                 error
-                    ? <ErrorBubble err={error} />
+                    ? <ErrorBubble message={error} />
                     : <></>
             }
             {

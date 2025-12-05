@@ -30,7 +30,7 @@ export default () => {
             <Stack gap={0.5} marginTop={2}>
                 {
                     !response || error
-                        ? <ErrorBubble err={error} />
+                        ? <ErrorBubble message={error} />
                         : <>
                             <Display title="Nome da instituição">
                                 {response.name}

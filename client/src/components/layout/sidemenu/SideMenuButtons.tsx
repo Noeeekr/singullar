@@ -11,7 +11,7 @@ import LinkButton from '../../buttons/Link'
 import PopupButton from '../../buttons/Popup/Popup'
 import Button, { ButtonEffectsProps, ButtonsProps } from '@components/buttons/Default'
 
-export interface SideMenuButtons extends ButtonGroupProps {}
+export interface SideMenuButtons extends ButtonGroupProps { }
 
 export interface SideMenuButtonsProps extends StackProps {
     isOpen?: boolean,
@@ -20,38 +20,42 @@ export interface SideMenuButtonsProps extends StackProps {
     effects?: ButtonEffectsProps
 }
 
-const SideMenuButtons = ({ 
+const SideMenuButtons = ({
     isOpen,
     title,
     menus,
-    ...props 
+    ...props
 }: SideMenuButtonsProps): JSX.Element => {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
-    
+
     return (
         <Fragment>
-            { Boolean(title) && !isOpen && <Divider /> }
-                <Stack component="ul" sx={{ WebkitUserSelect: 'none', userSelect: 'none', msUserSelect: 'none' }} gap={props.gap ? props.gap : 0.5}>
-                { isOpen && title && <SectionTitle sx={{ fontSize: 14 }}>{title}</SectionTitle> }
-                    {
-                        menus && menus.map((item) => {
-                            item.isMobile = isMobile
-                            switch (item.type) {
-                                case "link":
-                                    return <LinkButton key={item.title} {...item as LinkButtonProps} />;
-                                case "popup":
-                                    return <PopupButton key={item.title} {...item as PopupButtonProps} iconVariant="large"/>;
-                                case "group":
-                                    return <ButtonGroup key={item.title} isOpen={isOpen} {...item as ButtonGroupProps} />;
-                                case "button":
-                                    return <Button key={item.title} {...item} />;
-                                default:
-                                    return <div>Error rendering button, type does not exist in ISideMenuItemsProps</div>
-                            }
-                        })
-                    }
-                </Stack>
+            {Boolean(title) && !isOpen && <Divider />}
+            <Stack
+                component="ul"
+                sx={{ WebkitUserSelect: 'none', userSelect: 'none', msUserSelect: 'none' }}
+                gap={props.gap ? props.gap : 0.5}
+            >
+                {isOpen && title && <SectionTitle sx={{ fontSize: 14 }}>{title}</SectionTitle>}
+                {
+                    menus && menus.map((item) => {
+                        item.isMobile = isMobile
+                        switch (item.type) {
+                            case "link":
+                                return <LinkButton key={item.title} {...item as LinkButtonProps} />;
+                            case "popup":
+                                return <PopupButton key={item.title} {...item as PopupButtonProps} iconVariant="large" />;
+                            case "group":
+                                return <ButtonGroup key={item.title} isOpen={isOpen} {...item as ButtonGroupProps} />;
+                            case "button":
+                                return <Button key={item.title} {...item} />;
+                            default:
+                                return <div>Error rendering button, type does not exist in ISideMenuItemsProps</div>
+                        }
+                    })
+                }
+            </Stack>
         </Fragment>
     )
 }

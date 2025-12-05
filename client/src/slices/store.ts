@@ -19,8 +19,8 @@ const persistConfig = {
 
 // REDUCERS
 
-import userReducer from "./userSlice";
-import institutionReducer from "./institutionsSlice";
+import userReducer from "./user";
+import institutionReducer from "./institutions";
 
 const reducers = combineReducers({
     user: userReducer,

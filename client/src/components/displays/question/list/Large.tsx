@@ -13,6 +13,7 @@ import { styled } from "@mui/material";
 // Models
 import type { QuestionListDisplayProps } from ".";
 import Display from "..";
+import { parseQuestionDifficulty } from "@models/server/question";
 
 const Emphasis = styled("span")(({
     fontWeight: "bold",
@@ -37,7 +38,7 @@ export default function ({ list, ...props }: QuestionListDisplayProps): JSX.Elem
                     </Text>
                 </Stack>
                 <Text fontSize={16}>
-                    <Emphasis>Dificuldade:</Emphasis> {list.question_list_difficulty_level}
+                    <Emphasis>Dificuldade:</Emphasis> {parseQuestionDifficulty(list.question_list_difficulty_level)}
                 </Text>
             </Stack>
             <ErrorBubble message={error} />
@@ -45,7 +46,7 @@ export default function ({ list, ...props }: QuestionListDisplayProps): JSX.Elem
                 <Grid size={6}>
                     {
                         questions?.map((question, i) => (
-                            <Display navigable type="sm" question={question} key={i}/>
+                            <Display navigable type="sm" question={question} key={i} />
                         ))
                     }
                 </Grid>

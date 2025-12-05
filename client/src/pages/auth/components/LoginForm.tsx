@@ -82,7 +82,7 @@ const Internal = (): JSX.Element => {
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 {
-                    signinError != null && <ErrorBubble err={signinError} />
+                    signinError != null && <ErrorBubble message={signinError} />
                 }
                 <FormControl>
                     <InputLabel htmlFor="text">

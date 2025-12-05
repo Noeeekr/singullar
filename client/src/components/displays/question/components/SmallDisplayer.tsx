@@ -1,5 +1,7 @@
 import { Divider, Paper, Stack, styled, Typography, TypographyProps } from "@mui/material"
 
+import { parseQuestionDifficulty } from "@models/server/question"
+
 import type { JSX } from "react"
 import type { 
     DisplayerProps, 
@@ -67,7 +69,7 @@ export default <IsSelected extends boolean>({
                         {question.question_title}
                     </ContainerText>
                     <ContainerText isSelected={isSelected}>
-                        {question.question_difficulty_level}
+                        {parseQuestionDifficulty(question.question_difficulty_level)}
                     </ContainerText>
                 </Stack>
                 <Divider color={isSelected ? "white" : ""} />

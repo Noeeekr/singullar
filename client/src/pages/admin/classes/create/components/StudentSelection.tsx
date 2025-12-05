@@ -20,7 +20,7 @@ import useContextAwareFetch from '@hooks/useContextAwareFetch';
 
 // Models
 import type { ChangeEvent, SyntheticEvent, Dispatch, SetStateAction } from 'react';
-import type { User } from '../../../../../models/server/server';
+import type { User } from '@models/server';
 import { SERVER_ADDR } from '../../../../../configs';
 import { StudentFilters } from '@hooks/useFetchStudents';
 
@@ -296,7 +296,7 @@ const TableOptions = (): JSX.Element => {
             </Grid>
         </Grid>
         {
-            (error || requestError) && <ErrorBubble err={requestError || error || "Erro desconhecido"} />
+            (error || requestError) && <ErrorBubble message={requestError || error || "Erro desconhecido"} />
         }
     </Stack>
 }

@@ -27,7 +27,8 @@ export default defineConfig({
     host: "0.0.0.0",
   },
   plugins: [
-    //Gzip plugin with some defaults.
+    react(),
+    // Gzip plugin with some defaults.
     compression({
       verbose: true, // Optional: logs the compression results
       disable: false, // Optional: set to true to disable compression
@@ -35,12 +36,11 @@ export default defineConfig({
       algorithm: 'gzip', // Optional: set to 'brotliCompress' for Brotli
       ext: '.gz', // Optional: adds .gz to the file extension
     }),
-    react(),
   ],
   resolve: {
     alias: {
       '@hooks': path.resolve(__dirname, 'src/hooks'),
-      '@types': path.resolve(__dirname, 'src/types'),
+      '@models': path.resolve(__dirname, 'src/models'),
       '@slices': path.resolve(__dirname, 'src/slices'),
       '@components': path.resolve(__dirname, 'src/components'),
     }

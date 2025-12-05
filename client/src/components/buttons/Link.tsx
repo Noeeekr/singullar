@@ -5,7 +5,7 @@ import Button from './Default';
 // Features
 import { useLocation} from "react-router-dom"
 import { useAppDispatch } from '../../slices/store';
-import { incrementUrlVisitedCount } from '../../slices/userSlice'
+import { incrementUrlVisitedCount } from '../../slices/user'
 
 // Types
 import type { ButtonsProps } from "@components/buttons/Default"
@@ -18,8 +18,8 @@ export interface LinkButtonProps extends ButtonsProps {
 const LinkButton = ({ href, variant = "button", ...props}: LinkButtonProps): JSX.Element => {
     const dispatch = useAppDispatch();
     const location = useLocation();
-    if (props.effects == undefined) props.effects = { enableSelectEffect: location.pathname == href };
-    if (props.effects?.enableSelectEffect == undefined) props.effects.enableSelectEffect = location.pathname == href;
+    if (props.effects == undefined) props.effects = { select: location.pathname == href };
+    if (props.effects?.select == undefined) props.effects.select = location.pathname == href;
     
     return (
         <Link 

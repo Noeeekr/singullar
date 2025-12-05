@@ -12,7 +12,7 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } 
 
 import { lazy } from "react";
 
-import DefaultSuspense from "./components/layout/DefaultSuspense"
+import Suspense from "./components/layout/suspense"
 
 const Home = lazy(() => import("./components/Home"))
 const Layout = lazy(() => import("./components/layout/Layout"))
@@ -31,8 +31,9 @@ const PgClassesCreate = lazy(() => import("./pages/admin/classes/create/Page"))
 
 const PgSubjectCreate = lazy(() => import("./pages/platform/subjects/create/Page"))
 
-const PgTeachersSearch = lazy(() => import("./pages/admin/teachers/Search"))
+const PgTeachersSearch = lazy(() => import("./pages/admin/teachers/Page"))
 
+const PgQuestion = lazy(() => import("./pages/platform/question/Page"))
 const PgQuestionCreate = lazy(() => import("./pages/platform/question/create/Page"))
 const PgQuestionList = lazy(() => import("./pages/platform/question/list/Page"))
 const PgQuestionListSearch = lazy(() => import("./pages/platform/question/list/search/Page"))
@@ -41,34 +42,37 @@ const PgQuestionListCreate = lazy(() => import("./pages/platform/question/list/c
 const routerRoutes = createRoutesFromElements(
   <>
     <Route path="/"
-      element={<Box sx={{ width: "100vw", height: "100vh" }}><DefaultSuspense><RouteGuard/></DefaultSuspense></Box>}
+      element={<Box sx={{ width: "100vw", height: "100vh" }}><Suspense to={<RouteGuard />} /></Box>}
     >
       <Route path="auth"
-        element={<DefaultSuspense><PgAuthentication /></DefaultSuspense>}
+        element={<Suspense to={<PgAuthentication />} />}
         errorElement={<div>Error element auth</div>}
       />
       <Route path="/"
-        element={<DefaultSuspense><Layout /></DefaultSuspense>}
+        element={<Suspense to={<Layout />} />}
       >
         <Route index element={<div>Home root page</div>} />
         <Route path="platform">
           <Route path="subjects">
             <Route path="create"
-              element={<DefaultSuspense children={<PgSubjectCreate/>}/>}/>
+              element={<Suspense children={<PgSubjectCreate />} />} />
           </Route>
           <Route path="question">
             <Route path="create"
-              element={<DefaultSuspense><PgQuestionCreate /></DefaultSuspense>}
+              element={<Suspense to={<PgQuestionCreate />} />}
+            />
+            <Route path=":question_id"
+              element={<Suspense to={<PgQuestion />} />}
             />
             <Route path="list">
               <Route index
-                element={<DefaultSuspense><PgQuestionListSearch /></DefaultSuspense>}
+                element={<Suspense to={<PgQuestionListSearch />} />}
               />
               <Route path=":list_id"
-                element={<DefaultSuspense><PgQuestionList /></DefaultSuspense>}
+                element={<Suspense to={<PgQuestionList />} />}
               />
               <Route path="create"
-                element={<DefaultSuspense><PgQuestionListCreate /></DefaultSuspense>}
+                element={<Suspense to={<PgQuestionListCreate />} />}
               />
             </Route>
           </Route>
@@ -86,26 +90,26 @@ const routerRoutes = createRoutesFromElements(
         </Route>
         <Route path="admin">
           <Route path="dashboard"
-            element={<DefaultSuspense><PgDashboard /></DefaultSuspense>}
+            element={<Suspense to={<PgDashboard />} />}
           />
           <Route path="students">
             <Route index
-              element={<DefaultSuspense><PgStudentsSearch /></DefaultSuspense>}
+              element={<Suspense to={<PgStudentsSearch />} />}
             />
             <Route path="create"
-              element={<DefaultSuspense><PgStudentsCreate /></DefaultSuspense>}
+              element={<Suspense to={<PgStudentsCreate />} />}
             />
           </Route>
           <Route path="classes">
-            <Route index element={<DefaultSuspense><PgClassesSearch /></DefaultSuspense>} />
-            <Route path=":id" element={<DefaultSuspense><PgClass /></DefaultSuspense>} />
+            <Route index element={<Suspense to={<PgClassesSearch />} />} />
+            <Route path=":id" element={<Suspense to={<PgClass />} />} />
             <Route path="create"
-              element={<DefaultSuspense><PgClassesCreate /></DefaultSuspense>}
+              element={<Suspense to={<PgClassesCreate />} />}
             />
           </Route>
           <Route path="teachers">
             <Route index
-              element={<DefaultSuspense><PgTeachersSearch /></DefaultSuspense>}
+              element={<Suspense to={<PgTeachersSearch />} />}
             />
           </Route>
           <Route path="*" element={<div>Any path admin page</div>} />

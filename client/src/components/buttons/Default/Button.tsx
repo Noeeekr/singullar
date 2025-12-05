@@ -20,7 +20,7 @@ export const DefaultButtonLayout = styled(({ children, isMobile, ...props }: But
 ))(({ theme, isMobile, effects }) => ({
     alignItems: "center",
     
-    backgroundColor: effects?.enableSelectEffect ? theme.palette.primary.purpleLightInv : 'transparent',
+    backgroundColor: effects?.select ? theme.palette.primary.purpleLightInv : 'transparent',
     paddingY: isMobile ? "2.5rem" : "2rem",
     paddingX: "10px",
     borderRadius: 6,
@@ -42,7 +42,7 @@ export const DefaultButtonLayout = styled(({ children, isMobile, ...props }: But
     "&:active": {
         backgroundColor: theme.palette.primary.purpleLightInv
     },
-    "&:hover": effects?.enableHoverEffect ? {
+    "&:hover": effects?.hover ? {
         backgroundColor: theme.palette.primary.purpleLightInv,
     } : {},
 }))

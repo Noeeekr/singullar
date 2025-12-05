@@ -40,7 +40,7 @@ const MyAccountPopupContent = (props: { menus: (LinkButtonProps | ButtonProps)[]
                     gap={1}
                     fontWeight={400}
                     fontSize={13.5}
-                    effects={{ enableHoverEffect: true}}
+                    effects={{ hover: true }}
                     menus={menus.slice(0, -1)}
                 />
             </Box>
@@ -50,7 +50,7 @@ const MyAccountPopupContent = (props: { menus: (LinkButtonProps | ButtonProps)[]
                     <Button 
                         fontWeight={400}
                         fontSize={13.5}
-                        effects={{ enableHoverEffect: true }}
+                        effects={{ hover: true }}
                         { ...menus[menus.length - 1] }
                         type="button"
                     />

@@ -8,6 +8,7 @@ import styled from "@emotion/styled";
 import Title from "./components/Title";
 import Text from "./components/Text";
 import { QuestionListDisplayProps } from ".";
+import { parseQuestionDifficulty } from "@models/server/question";
 
 const Emphasis = styled("span")(({
     fontWeight: "bold",
@@ -25,7 +26,7 @@ export default function ({ list, ...props }: QuestionListDisplayProps): JSX.Elem
                 </Text>
             </Stack>
             <Text>
-                <Emphasis>Dificuldade:</Emphasis> {list.question_list_difficulty_level}
+                    <Emphasis>Dificuldade:</Emphasis> {parseQuestionDifficulty(list.question_list_difficulty_level)}
             </Text>
             <Stack direction="row" gap={1} marginY={2}>
                 <NumberDisplay

@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 
 import type { JSX } from "react"
-import type { FilterOptions } from "./default";
+import type { FilterOptions } from "@hooks/useFetchQuestionLists";
 
 export default (): JSX.Element => {
     const [isHidden, setIsHidden] = useState(false);

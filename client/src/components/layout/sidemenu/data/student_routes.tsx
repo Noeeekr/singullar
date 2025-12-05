@@ -22,7 +22,7 @@ import {
 import type { LinkButtonProps } from '@components/buttons/Link';
 import { SideMenuButtons } from '../SideMenuButtons';
 import { ButtonsProps } from '@components/buttons/Default';
-import { NavigationPopupProps } from '@components/layout/navbar/AppNavbar';
+import { PopupButtonProps } from '@components/buttons/Popup';
 
 const students_sidemenu_data_myaccount: (LinkButtonProps | ButtonsProps)[] = [
     {
@@ -125,7 +125,7 @@ export const students_sidemenu_data: SideMenuButtons[] = [
 
 export type StudentNavbarPopupIds = "help" | "notifications" | "myaccount" | "quickaccess" | "";
 
-export const students_navbar_popup_data: NavigationPopupProps[] = [
+export const students_navbar_popup_data: PopupButtonProps[] = [
     {
         variant: "side",
         title: "Central de ajuda",

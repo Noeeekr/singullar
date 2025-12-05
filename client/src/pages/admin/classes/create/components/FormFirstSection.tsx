@@ -12,8 +12,8 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { FormContext } from "./Form";
 
 // Types
-import type { UserSegments } from "@models/server/server";
-import { EF1, EF2, EM } from "../../../../../models/server/server";
+import type { UserSegments } from "@models/server";
+import { EF1, EF2, EM } from "@models/server";
 
 export type FormFirstSectionData = {
   className: string,
@@ -44,11 +44,10 @@ export const ButtonAddClass = (): JSX.Element => {
   return (
     <div style={{ margin: '0 0 0 auto' }}>
       <ButtonSolid
+        title="Adicionar Turma"
         disabled={isDisabled}
         onClick={enableNextSection}
-      >
-        Adicionar turma
-      </ButtonSolid>
+      />
     </div>
   )
 }

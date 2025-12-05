@@ -1,4 +1,4 @@
-import { NavigationPopupProps } from "@components/layout/navbar/AppNavbar";
+import { PopupButtonProps } from '@components/buttons/Popup';
 import { SideMenuButtons } from "../SideMenuButtons";
 
 export const supervisor_sidemenu_data: SideMenuButtons[] = [
@@ -7,7 +7,7 @@ export const supervisor_sidemenu_data: SideMenuButtons[] = [
 
 export type SupervisorNavbarPopupId = "deleteLater" | "";
 
-export const supervisor_navbar_popup_data: NavigationPopupProps[] = [
+export const supervisor_navbar_popup_data: PopupButtonProps[] = [
     {
         variant: "side",
         title: "deleteLater",

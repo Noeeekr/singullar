@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { updateUser } from '../slices/userSlice'
+import { updateUser } from '../slices/user'
 import { useAppDispatch } from '../slices/store'
 
 import { SERVER_ADDR } from '../configs'

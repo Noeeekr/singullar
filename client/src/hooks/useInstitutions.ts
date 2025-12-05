@@ -9,7 +9,7 @@ import {
     useAppDispatch,
     useAppSelector,
 } from '../slices/store';
-import { setInstitution as ActionSetInstitution } from '../slices/institutionsSlice'
+import { setInstitution as ActionSetInstitution } from '../slices/institutions'
 
 import type { Institution } from '../models/server';
 

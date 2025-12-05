@@ -33,3 +33,23 @@ export interface ExpandedQuestionList extends DefaultFields {
     difficulty_level: number,
     question_quantity: number,
 }
+
+const difficulties: {[index: number]: string} = {
+    1: "Fundamental",
+    2: "Iniciante",
+    3: "Intermediario",
+    4: "Intermediario+",
+    5: "Intermediario++",
+    6: "Avançado",
+    7: "Avançado+",
+    8: "Avançado++",
+    9: "Profissional",
+    10: "Expert",
+}
+
+// Parses the difficulty level (int) to its name (string) 
+// **Not always realiable, if the level is not set will return "Dificuldade desconhecida" 
+export function parseQuestionDifficulty(difficulty_level: number): string {
+    const difficulty_level_name: string | undefined = difficulties[difficulty_level]
+    return difficulty_level_name == undefined ? "Dificuldade desconhecida" : difficulty_level_name
+}

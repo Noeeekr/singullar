@@ -15,7 +15,7 @@ export default function FormSection({ activeSection }: { activeSection: number }
 
     const formData = useMemo(() => {
         let data: FormRequest = {} as FormRequest
-    
+
         const keys = Object.keys(formSections) as Array<keyof FormSections>
         for (const key of keys) {
             const section = formSections[key]
@@ -29,18 +29,18 @@ export default function FormSection({ activeSection }: { activeSection: number }
             if (section == 1) {
                 return 1
             }
-            switch(section) {
+            switch (section) {
                 case 2:
                     setFormData("firstSection.className", "")
                     setFormData("firstSection.segment", "")
                     setFormData("firstSection.series", "")
-                break
+                    break
                 case 3:
                     setFormData("secondSection.students", [])
-                break
+                    break
                 case 4:
                     setFormData("thirdSection.teacher_id", null)
-                break
+                    break
             }
             return section - 1 as typeof section
         });
@@ -72,22 +72,22 @@ export default function FormSection({ activeSection }: { activeSection: number }
                                     : <div style={{ margin: '0 0 0 auto' }}>
                                         <Stack flexDirection="row" gap={2}>
                                             {
-                                                i == 0  
+                                                i == 0
                                                     ? <></>
-                                                    : <ButtonSolid onClick={handleRedoSection}>
-                                                        Refazer última etápa
-                                                    </ButtonSolid>
+                                                    : <ButtonSolid title="Refazer última etápa" onClick={handleRedoSection} />
                                             }
                                             {
                                                 section.button != null
                                                     ? section.button
-                                                    : activeSection == 4 
-                                                    ? <ButtonSolid onClick={() => { send(formData); setActiveSection(1) }}>
-                                                        Criar turma
-                                                    </ButtonSolid>
-                                                    : <ButtonSolid onClick={() => {setActiveSection((section) => section + 1 as typeof section)}}>
-                                                        Continuar
-                                                    </ButtonSolid>
+                                                    : activeSection == 4
+                                                        ? <ButtonSolid
+                                                            title="Criar turma"
+                                                            onClick={() => { send(formData); setActiveSection(1) }}
+                                                        />
+                                                        : <ButtonSolid
+                                                            title="Continuar"
+                                                            onClick={() => { setActiveSection((section) => section + 1 as typeof section) }}
+                                                        />
                                             }
                                         </Stack>
                                     </div>

@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form"
 import { useCallback, useEffect, useState } from "react";
 import useFetchUsers from "@hooks/useFetchUsers";
 
-import { ROLE_TEACHER } from "../../../../models/server" 
+import { ROLE_TEACHER } from "../../../../models/server"
 import type { UserRoles } from "@models/server"
 
 const roles: UserRoles[] = [ROLE_TEACHER]
@@ -135,7 +135,7 @@ export default function Search(
                         }}>
                             {
                                 error != ""
-                                    ? <ErrorBubble err={`Ocorreu um erro ao procurar os usuários. Por favor tente novamente mais tarde.`} />
+                                    ? <ErrorBubble message="Ocorreu um erro ao procurar os usuários. Por favor tente novamente mais tarde." />
                                     : <></>
                             }
                             {
@@ -151,7 +151,7 @@ export default function Search(
                                         <Typography variant="subtitle1">
                                             Nenhum usuário encontrado
                                         </Typography>
-                                        <Button onClick={() => { send({"accepted_roles": roles })}}>Recarregar</Button>
+                                        <Button onClick={() => { send({ "accepted_roles": roles }) }}>Recarregar</Button>
                                     </>
                                     : <></>
                             }
@@ -186,7 +186,7 @@ export default function Search(
                                     cursor: selectable ? "pointer" : "initial",
                                     flex: 1,
                                     bgcolor: isSelected ? "primary.purpleLight" : selectable == selectedUsersIds.length ? "rgb(220,220,220)" : "white",
-                                    border: selectable <= selectedUsersIds.length ? "solid 1px rgb(230,230,230)": "solid 2px rgb(200,200,200)",
+                                    border: selectable <= selectedUsersIds.length ? "solid 1px rgb(230,230,230)" : "solid 2px rgb(200,200,200)",
                                     transition: "all 150ms ease-in-out",
                                     padding: 2,
                                     borderRadius: 2,

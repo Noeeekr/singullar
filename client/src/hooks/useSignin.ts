@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { DefaultResponse } from '../models/server'
 
-import { updateUser } from '../slices/userSlice'
+import { updateUser } from '../slices/user'
 import { AppDispatch } from '../slices/store'
 import { useDispatch } from 'react-redux'
 

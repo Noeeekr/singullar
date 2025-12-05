@@ -13,15 +13,17 @@ export interface ButtonIconProps {
     }
 }
 export interface ButtonEffectsProps {
-    effects?: {
-        enableSelectEffect?: boolean,
-        enableHoverEffect?: boolean,
-        enableNotificationEffect?: boolean,
-    }
+    select?: boolean,
+    hover?: boolean,
+    notification?: boolean,
 }
-export interface ButtonLayoutProps extends ButtonEffectsProps {
+
+export interface ButtonLayoutProps {
     isMobile?: boolean
+    
+    effects?: ButtonEffectsProps
 }
+
 export interface ButtonProps extends ButtonLayoutProps, ButtonIconProps, StackProps {
     title: string,
 
