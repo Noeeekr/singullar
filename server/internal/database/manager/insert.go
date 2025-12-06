@@ -95,7 +95,10 @@ func (ops *Operator) InsertQuestionList(institutionId int, questionList *models.
 	err := ops.Do(query)
 	if err != nil {
 		return nil, err
-	} else if len(ids) == 0 {
+	}
+
+	// If no valid ids, return not found
+	if len(ids) == 0 {
 		return nil, borm.ErrNotFound
 	}
 

@@ -40,6 +40,11 @@ type QuestionListsFilters struct {
 	Ids []int `json:"ids"`
 }
 
+type QuestionListsRequest struct {
+	Filters *QuestionListsFilters `json:"filters"`
+	Offset  int                   `json:"offset"`
+}
+
 // Target: Client Ready Data + Extra info
 // Comes From: Database return
 type ExtendedQuestionList struct {

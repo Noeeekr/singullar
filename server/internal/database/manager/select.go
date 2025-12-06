@@ -227,8 +227,16 @@ func (ops *DatabaseManager) SelectQuestions(InstitutionId int, filters *models.Q
 			"q.question_description", "q.question_short_description", "q.question_difficulty_level",
 			"q.question_correct_alternative", "q.question_subject_id").As("q")
 
-	conditions := make([]*borm.ConditionalQuery, 3)
+	conditions := make([]*borm.ConditionalQuery, 4)
 	conditions = append(conditions, query.Field("q.question_institution_id").IsEqual(InstitutionId))
+
+	if len(filters.QuestionIds) > 0 {
+		ids := make([]any, len(filters.QuestionIds))
+		for i, id := range filters.QuestionIds {
+			ids[i] = id
+		}
+		conditions = append(conditions, query.Field("q.id").IsAny(ids...))
+	}
 
 	// Filter question by question list if capable
 	if len(filters.QuestionListIds) > 0 {
@@ -271,5 +279,59 @@ func (ops *DatabaseManager) SelectQuestions(InstitutionId int, filters *models.Q
 	if err := ops.Do(query); err != nil {
 		return nil, err
 	}
+
 	return questions, nil
+}
+
+func (ops *DatabaseManager) SelectQuestionLists(InstitutionId int, request *models.QuestionListsRequest) (*[]*models.ExtendedQuestionList, error) {
+	lists := &[]*models.ExtendedQuestionList{}
+
+	query := models.TableQuestionLists.
+		Select("ql.id", "ql.created_at", "ql.updated_at", "ql.institution_id", "ql.question_list_title", "ql.subject_id", "s.subject_name", "ql.question_list_difficulty_level", "COUNT(q.id) AS question_quantity").
+		As("ql").Scanner(scan.ExtendedQuestionLists(lists)).
+		InnerJoin(models.TableInstitutions, "i").On("i.id", "ql.institution_id").
+		LeftJoin(models.TableQuestionListsQuestions, "qlq").On("ql.id", "qlq.question_list_id").
+		LeftJoin(models.TableQuestions, "q").On("q.id", "qlq.question_id").
+		LeftJoin(models.TableSubjects, "s").On("ql.subject_id", "s.id")
+	query.Where(query.And(
+		query.Field("ql.institution_id").IsEqual(InstitutionId),
+		appendQuestionListFilters(query, request.Filters),
+	)).
+		GroupBy("ql.id", "q.id", "s.subject_name").
+		Offset(request.Offset).
+		Limit(10)
+
+	return lists, ops.Commiter.Do(query)
+}
+
+func appendQuestionListFilters(query *borm.Query, filters *models.QuestionListsFilters) *borm.ConditionalQuery {
+	if filters == nil {
+		return nil
+	}
+	// Appends "filter by fields" rule only if fields > 0
+	conditions := make([]*borm.ConditionalQuery, len(filters.Fields))
+	for _, filter := range filters.Fields {
+		composedCondition := []*borm.ConditionalQuery{}
+		if filter.Title != nil {
+			composedCondition = append(composedCondition, query.Field("ql.question_list_title").IsLike("%"+*filter.Title+"%", false))
+		}
+		if filter.SubjectId != nil {
+			composedCondition = append(composedCondition, query.Field("ql.subject_id").IsEqual(*filter.SubjectId))
+		}
+		if filter.DifficultyLevel != nil {
+			composedCondition = append(composedCondition, query.Field("ql.question_list_difficulty_level").IsEqual(*filter.DifficultyLevel))
+		}
+		conditions = append(conditions, query.Compose(query.And(composedCondition...)))
+	}
+
+	// Appends "filter by id" rule only if ids > 0
+	if len(filters.Ids) != 0 {
+		ids := make([]any, len(filters.Ids))
+		for i, id := range filters.Ids {
+			ids[i] = id
+		}
+		conditions = append(conditions, query.Field("ql.id").IsAny(ids...))
+	}
+
+	return query.And(conditions...)
 }

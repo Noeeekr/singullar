@@ -9,8 +9,9 @@ type GetQuestionRequest struct {
 
 type QuestionFilters struct {
 	// For these field, if empty, default value is acceptable
-	Fields          []GetQuestionRequest `json:"question_fields"`
 	QuestionListIds []int                `json:"question_list_ids"`
+	QuestionIds     []int                `json:"question_ids"`
+	Fields          []GetQuestionRequest `json:"question_fields"`
 	Offset          int                  `json:"offset"`
 }
 

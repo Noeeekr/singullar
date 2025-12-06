@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/Noeeekr/borm"
 	"github.com/Noeeekr/singullar/server/common/environment"
 	"github.com/Noeeekr/singullar/server/common/logs"
+	"github.com/Noeeekr/singullar/server/internal/common/commandutil"
 	"github.com/Noeeekr/singullar/server/internal/database/manager"
 	"github.com/Noeeekr/singullar/server/internal/database/models"
 	"github.com/Noeeekr/singullar/server/internal/database/seeder"
@@ -11,7 +14,7 @@ import (
 )
 
 var seedCmd *cobra.Command = &cobra.Command{
-	Use:   "seed [ -f ENVIRONMENT_FILES... ] [ -e EMAIL ] [ -p PASSWORD ]",
+	Use:   "seed [ -f ENVIRONMENT_FILE_PATH... ]",
 	Short: "Creates and seeds a single institution with the given name into the development environment",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -23,26 +26,26 @@ var seedCmd *cobra.Command = &cobra.Command{
 			Migrations().
 			Enable().RecreateExisting().UndoOnError()
 
-		psswd, _ := cmd.Flags().GetString("password")
-		email, _ := cmd.Flags().GetString("email")
-
 		files, _ := cmd.Flags().GetStringArray("environmentFiles")
 		if err := environment.Parse(files...); err != nil {
 			logs.Error.Fatal(err.String())
 		}
 
-		if err := seedInstitution(email, psswd); err != nil {
+		if err := seedInstitution(); err != nil {
 			logs.Error.Fatal(err)
 		}
-		logs.Info.Println("[Finished seeding]")
+		logs.Info.Println("|\n[Finished seeding]")
 	},
 }
 
-func seedInstitution(email, password string) error {
+func seedInstitution() error {
 	institutionRequest := seeder.CreateInstitutionRequest(1)[0]
-	institutionRequest.Name = "SeededInstitution"
-	institutionRequest.Email = email
-	institutionRequest.Password = password
+	institutionRequest.Name = "Test Institution"
+	institutionRequest.Email = "admin@test.com"
+	institutionRequest.Password = "admin"
+	fmt.Println("Institution Name: ", institutionRequest.Name)
+	fmt.Println("[Test-Admin] Email:", institutionRequest.Email)
+	fmt.Println("[Test-Admin] Password:", institutionRequest.Password)
 
 	commiter, err := borm.Connect(models.EnvironmentDatabase)
 	if err != nil {
@@ -69,6 +72,7 @@ func seedInstitution(email, password string) error {
 	if err != nil {
 		logs.Error.Fatal(err)
 	}
+
 	return operator.Commit()
 }
 func InsertInstitution(operator *manager.Operator, r *models.CreateInstitutions) (*models.Users, error) {
@@ -81,7 +85,14 @@ func InsertInstitution(operator *manager.Operator, r *models.CreateInstitutions)
 }
 func InsertUsers(operator *manager.Operator, institutionId int) (teachers []*models.Users, studentIds []int, err error) {
 	// Create students, teachers and supervisors
+	segment := models.EF2
+	testuser := models.CreateUser("student", "student@test.com", "student", institutionId, models.STUDENT, &segment)
+	fmt.Println("|")
+	fmt.Println("[Test-Student] Email:", testuser.Email)
+	fmt.Println("[Test-Student] Password:", testuser.Password)
+
 	createdUsers := seeder.CreateUserRequests(10, institutionId)
+	createdUsers = append(createdUsers, testuser)
 
 	users, err := operator.InsertManyUsers(createdUsers...)
 	if err != nil {
@@ -118,13 +129,7 @@ func InsertNotifications(operator *manager.Operator, teachers []*models.Users, s
 	return nil
 }
 func init() {
-	seedCmd.Flags().StringArrayP("environmentFiles", "f", []string{}, "Defines environment files to parse the required environment variables.")
-
-	seedCmd.Flags().StringP("email", "e", "", "The email of the institution administrator to sign-in")
-	seedCmd.MarkFlagRequired("email")
-
-	seedCmd.Flags().StringP("password", "p", "12345", "The password of the institution administrator to sign-in")
-	seedCmd.MarkFlagRequired("password")
+	commandutil.ConsumeFlagConfiguration(environment.EnvironmentFilesFlagToken, seedCmd)
 
 	rootCmd.AddCommand(seedCmd)
 }
