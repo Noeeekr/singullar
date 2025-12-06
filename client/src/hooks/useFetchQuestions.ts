@@ -9,6 +9,8 @@ import { QuestionFilters } from "../pages/platform/question/list/components/Sear
 
 export interface FilterOptions {
     question_list_ids?: number[]
+    question_ids?: number[]
+    
     fields?: QuestionFilters[]
     offset?: number
 }
@@ -31,6 +33,6 @@ export default (): useContextAwareFetchReturn<Question[], FilterOptions> => {
         if (body == undefined) body = DEFAULT_BODY
         defaultSend(body)
     }
-    
+
     return values
 }

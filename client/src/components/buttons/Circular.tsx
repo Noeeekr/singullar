@@ -10,7 +10,11 @@ import { styled } from '@mui/material';
 // Types
 import type { BoxProps } from '@mui/material/Box';
 
-const CircularButton = styled(({ children, fontSize, ...props }: BoxProps) => (
+export interface CircularButtonProps extends BoxProps {
+    disabled?: boolean
+}
+
+const CircularButton = styled(({ children, fontSize, ...props }: CircularButtonProps) => (
     <Box {...props}>
         {
             children
@@ -18,15 +22,15 @@ const CircularButton = styled(({ children, fontSize, ...props }: BoxProps) => (
                 : <FaChevronLeft fontSize={fontSize ? Number(fontSize) : 13} />
         }
     </Box>
-))(({ theme }) => ({
+))(({ theme, disabled }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
 
-    backgroundColor: 'rgba(0,0,0,0)',
+    backgroundColor: disabled ? 'rgba(235,235,235)' :'rgba(0,0,0,0)',
     width: 42,
     height: 42,
-    border: `solid 2px ${theme.palette.primary.purpleExtraLight}`,
+    border: disabled ? 'solid 2px rgba(235,235,235)' : `solid 2px ${theme.palette.primary.purpleExtraLight}`,
     borderRadius: '50%',
 
     '&:hover': {

@@ -3,7 +3,6 @@ import {
     Typography,
 } from '@mui/material'
 
-// Seriously MUI, what is this syntax???
 const SectionTitle = styled(({ children, ...other }: { children: string }) => (
     <Typography variant={"subtitle1"} {...other}>{children}</Typography>
 ))(({ theme }) => ({

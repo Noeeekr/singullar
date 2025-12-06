@@ -5,6 +5,7 @@ import CircularButton from "@components/buttons/Circular";
 
 // Features
 import { useNavigate } from "react-router-dom";
+import TextFallback from "./TextFallback";
 
 interface SectionHeaderProps extends StackProps {
   title: string;
@@ -23,23 +24,27 @@ const SectionHeader = ({ children, title, subtitle, breadcrumbs, ...props }: Sec
   return (
     <Stack direction="row" alignItems="center" width="100%" justifyContent="space-between" gap={1} {...props}>
       <Stack direction="row" alignItems="center" gap={1}>
-        <CircularButton onClick={() => {navigate(-1)}} />
+        <CircularButton onClick={() => { navigate(-1) }} />
         <Stack gap={0.5} direction="column" alignItems="start">
-          <Typography component="h3" variant="h4" fontWeight="600">
-            {title}
-          </Typography>
+          <TextFallback on={title == ""}>
+            <Typography component="h3" variant="h4" fontWeight="600">
+              {title}
+            </Typography>
+          </TextFallback>
           <Stack direction="row" gap={0.5}>
             {
-              subtitle
-                ? <Typography fontWeight={500} sx={{ color: 'rgb(130,130,130)' }}>
-                  {subtitle}
-                </Typography>
+              subtitle != undefined
+                ? <TextFallback on={subtitle == ""} width={2}>
+                  <Typography fontWeight={500} sx={{ color: 'rgb(130,130,130)' }}>
+                    {subtitle}
+                  </Typography>
+                </TextFallback>
                 : breadcrumbs
             }
           </Stack>
         </Stack>
       </Stack>
-        {children || <></>}
+      {children || <></>}
     </Stack>
   );
 };

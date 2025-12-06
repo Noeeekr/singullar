@@ -6,14 +6,19 @@ export interface QuestionListDifficulty {
 }
 
 export interface Question extends DefaultFields {
-    // Necessary to identify it's status as [right, wrong, not_done]
     question_id: string
     question_title: string
-    question_status: string
     question_description: string
     question_institution_id: number
     question_difficulty_level: number
     question_short_description: string
+
+    /** Extended type fields */
+
+    /** [Mock] [Missing Implementation] The alternatives to display */
+    question_alternatives: string[]
+    /** [Mock] [Missing Implementation] Identify question as (R | W | ND) */
+    question_status: string
 }
 
 export interface QuestionList extends DefaultFields {
@@ -51,5 +56,5 @@ const difficulties: {[index: number]: string} = {
 // **Not always realiable, if the level is not set will return "Dificuldade desconhecida" 
 export function parseQuestionDifficulty(difficulty_level: number): string {
     const difficulty_level_name: string | undefined = difficulties[difficulty_level]
-    return difficulty_level_name == undefined ? "Dificuldade desconhecida" : difficulty_level_name
+    return difficulty_level_name == undefined ? "Desconhecida" : difficulty_level_name
 }

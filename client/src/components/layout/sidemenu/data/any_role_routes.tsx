@@ -2,7 +2,7 @@ import BorderIcon from '@components/BorderIcon.tsx'
 
 import { BiMessageSquareDetail } from 'react-icons/bi';
 import { LuPartyPopper } from 'react-icons/lu';
-import { FaChalkboardTeacher, FaGithub, FaShareAlt } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaEdit, FaGithub, FaShareAlt } from 'react-icons/fa';
 import { IoNewspaperOutline } from 'react-icons/io5';
 import { GrBook } from 'react-icons/gr';
 import { FiPaperclip } from 'react-icons/fi';
@@ -11,8 +11,9 @@ import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { IoMdHelpCircle, IoIosBarcode } from 'react-icons/io';
 import { LinkButtonProps } from '@components/buttons/Link';
 import { SideMenuButtons } from '../SideMenuButtons';
+import { GoDiscussionDuplicate } from 'react-icons/go';
 
-export const sidemenu_data_quickaccess: { title: string, menus: LinkButtonProps[], type: "group" } = {
+export const sidemenu_quickaccess_group: { title: string, menus: LinkButtonProps[], type: "group" } = {
     type: "group",
     title: "Acesso Rápido",
     menus: [
@@ -48,9 +49,25 @@ export const sidemenu_data_quickaccess: { title: string, menus: LinkButtonProps[
     ]
 };
 
-export const sidemenu_data_classroom: SideMenuButtons = {
-    title: "Sala de aula",
+export const sidemenu_platform_group: SideMenuButtons = {
+    title: "Plataforma",
     menus: [
+        {
+            title: "Banco de questões",
+            type: "link",
+            href: "/platform/question/list",
+            icon: {
+                component: <FaEdit />,
+            },
+        },
+        {
+            title: "Estudo orientado",
+            type: "link",
+            href: "/platform/study",
+            icon: {
+                component: <GoDiscussionDuplicate />,
+            },
+        },
         {
             title: "Biblioteca de conteúdos",
             icon: {
@@ -129,7 +146,7 @@ export const sidemenu_data_classroom: SideMenuButtons = {
     type: "group",
 };
 
-export const sidemenu_data_utilities: SideMenuButtons = {
+export const sidemenu_utilities_group: SideMenuButtons = {
     title: "Utilidades",
     menus: [
         {

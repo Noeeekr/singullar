@@ -15,8 +15,9 @@ import QuickAccessPopupContent from '../../../popups/content/PopupContentQuickAc
 
 // Data
 import {
-    sidemenu_data_classroom,
-    sidemenu_data_quickaccess,
+    sidemenu_platform_group,
+    sidemenu_quickaccess_group,
+    sidemenu_utilities_group,
 } from './any_role_routes';
 
 import type { LinkButtonProps } from '@components/buttons/Link';
@@ -24,7 +25,7 @@ import { SideMenuButtons } from '../SideMenuButtons';
 import { ButtonsProps } from '@components/buttons/Default';
 import { PopupButtonProps } from '@components/buttons/Popup';
 
-const students_sidemenu_data_myaccount: (LinkButtonProps | ButtonsProps)[] = [
+const sidemenu_myaccount_group_data: (LinkButtonProps | ButtonsProps)[] = [
     {
         title: "Dados pessoais e acesso",
         icon: {
@@ -74,7 +75,7 @@ const students_sidemenu_data_myaccount: (LinkButtonProps | ButtonsProps)[] = [
     },
 ];
 
-const students_sidemenu_data_main: SideMenuButtons = {
+const sidemenu_main_group: SideMenuButtons = {
     title: "Principal",
     menus: [
         {
@@ -88,7 +89,7 @@ const students_sidemenu_data_main: SideMenuButtons = {
         {
             title: "Notificações",
             icon: {
-                component: <MdOutlineNotificationsNone />,
+                component: <MdOutlineNotificationsNone color="white" />
             },
             type: "popup",
             element: <NotificationPopupContent />,
@@ -107,7 +108,7 @@ const students_sidemenu_data_main: SideMenuButtons = {
         },
         {
             title: "Minha conta",
-            menus: students_sidemenu_data_myaccount,
+            menus: sidemenu_myaccount_group_data,
             icon: {
                 component: <GoPerson />,
             },
@@ -118,9 +119,9 @@ const students_sidemenu_data_main: SideMenuButtons = {
 };
 
 export const students_sidemenu_data: SideMenuButtons[] = [
-    students_sidemenu_data_main,
-    sidemenu_data_classroom,
-    sidemenu_data_quickaccess,
+    sidemenu_main_group,
+    sidemenu_platform_group,
+    sidemenu_utilities_group,
 ]
 
 export type StudentNavbarPopupIds = "help" | "notifications" | "myaccount" | "quickaccess" | "";
@@ -153,7 +154,7 @@ export const students_navbar_popup_data: PopupButtonProps[] = [
         icon: {
             component: <VscAccount color="white" fontSize={22} />,
         },
-        element: <MyAccountPopupContent menus={students_sidemenu_data_myaccount} />,
+        element: <MyAccountPopupContent menus={sidemenu_myaccount_group_data} />,
         type: "popup",
     },
     {
@@ -163,7 +164,7 @@ export const students_navbar_popup_data: PopupButtonProps[] = [
         icon: {
             component: <TbGridDots color="white" fontSize={23} />,
         },
-        element: <QuickAccessPopupContent menus={sidemenu_data_quickaccess.menus} />,
+        element: <QuickAccessPopupContent menus={sidemenu_quickaccess_group.menus} />,
         type: "popup",
     }
 ]

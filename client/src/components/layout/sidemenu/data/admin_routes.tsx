@@ -2,9 +2,9 @@
 import { BiDirections } from 'react-icons/bi';
 import { LuScanFace, LuAtom } from 'react-icons/lu';
 import { MdOutlineNotificationsNone } from 'react-icons/md';
-import { FaChalkboardTeacher, FaEdit } from 'react-icons/fa';
+import { FaChalkboardTeacher } from 'react-icons/fa';
 import { IoSchool, IoPeopleSharp, IoExitOutline } from 'react-icons/io5';
-import { GoPerson, GoLock, GoDiscussionDuplicate } from 'react-icons/go';
+import { GoPerson, GoLock } from 'react-icons/go';
 import { TbSmartHome, TbSpeakerphone, TbGridDots } from 'react-icons/tb';
 
 // components;
@@ -14,9 +14,9 @@ import QuickAccessPopupContent from '../../../popups/content/PopupContentQuickAc
 
 // Data
 import {
-    sidemenu_data_classroom,
-    sidemenu_data_quickaccess,
-    sidemenu_data_utilities,
+    sidemenu_platform_group,
+    sidemenu_quickaccess_group,
+    sidemenu_utilities_group,
 } from './any_role_routes'
 import { ButtonProps } from '@components/buttons/Default';
 import { LinkButtonProps } from '@components/buttons/Link';
@@ -36,7 +36,7 @@ export interface INavbarPopupData {
     element: JSX.Element,
 };
 
-const admin_sidemenu_data_myaccount: (ButtonProps | LinkButtonProps)[] = [
+const sidemenu_myaccount_group_data: (ButtonProps | LinkButtonProps)[] = [
     {
         title: "Dados pessoais e acesso",
         icon: {
@@ -87,7 +87,7 @@ export const admin_navbar_popup_data: PopupButtonProps[] = [
         icon: {
             component: <GoPerson color="white" fontSize={22} />,
         },
-        element: <MyAccountPopupContent menus={admin_sidemenu_data_myaccount} />,
+        element: <MyAccountPopupContent menus={sidemenu_myaccount_group_data} />,
         type: "popup",
     },
     {
@@ -107,7 +107,7 @@ export const admin_navbar_popup_data: PopupButtonProps[] = [
         icon: {
             component: <TbGridDots color="white" fontSize={23} />,
         },
-        element: <QuickAccessPopupContent menus={sidemenu_data_quickaccess.menus} />,
+        element: <QuickAccessPopupContent menus={sidemenu_quickaccess_group.menus} />,
         type: "popup",
     },
 ];
@@ -166,29 +166,7 @@ export const admin_sidemenu_data: SideMenuButtons[] = [
         ],
         type: "group",
     },
-    {
-        title: "Plataforma",
-        menus: [
-            {
-                title: "Banco de questões",
-                type: "link",
-                href: "/platform/question/list",
-                icon: {
-                    component: <FaEdit />,
-                },
-            },
-            {
-                title: "Estudo orientado",
-                type: "link",
-                href: "/platform/study",
-                icon: {
-                    component: <GoDiscussionDuplicate />,
-                },
-            },
-            ...sidemenu_data_classroom.menus,
-        ],
-        type: "group",
-    },
-    sidemenu_data_utilities,
+    sidemenu_platform_group,
+    sidemenu_utilities_group,
 ];
 
